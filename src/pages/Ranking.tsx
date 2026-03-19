@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, ArrowLeft, Medal } from "lucide-react";
+import { Clock, ArrowLeft, Medal } from "lucide-react";
+import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -91,7 +92,7 @@ const RankingPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6"
         >
-          <Trophy className="w-10 h-10 text-primary mx-auto mb-2" />
+          <img src={churchLogo} alt="Logo ADREC" className="w-12 h-12 object-contain mx-auto mb-2" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
         </motion.div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, Clock, Target, BarChart3, ArrowRight } from "lucide-react";
+import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -80,9 +81,9 @@ const ResultPage = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full gradient-primary mb-4 shadow-lg"
+            className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-background mb-4"
           >
-            <Trophy className="w-10 h-10 text-primary-foreground" />
+            <img src={churchLogo} alt="Logo ADREC" className="w-16 h-16 object-contain" />
           </motion.div>
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">
             {store.participantName}
