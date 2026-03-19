@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, Users, Sparkles, ChevronRight } from "lucide-react";
+import { Users, Sparkles, ChevronRight } from "lucide-react";
+import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
