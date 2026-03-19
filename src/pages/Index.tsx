@@ -9,9 +9,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
-  Adultos: "👨‍👩‍👧‍👦",
-  Jovens: "🧑‍🎓",
-  Adolescentes: "🎒",
+  Adultos: "🤵🏻‍♂️🤵🏻‍♀️",
+  Jovens: "🎺",
+  Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
 };
 
 const Index = () => {
@@ -79,8 +79,8 @@ const Index = () => {
           <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-2">
             Quiz EBD
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Escola Bíblica Dominical • Teste seus conhecimentos
+          <p className="text-muted-foreground text-sm font-semibold">
+            1º TRI. 2026 - ADREC
           </p>
         </motion.div>
 
