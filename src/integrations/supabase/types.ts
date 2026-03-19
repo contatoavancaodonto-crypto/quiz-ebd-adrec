@@ -14,10 +14,306 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      answers: {
+        Row: {
+          answered_at: string
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_option: string
+        }
+        Insert: {
+          answered_at?: string
+          attempt_id: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          selected_option: string
+        }
+        Update: {
+          answered_at?: string
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_option?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      participants: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          correct_option: string
+          created_at: string
+          explanation: string | null
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          order_index: number
+          question_text: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_option: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          order_index: number
+          question_text: string
+          quiz_id: string
+        }
+        Update: {
+          correct_option?: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          order_index?: number
+          question_text?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          accuracy_percentage: number
+          created_at: string
+          finished_at: string | null
+          id: string
+          participant_id: string
+          quiz_id: string
+          score: number
+          started_at: string
+          total_questions: number
+          total_time_seconds: number
+        }
+        Insert: {
+          accuracy_percentage?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          participant_id: string
+          quiz_id: string
+          score?: number
+          started_at?: string
+          total_questions?: number
+          total_time_seconds?: number
+        }
+        Update: {
+          accuracy_percentage?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          participant_id?: string
+          quiz_id?: string
+          score?: number
+          started_at?: string
+          total_questions?: number
+          total_time_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          active: boolean
+          class_id: string
+          created_at: string
+          id: string
+          title: string
+          total_questions: number
+        }
+        Insert: {
+          active?: boolean
+          class_id: string
+          created_at?: string
+          id?: string
+          title: string
+          total_questions?: number
+        }
+        Update: {
+          active?: boolean
+          class_id?: string
+          created_at?: string
+          id?: string
+          title?: string
+          total_questions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      ranking_by_class: {
+        Row: {
+          accuracy_percentage: number | null
+          attempt_id: string | null
+          class_id: string | null
+          class_name: string | null
+          finished_at: string | null
+          participant_name: string | null
+          position: number | null
+          score: number | null
+          total_time_seconds: number | null
+        }
+        Relationships: []
+      }
+      ranking_general: {
+        Row: {
+          accuracy_percentage: number | null
+          attempt_id: string | null
+          class_id: string | null
+          class_name: string | null
+          finished_at: string | null
+          participant_name: string | null
+          position: number | null
+          score: number | null
+          total_time_seconds: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
