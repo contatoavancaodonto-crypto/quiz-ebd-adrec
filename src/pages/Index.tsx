@@ -9,9 +9,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
-  Adultos: "👨‍👩‍👧‍👦",
-  Jovens: "🧑‍🎓",
-  Adolescentes: "🎒",
+  Adultos: "🤵🏻‍♂️🤵🏻‍♀️",
+  Jovens: "🎺",
+  Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
 };
 
 const Index = () => {
