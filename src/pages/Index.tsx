@@ -74,8 +74,8 @@ const Index = () => {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl gradient-primary mb-4 shadow-lg">
-            <BookOpen className="w-10 h-10 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-background mb-4">
+            <img src={churchLogo} alt="Logo ADREC" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-2">
             Quiz EBD
