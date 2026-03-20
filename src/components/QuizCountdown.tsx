@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { Sparkles, ChevronRight } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 
 interface QuizCountdownProps {
@@ -14,17 +14,6 @@ const rules = [
 ];
 
 export function QuizCountdown({ onComplete }: QuizCountdownProps) {
-  const [count, setCount] = useState(5);
-
-  useEffect(() => {
-    if (count <= 0) {
-      onComplete();
-      return;
-    }
-    const timer = setTimeout(() => setCount((c) => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [count, onComplete]);
-
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -60,20 +49,20 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
           ))}
         </div>
 
-        {/* Countdown */}
-        <div className="text-muted-foreground text-sm mb-3">Começando em</div>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={count}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.5, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="text-7xl font-display font-bold gradient-text"
-          >
-            {count}
-          </motion.div>
-        </AnimatePresence>
+        {/* Start button */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onComplete}
+          className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+        >
+          <Sparkles className="w-5 h-5" />
+          Estou Pronto!
+          <ChevronRight className="w-5 h-5" />
+        </motion.button>
       </motion.div>
     </div>
   );

@@ -233,13 +233,13 @@ const QuizPage = () => {
 
                   if (confirmed) {
                     if (isCorrectOption) {
-                      optionClass = "border-green-500 bg-green-500/10";
+                      optionClass = "border-green-500 bg-green-500/15 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
                       badgeClass = "bg-green-500 text-white";
                     } else if (isSelected && !isCorrectOption) {
-                      optionClass = "border-destructive bg-destructive/10";
+                      optionClass = "border-destructive bg-destructive/15 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
                       badgeClass = "bg-destructive text-white";
                     } else {
-                      optionClass = "border-border/50 bg-card/50 opacity-50";
+                      optionClass = "border-border/50 bg-card/50 opacity-40";
                     }
                   } else if (isSelected) {
                     optionClass = "border-primary bg-primary/10 shadow-md";
