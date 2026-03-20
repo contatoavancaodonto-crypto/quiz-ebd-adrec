@@ -59,7 +59,7 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
           onClick={onComplete}
           className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer">
           
-          <CheckLine className="w-5 h-5" />
+          <Check className="w-5 h-5" />
           Estou Pronto!
           <ChevronRight className="w-5 h-5" />
         </motion.button>
