@@ -8,7 +8,7 @@ interface QuizCountdownProps {
 
 const rules = [
 "📝 O quiz contém 13 perguntas aleatórias",
-"🏆 Haverá 2 rankings: da Turma e Geral",
+"🏆 Haverá 2 rankings: da sua Classe e Geral",
 "⏱️ O critério de desempate é o menor tempo",
 "💡 Não basta acertar tudo — responda rápido!"];
 
