@@ -108,7 +108,7 @@ const RankingPage = () => {
                   : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "class" ? "Por Turma" : "Geral"}
+              {t === "class" ? "Por Classe" : "Geral"}
             </button>
           ))}
         </div>
