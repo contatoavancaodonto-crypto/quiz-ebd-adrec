@@ -6,11 +6,12 @@ import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThankYouScreen } from "@/components/ThankYouScreen";
 
 function getPerformanceMessage(pct: number) {
-  if (pct >= 90) return { text: "Excelente! 🌟", color: "text-success" };
+  if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };
   if (pct >= 70) return { text: "Muito bom! 👏", color: "text-primary" };
-  if (pct >= 50) return { text: "Bom! 👍", color: "text-warning" };
+  if (pct >= 50) return { text: "Bom! 👍", color: "text-yellow-500" };
   return { text: "Precisa melhorar 📖", color: "text-destructive" };
 }
 
@@ -18,15 +19,17 @@ function formatTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
+const TOTAL_QUESTIONS = 13;
+
 const ResultPage = () => {
   const navigate = useNavigate();
   const store = useQuizStore();
   const [classRank, setClassRank] = useState<number | null>(null);
   const [generalRank, setGeneralRank] = useState<number | null>(null);
+  const [showThankYou, setShowThankYou] = useState(true);
 
-  const totalQuestions = 13;
   const score = store.score;
-  const pct = Math.round((score / totalQuestions) * 100);
+  const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
   const perf = getPerformanceMessage(pct);
 
   useEffect(() => {
@@ -40,21 +43,30 @@ const ResultPage = () => {
         .from("ranking_by_class")
         .select("position")
         .eq("attempt_id", store.attemptId)
-        .single();
+        .maybeSingle();
       if (cr) setClassRank(Number(cr.position));
 
       const { data: gr } = await supabase
         .from("ranking_general")
         .select("position")
         .eq("attempt_id", store.attemptId)
-        .single();
+        .maybeSingle();
       if (gr) setGeneralRank(Number(gr.position));
     };
     fetchRanks();
   }, [store.attemptId, navigate]);
 
+  if (showThankYou) {
+    return (
+      <ThankYouScreen
+        participantName={store.participantName}
+        onContinue={() => setShowThankYou(false)}
+      />
+    );
+  }
+
   const stats = [
-    { icon: Target, label: "Pontuação", value: `${score}/${totalQuestions}`, sub: `${pct}%` },
+    { icon: Target, label: "Pontuação", value: `${score}/${TOTAL_QUESTIONS}`, sub: `${pct}%` },
     { icon: Clock, label: "Tempo", value: formatTime(store.totalTimeSeconds), sub: "" },
     { icon: Trophy, label: "Ranking Turma", value: classRank ? `#${classRank}` : "...", sub: store.className },
     { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "...", sub: "Todas turmas" },

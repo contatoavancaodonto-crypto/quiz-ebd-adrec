@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, ChevronRight } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { QuizCountdown } from "@/components/QuizCountdown";
 import { toast } from "sonner";
 
 interface Question {
@@ -21,6 +22,16 @@ interface Question {
 
 const optionLabels = ["A", "B", "C", "D"] as const;
 const optionKeys = ["option_a", "option_b", "option_c", "option_d"] as const;
+const QUESTIONS_PER_QUIZ = 13;
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -28,8 +39,10 @@ const QuizPage = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { seconds, formatted } = useTimer(!isLoading);
+  const [confirmed, setConfirmed] = useState(false);
+  const { seconds, formatted } = useTimer(!isLoading && !showCountdown);
 
   // Load quiz
   useEffect(() => {
@@ -60,14 +73,15 @@ const QuizPage = () => {
         if (qErr) throw qErr;
         store.setQuizId(quiz.id);
 
-        // Get questions
-        const { data: qs, error: qsErr } = await supabase
+        // Get ALL questions and randomly pick 13
+        const { data: allQs, error: qsErr } = await supabase
           .from("questions")
           .select("*")
-          .eq("quiz_id", quiz.id)
-          .order("order_index");
+          .eq("quiz_id", quiz.id);
         if (qsErr) throw qsErr;
-        setQuestions(qs);
+
+        const selected = shuffleArray(allQs).slice(0, QUESTIONS_PER_QUIZ);
+        setQuestions(selected);
 
         // Create attempt
         const { data: attempt, error: aErr } = await supabase
@@ -75,13 +89,12 @@ const QuizPage = () => {
           .insert({
             participant_id: participant.id,
             quiz_id: quiz.id,
-            total_questions: qs.length,
+            total_questions: QUESTIONS_PER_QUIZ,
           })
           .select("id")
           .single();
         if (aErr) throw aErr;
         store.setAttemptId(attempt.id);
-        store.startTimer();
         setIsLoading(false);
       } catch {
         toast.error("Erro ao carregar quiz.");
@@ -92,13 +105,19 @@ const QuizPage = () => {
     loadQuiz();
   }, []);
 
+  const handleCountdownComplete = useCallback(() => {
+    setShowCountdown(false);
+    store.startTimer();
+  }, [store]);
+
   const currentQ = questions[store.currentQuestionIndex];
   const isLast = store.currentQuestionIndex === questions.length - 1;
   const progress = questions.length > 0 ? ((store.currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
-  const handleNext = useCallback(async () => {
-    if (!selectedOption || !currentQ) return;
+  const handleConfirm = useCallback(async () => {
+    if (!selectedOption || !currentQ || confirmed) return;
     setIsSubmitting(true);
+    setConfirmed(true);
 
     const isCorrect = selectedOption === currentQ.correct_option;
     store.setAnswer(currentQ.id, selectedOption);
@@ -111,9 +130,14 @@ const QuizPage = () => {
       is_correct: isCorrect,
     });
 
+    setIsSubmitting(false);
+  }, [selectedOption, currentQ, confirmed, store]);
+
+  const handleNext = useCallback(() => {
+    if (!confirmed || !currentQ) return;
+
     if (isLast) {
-      // Calculate score
-      const allAnswers = { ...store.answers, [currentQ.id]: selectedOption };
+      const allAnswers = { ...store.answers, [currentQ.id]: store.answers[currentQ.id] };
       let score = 0;
       questions.forEach((q) => {
         if (allAnswers[q.id] === q.correct_option) score++;
@@ -122,8 +146,7 @@ const QuizPage = () => {
       const totalTime = seconds;
       const accuracy = (score / questions.length) * 100;
 
-      // Update attempt
-      await supabase
+      supabase
         .from("quiz_attempts")
         .update({
           score,
@@ -131,16 +154,17 @@ const QuizPage = () => {
           total_time_seconds: totalTime,
           finished_at: new Date().toISOString(),
         })
-        .eq("id", store.attemptId);
-
-      store.finishQuiz(score);
-      navigate("/result");
+        .eq("id", store.attemptId)
+        .then(() => {
+          store.finishQuiz(score);
+          navigate("/result");
+        });
     } else {
       store.nextQuestion();
       setSelectedOption(null);
+      setConfirmed(false);
     }
-    setIsSubmitting(false);
-  }, [selectedOption, currentQ, isLast, store, questions, seconds, navigate]);
+  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate]);
 
   if (isLoading) {
     return (
@@ -148,6 +172,10 @@ const QuizPage = () => {
         <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (showCountdown) {
+    return <QuizCountdown onComplete={handleCountdownComplete} />;
   }
 
   if (!currentQ) return null;
@@ -198,32 +226,50 @@ const QuizPage = () => {
                 {optionLabels.map((label, i) => {
                   const optionText = currentQ[optionKeys[i]];
                   const isSelected = selectedOption === label;
+                  const isCorrectOption = label === currentQ.correct_option;
+
+                  let optionClass = "border-border bg-card hover:border-primary/40";
+                  let badgeClass = "bg-muted text-muted-foreground";
+
+                  if (confirmed) {
+                    if (isCorrectOption) {
+                      optionClass = "border-green-500 bg-green-500/10";
+                      badgeClass = "bg-green-500 text-white";
+                    } else if (isSelected && !isCorrectOption) {
+                      optionClass = "border-destructive bg-destructive/10";
+                      badgeClass = "bg-destructive text-white";
+                    } else {
+                      optionClass = "border-border/50 bg-card/50 opacity-50";
+                    }
+                  } else if (isSelected) {
+                    optionClass = "border-primary bg-primary/10 shadow-md";
+                    badgeClass = "gradient-primary text-primary-foreground";
+                  }
 
                   return (
                     <motion.button
                       key={label}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={() => setSelectedOption(label)}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${
-                        isSelected
-                          ? "border-primary bg-primary/10 shadow-md"
-                          : "border-border bg-card hover:border-primary/40"
-                      }`}
+                      whileHover={!confirmed ? { scale: 1.01 } : {}}
+                      whileTap={!confirmed ? { scale: 0.99 } : {}}
+                      onClick={() => !confirmed && setSelectedOption(label)}
+                      disabled={confirmed}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${optionClass}`}
                     >
-                      <span
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                          isSelected
-                            ? "gradient-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
+                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${badgeClass}`}>
                         {label}
                       </span>
                       <span className="text-foreground font-medium text-sm md:text-base">
                         {optionText}
                       </span>
-                      {isSelected && <CheckCircle2 className="w-5 h-5 text-primary ml-auto shrink-0" />}
+                      {confirmed && isCorrectOption && (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto shrink-0" />
+                      )}
+                      {confirmed && isSelected && !isCorrectOption && (
+                        <XCircle className="w-5 h-5 text-destructive ml-auto shrink-0" />
+                      )}
+                      {!confirmed && isSelected && (
+                        <CheckCircle2 className="w-5 h-5 text-primary ml-auto shrink-0" />
+                      )}
                     </motion.button>
                   );
                 })}
@@ -231,27 +277,40 @@ const QuizPage = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Next button */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: selectedOption ? 1 : 0.4 }}
-            whileHover={selectedOption ? { scale: 1.02 } : {}}
-            whileTap={selectedOption ? { scale: 0.98 } : {}}
-            onClick={handleNext}
-            disabled={!selectedOption || isSubmitting}
-            className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 cursor-pointer"
-          >
-            {isSubmitting ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : isLast ? (
-              "Finalizar Quiz"
-            ) : (
-              <>
-                Próxima
-                <ChevronRight className="w-5 h-5" />
-              </>
-            )}
-          </motion.button>
+          {/* Action button */}
+          {!confirmed ? (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: selectedOption ? 1 : 0.4 }}
+              whileHover={selectedOption ? { scale: 1.02 } : {}}
+              whileTap={selectedOption ? { scale: 0.98 } : {}}
+              onClick={handleConfirm}
+              disabled={!selectedOption || isSubmitting}
+              className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              ) : (
+                "Confirmar"
+              )}
+            </motion.button>
+          ) : (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleNext}
+              className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              {isLast ? "Finalizar Quiz" : (
+                <>
+                  Próxima
+                  <ChevronRight className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
+          )}
         </div>
       </div>
     </div>
