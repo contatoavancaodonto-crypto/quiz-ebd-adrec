@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ChevronRight, CheckLine } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 
 interface QuizCountdownProps {
@@ -8,7 +8,7 @@ interface QuizCountdownProps {
 
 const rules = [
 "📝 O quiz contém 13 perguntas aleatórias",
-"🏆 Haverá 2 rankings: da Turma e Geral",
+"🏆 Haverá 2 rankings: da sua Classe e Geral",
 "⏱️ O critério de desempate é o menor tempo",
 "💡 Não basta acertar tudo — responda rápido!"];
 
@@ -59,7 +59,7 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
           onClick={onComplete}
           className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer">
           
-          <CheckLine className="w-5 h-5" />
+          <Check className="w-5 h-5" />
           Estou Pronto!
           <ChevronRight className="w-5 h-5" />
         </motion.button>
