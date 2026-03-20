@@ -140,7 +140,7 @@ const RankingPage = () => {
         ) : !ranking?.length ? (
           <div className="text-center py-12 text-muted-foreground">
             {tab === "class" && !selectedClassId
-              ? "Selecione uma turma acima"
+              ? "Selecione uma classe acima"
               : "Nenhum resultado ainda. Seja o primeiro!"}
           </div>
         ) : (
