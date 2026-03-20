@@ -108,14 +108,14 @@ const RankingPage = () => {
                   : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "class" ? "Por Turma" : "Geral"}
+              {t === "class" ? "Por Classe" : "Geral"}
             </button>
           ))}
         </div>
 
         {/* Class selector */}
         {tab === "class" && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 justify-end">
             {classes?.map((cls) => (
               <button
                 key={cls.id}
@@ -140,7 +140,7 @@ const RankingPage = () => {
         ) : !ranking?.length ? (
           <div className="text-center py-12 text-muted-foreground">
             {tab === "class" && !selectedClassId
-              ? "Selecione uma turma acima"
+              ? "Selecione uma classe acima"
               : "Nenhum resultado ainda. Seja o primeiro!"}
           </div>
         ) : (
