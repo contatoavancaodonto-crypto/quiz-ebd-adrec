@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ChevronRight, CheckLine } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 
 interface QuizCountdownProps {
