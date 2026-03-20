@@ -115,7 +115,7 @@ const RankingPage = () => {
 
         {/* Class selector */}
         {tab === "class" && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 justify-end">
             {classes?.map((cls) => (
               <button
                 key={cls.id}
