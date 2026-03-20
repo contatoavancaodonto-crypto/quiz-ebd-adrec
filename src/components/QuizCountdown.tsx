@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { ChevronRight, CheckLine } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 
 interface QuizCountdownProps {
@@ -7,11 +7,11 @@ interface QuizCountdownProps {
 }
 
 const rules = [
-  "📝 O quiz contém 13 perguntas aleatórias",
-  "🏆 Haverá 2 rankings: da Turma e Geral",
-  "⏱️ O critério de desempate é o menor tempo",
-  "💡 Não basta acertar tudo — responda rápido!",
-];
+"📝 O quiz contém 13 perguntas aleatórias",
+"🏆 Haverá 2 rankings: da Turma e Geral",
+"⏱️ O critério de desempate é o menor tempo",
+"💡 Não basta acertar tudo — responda rápido!"];
+
 
 export function QuizCountdown({ onComplete }: QuizCountdownProps) {
   return (
@@ -24,8 +24,8 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10 text-center"
-      >
+        className="w-full max-w-md relative z-10 text-center">
+        
         <img src={churchLogo} alt="Logo ADREC" className="w-16 h-16 object-contain mx-auto mb-4" />
         <h2 className="text-xl font-display font-bold text-foreground mb-6">
           Prepare-se! 🙏
@@ -36,17 +36,17 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
           <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3">
             Regras do Quiz
           </h3>
-          {rules.map((rule, i) => (
-            <motion.p
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.15 }}
-              className="text-sm text-foreground/80"
-            >
+          {rules.map((rule, i) =>
+          <motion.p
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.15 }}
+            className="text-sm text-foreground/80">
+            
               {rule}
             </motion.p>
-          ))}
+          )}
         </div>
 
         {/* Start button */}
@@ -57,13 +57,13 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onComplete}
-          className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-        >
-          <Sparkles className="w-5 h-5" />
+          className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+          
+          <CheckLine className="w-5 h-5" />
           Estou Pronto!
           <ChevronRight className="w-5 h-5" />
         </motion.button>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 }
