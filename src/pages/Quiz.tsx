@@ -166,6 +166,15 @@ const QuizPage = () => {
     }
   }, [confirmed, currentQ, isLast, store, questions, seconds, navigate]);
 
+  // Auto-advance after 1 second when confirmed
+  useEffect(() => {
+    if (!confirmed) return;
+    const timer = setTimeout(() => {
+      handleNext();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [confirmed, handleNext]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
