@@ -133,15 +133,6 @@ const QuizPage = () => {
     setIsSubmitting(false);
   }, [selectedOption, currentQ, confirmed, store]);
 
-  // Auto-advance after 1 second when confirmed
-  useEffect(() => {
-    if (!confirmed) return;
-    const timer = setTimeout(() => {
-      handleNext();
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [confirmed, handleNext]);
-
   const handleNext = useCallback(() => {
     if (!confirmed || !currentQ) return;
 
@@ -174,6 +165,15 @@ const QuizPage = () => {
       setConfirmed(false);
     }
   }, [confirmed, currentQ, isLast, store, questions, seconds, navigate]);
+
+  // Auto-advance after 1 second when confirmed
+  useEffect(() => {
+    if (!confirmed) return;
+    const timer = setTimeout(() => {
+      handleNext();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [confirmed, handleNext]);
 
   if (isLoading) {
     return (
