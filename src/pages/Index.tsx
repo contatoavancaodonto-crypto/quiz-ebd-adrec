@@ -138,6 +138,7 @@ const Index = () => {
                 >
                   <div className="text-2xl mb-1">{classIcons[cls.name] || "📚"}</div>
                   <div className="text-xs font-medium text-foreground">{cls.name}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{classSubtitles[cls.name] || ""}</div>
                 </motion.button>
               ))}
             </div>
