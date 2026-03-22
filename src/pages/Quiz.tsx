@@ -196,6 +196,7 @@ const QuizPage = () => {
       {/* Header */}
       <div className="max-w-xl mx-auto w-full pt-2">
         <div className="flex items-center justify-between mb-3">
+          <img src={churchLogo} alt="Logo ADREC" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]" />
           <span className="text-sm text-muted-foreground font-medium">
             Pergunta {store.currentQuestionIndex + 1} de {questions.length}
           </span>

@@ -92,7 +92,7 @@ const RankingPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6"
         >
-          <img src={churchLogo} alt="Logo ADREC" className="w-12 h-12 object-contain mx-auto mb-2" />
+          <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
         </motion.div>
 

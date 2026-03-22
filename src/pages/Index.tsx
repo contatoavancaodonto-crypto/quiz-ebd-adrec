@@ -74,8 +74,8 @@ const Index = () => {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-background mb-4">
-            <img src={churchLogo} alt="Logo ADREC" className="w-16 h-16 object-contain" />
+          <div className="inline-flex items-center justify-center w-28 h-28 rounded-2xl bg-background mb-4">
+            <img src={churchLogo} alt="Logo ADREC" className="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-2">
             Quiz EBD

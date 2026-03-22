@@ -93,9 +93,9 @@ const ResultPage = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-background mb-4"
+            className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-background mb-4"
           >
-            <img src={churchLogo} alt="Logo ADREC" className="w-16 h-16 object-contain" />
+            <img src={churchLogo} alt="Logo ADREC" className="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           </motion.div>
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">
             {store.participantName}
