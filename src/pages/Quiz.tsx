@@ -172,7 +172,7 @@ const QuizPage = () => {
     if (!confirmed) return;
     const timer = setTimeout(() => {
       handleNext();
-    }, 1000);
+    }, 500);
     return () => clearTimeout(timer);
   }, [confirmed, handleNext]);
 
