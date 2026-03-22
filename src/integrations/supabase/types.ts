@@ -284,6 +284,49 @@ export type Database = {
           },
         ]
       }
+      suggestions: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          suggestion_text: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          suggestion_text: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          suggestion_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suggestions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggestions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "suggestions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
     }
     Views: {
       ranking_by_class: {

@@ -60,6 +60,7 @@ const ResultPage = () => {
     return (
       <ThankYouScreen
         participantName={store.participantName}
+        classId={store.classId}
         onContinue={() => setShowThankYou(false)}
       />
     );
