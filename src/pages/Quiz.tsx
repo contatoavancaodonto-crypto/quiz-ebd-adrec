@@ -199,10 +199,6 @@ const QuizPage = () => {
           <span className="text-sm text-muted-foreground font-medium">
             Pergunta {store.currentQuestionIndex + 1} de {questions.length}
           </span>
-          <div className="flex items-center gap-2 text-base md:text-lg font-mono font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
-            <Clock className="w-5 h-5" />
-            {formatted}
-          </div>
         </div>
 
         {/* Progress bar */}
