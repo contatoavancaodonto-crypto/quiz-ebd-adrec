@@ -256,7 +256,23 @@ const QuizPage = () => {
                       key={label}
                       whileHover={!confirmed ? { scale: 1.01 } : {}}
                       whileTap={!confirmed ? { scale: 0.99 } : {}}
-                      onClick={() => !confirmed && setSelectedOption(label)}
+                      onClick={() => {
+                        if (confirmed) return;
+                        setSelectedOption(label);
+                        // Auto-confirm immediately after selecting
+                        if (!confirmed && currentQ) {
+                          setIsSubmitting(true);
+                          setConfirmed(true);
+                          const isCorrect = label === currentQ.correct_option;
+                          store.setAnswer(currentQ.id, label);
+                          supabase.from("answers").insert({
+                            attempt_id: store.attemptId,
+                            question_id: currentQ.id,
+                            selected_option: label,
+                            is_correct: isCorrect,
+                          }).then(() => setIsSubmitting(false));
+                        }
+                      }}
                       disabled={confirmed}
                       className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${optionClass}`}
                     >
@@ -282,24 +298,8 @@ const QuizPage = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Action button */}
-          {!confirmed ? (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: selectedOption ? 1 : 0.4 }}
-              whileHover={selectedOption ? { scale: 1.02 } : {}}
-              whileTap={selectedOption ? { scale: 0.98 } : {}}
-              onClick={handleConfirm}
-              disabled={!selectedOption || isSubmitting}
-              className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              ) : (
-                "Confirmar"
-              )}
-            </motion.button>
-          ) : (
+          {/* Action button - only show after confirmed for manual advance fallback */}
+          {!confirmed ? null : (
             <motion.button
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
