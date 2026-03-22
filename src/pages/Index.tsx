@@ -40,6 +40,10 @@ const Index = () => {
       toast.error("Por favor, selecione uma turma.");
       return;
     }
+    if (selectedClass.name === "Adolescentes") {
+      toast.info("🚧 Classe em construção, disponível no próximo trimestre!");
+      return;
+    }
     setLoading(true);
     try {
       setParticipant(name.trim(), selectedClass.id, selectedClass.name);
