@@ -121,6 +121,31 @@ const ResultPage = () => {
           ))}
         </div>
 
+        {/* Low score retry */}
+        {score < 5 && !store.hasRetried && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass-card glow-border p-4 mb-4 text-center"
+          >
+            <p className="text-sm text-muted-foreground mb-3">
+              Você não atingiu a pontuação mínima de 5 acertos para aparecer no ranking. Você tem <strong>1 chance</strong> de tentar novamente!
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                store.retryQuiz();
+                navigate("/quiz");
+              }}
+              className="w-full py-3.5 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              🔄 Tentar Novamente
+            </motion.button>
+          </motion.div>
+        )}
+
         {/* Actions */}
         <div className="space-y-3">
           <motion.button
