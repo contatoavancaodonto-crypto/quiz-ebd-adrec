@@ -256,7 +256,23 @@ const QuizPage = () => {
                       key={label}
                       whileHover={!confirmed ? { scale: 1.01 } : {}}
                       whileTap={!confirmed ? { scale: 0.99 } : {}}
-                      onClick={() => !confirmed && setSelectedOption(label)}
+                      onClick={() => {
+                        if (confirmed) return;
+                        setSelectedOption(label);
+                        // Auto-confirm immediately after selecting
+                        if (!confirmed && currentQ) {
+                          setIsSubmitting(true);
+                          setConfirmed(true);
+                          const isCorrect = label === currentQ.correct_option;
+                          store.setAnswer(currentQ.id, label);
+                          supabase.from("answers").insert({
+                            attempt_id: store.attemptId,
+                            question_id: currentQ.id,
+                            selected_option: label,
+                            is_correct: isCorrect,
+                          }).then(() => setIsSubmitting(false));
+                        }
+                      }}
                       disabled={confirmed}
                       className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${optionClass}`}
                     >
