@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import churchLogo from "@/assets/church-logo.png";
 import { useQuizStore } from "@/stores/quizStore";
 import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -196,6 +197,7 @@ const QuizPage = () => {
       {/* Header */}
       <div className="max-w-xl mx-auto w-full pt-2">
         <div className="flex items-center justify-between mb-3">
+          <img src={churchLogo} alt="Logo ADREC" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]" />
           <span className="text-sm text-muted-foreground font-medium">
             Pergunta {store.currentQuestionIndex + 1} de {questions.length}
           </span>

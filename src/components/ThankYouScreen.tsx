@@ -31,7 +31,7 @@ export function ThankYouScreen({ participantName, onContinue }: ThankYouScreenPr
         <motion.img
           src={churchLogo}
           alt="Logo ADREC"
-          className="w-20 h-20 object-contain mx-auto mb-6"
+          className="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}

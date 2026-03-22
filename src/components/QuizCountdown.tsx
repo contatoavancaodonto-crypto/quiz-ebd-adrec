@@ -28,7 +28,7 @@ export function QuizCountdown({ onComplete }: QuizCountdownProps) {
         <img
           src={churchLogo}
           alt="Logo ADREC"
-          className="w-28 h-28 object-contain mx-auto mb-5 drop-shadow-lg"
+          className="w-36 h-36 object-contain mx-auto mb-5 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]"
         />
         <h2 className="text-xl font-display font-bold text-foreground mb-6">
           Prepare-se! 🙏
