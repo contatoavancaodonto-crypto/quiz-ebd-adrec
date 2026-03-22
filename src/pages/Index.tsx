@@ -15,6 +15,12 @@ const classIcons: Record<string, string> = {
   Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
 };
 
+const classSubtitles: Record<string, string> = {
+  Adolescentes: "Geração JC",
+  Adultos: "Homens de valor & Mulheres de fé",
+  Jovens: "Maranata",
+};
+
 const Index = () => {
   const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
