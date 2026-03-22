@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import QuizPage from "./pages/Quiz";
 import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
+import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
+          <Route path="/gabarito" element={<GabaritoPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
