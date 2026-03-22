@@ -126,6 +126,18 @@ const ResultPage = () => {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ delay: 0.65 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/gabarito")}
+            className="w-full py-3.5 rounded-xl border-2 border-primary/40 bg-primary/5 text-foreground font-semibold flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors cursor-pointer"
+          >
+            📝 Meu Gabarito
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

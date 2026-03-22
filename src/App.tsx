@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import QuizPage from "./pages/Quiz";
 import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
+import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
