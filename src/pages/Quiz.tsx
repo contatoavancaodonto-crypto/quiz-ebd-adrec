@@ -54,42 +54,49 @@ const QuizPage = () => {
 
     const loadQuiz = async () => {
       try {
-        // Create participant
-        const { data: participant, error: pErr } = await supabase
-          .from("participants")
-          .insert({ name: store.participantName, class_id: store.classId })
-          .select("id")
-          .single();
-        if (pErr) throw pErr;
-        store.setParticipantId(participant.id);
+        let participantId = store.participantId;
+        let quizId = store.quizId;
 
-        // Get active quiz for class
-        const { data: quiz, error: qErr } = await supabase
-          .from("quizzes")
-          .select("id")
-          .eq("class_id", store.classId)
-          .eq("active", true)
-          .limit(1)
-          .single();
-        if (qErr) throw qErr;
-        store.setQuizId(quiz.id);
+        if (!store.isRetrying) {
+          // Normal flow: create participant
+          const { data: participant, error: pErr } = await supabase
+            .from("participants")
+            .insert({ name: store.participantName, class_id: store.classId })
+            .select("id")
+            .single();
+          if (pErr) throw pErr;
+          store.setParticipantId(participant.id);
+          participantId = participant.id;
+
+          // Get active quiz for class
+          const { data: quiz, error: qErr } = await supabase
+            .from("quizzes")
+            .select("id")
+            .eq("class_id", store.classId)
+            .eq("active", true)
+            .limit(1)
+            .single();
+          if (qErr) throw qErr;
+          store.setQuizId(quiz.id);
+          quizId = quiz.id;
+        }
 
         // Get ALL questions and randomly pick 13
         const { data: allQs, error: qsErr } = await supabase
           .from("questions")
           .select("*")
-          .eq("quiz_id", quiz.id);
+          .eq("quiz_id", quizId);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, QUESTIONS_PER_QUIZ);
         setQuestions(selected);
 
-        // Create attempt
+        // Create new attempt
         const { data: attempt, error: aErr } = await supabase
           .from("quiz_attempts")
           .insert({
-            participant_id: participant.id,
-            quiz_id: quiz.id,
+            participant_id: participantId,
+            quiz_id: quizId,
             total_questions: QUESTIONS_PER_QUIZ,
           })
           .select("id")
