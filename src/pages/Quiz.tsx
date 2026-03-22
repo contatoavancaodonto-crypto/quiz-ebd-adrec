@@ -298,24 +298,8 @@ const QuizPage = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Action button */}
-          {!confirmed ? (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: selectedOption ? 1 : 0.4 }}
-              whileHover={selectedOption ? { scale: 1.02 } : {}}
-              whileTap={selectedOption ? { scale: 0.98 } : {}}
-              onClick={handleConfirm}
-              disabled={!selectedOption || isSubmitting}
-              className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              ) : (
-                "Confirmar"
-              )}
-            </motion.button>
-          ) : (
+          {/* Action button - only show after confirmed for manual advance fallback */}
+          {!confirmed ? null : (
             <motion.button
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
