@@ -187,7 +187,7 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={onContinue}
+            onClick={handleContinue}
             className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg shadow-lg cursor-pointer"
           >
             Ver Meu Resultado 🏆
