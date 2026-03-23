@@ -61,6 +61,9 @@ const ResultPage = () => {
       <ThankYouScreen
         participantName={store.participantName}
         classId={store.classId}
+        className={store.className}
+        score={store.score}
+        totalTimeSeconds={store.totalTimeSeconds}
         onContinue={() => setShowThankYou(false)}
       />
     );
