@@ -5,9 +5,14 @@ import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const WEBHOOK_URL = "https://n8n.falaminhasmanas.shop/webhook-test/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
+
 interface ThankYouScreenProps {
   participantName: string;
   classId: string;
+  className: string;
+  score: number;
+  totalTimeSeconds: number;
   onContinue: () => void;
 }
 
