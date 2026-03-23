@@ -27,6 +27,27 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
     return () => clearTimeout(t);
   }, []);
 
+  const sendWebhook = async (event: string, extra: Record<string, unknown> = {}) => {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event,
+          participantName,
+          classId,
+          className,
+          score,
+          totalTimeSeconds,
+          timestamp: new Date().toISOString(),
+          ...extra,
+        }),
+      });
+    } catch (err) {
+      console.error("Webhook error:", err);
+    }
+  };
+
   const handleSendSuggestion = async () => {
     const text = suggestion.trim();
     if (!text || text.length < 3) {
@@ -47,7 +68,13 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
     } else {
       setSent(true);
       toast.success("Sugestão enviada com sucesso! 🙏");
+      sendWebhook("suggestion_sent", { suggestion: text });
     }
+  };
+
+  const handleContinue = () => {
+    sendWebhook("view_result");
+    onContinue();
   };
 
   return (
