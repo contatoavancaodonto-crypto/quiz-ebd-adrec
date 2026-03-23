@@ -5,13 +5,18 @@ import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const WEBHOOK_URL = "https://n8n.falaminhasmanas.shop/webhook-test/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
+
 interface ThankYouScreenProps {
   participantName: string;
   classId: string;
+  className: string;
+  score: number;
+  totalTimeSeconds: number;
   onContinue: () => void;
 }
 
-export function ThankYouScreen({ participantName, classId, onContinue }: ThankYouScreenProps) {
+export function ThankYouScreen({ participantName, classId, className, score, totalTimeSeconds, onContinue }: ThankYouScreenProps) {
   const [show, setShow] = useState(false);
   const [suggestion, setSuggestion] = useState("");
   const [sending, setSending] = useState(false);
@@ -21,6 +26,27 @@ export function ThankYouScreen({ participantName, classId, onContinue }: ThankYo
     const t = setTimeout(() => setShow(true), 500);
     return () => clearTimeout(t);
   }, []);
+
+  const sendWebhook = async (event: string, extra: Record<string, unknown> = {}) => {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event,
+          participantName,
+          classId,
+          className,
+          score,
+          totalTimeSeconds,
+          timestamp: new Date().toISOString(),
+          ...extra,
+        }),
+      });
+    } catch (err) {
+      console.error("Webhook error:", err);
+    }
+  };
 
   const handleSendSuggestion = async () => {
     const text = suggestion.trim();
@@ -42,7 +68,13 @@ export function ThankYouScreen({ participantName, classId, onContinue }: ThankYo
     } else {
       setSent(true);
       toast.success("Sugestão enviada com sucesso! 🙏");
+      sendWebhook("suggestion_sent", { suggestion: text });
     }
+  };
+
+  const handleContinue = () => {
+    sendWebhook("view_result");
+    onContinue();
   };
 
   return (
@@ -155,7 +187,7 @@ export function ThankYouScreen({ participantName, classId, onContinue }: ThankYo
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={onContinue}
+            onClick={handleContinue}
             className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg shadow-lg cursor-pointer"
           >
             Ver Meu Resultado 🏆
