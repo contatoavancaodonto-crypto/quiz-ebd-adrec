@@ -16,7 +16,7 @@ interface ThankYouScreenProps {
   onContinue: () => void;
 }
 
-export function ThankYouScreen({ participantName, classId, onContinue }: ThankYouScreenProps) {
+export function ThankYouScreen({ participantName, classId, className, score, totalTimeSeconds, onContinue }: ThankYouScreenProps) {
   const [show, setShow] = useState(false);
   const [suggestion, setSuggestion] = useState("");
   const [sending, setSending] = useState(false);
