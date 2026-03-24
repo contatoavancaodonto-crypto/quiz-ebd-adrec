@@ -24,6 +24,7 @@ interface RankEntry {
   score: number;
   total_time_seconds: number;
   accuracy_percentage: number;
+  is_retry?: boolean;
 }
 
 const RankingPage = () => {
