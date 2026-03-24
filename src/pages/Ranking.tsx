@@ -24,6 +24,7 @@ interface RankEntry {
   score: number;
   total_time_seconds: number;
   accuracy_percentage: number;
+  is_retry?: boolean;
 }
 
 const RankingPage = () => {
@@ -172,8 +173,13 @@ const RankingPage = () => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground truncate">
+                  <div className="font-semibold text-foreground truncate flex items-center gap-2">
                     {entry.participant_name}
+                    {entry.is_retry && (
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
+                        2ª tentativa
+                      </span>
+                    )}
                   </div>
                   {tab === "general" && (
                     <div className="text-xs text-muted-foreground">{entry.class_name}</div>

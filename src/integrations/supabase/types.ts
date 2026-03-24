@@ -336,6 +336,7 @@ export type Database = {
           class_id: string | null
           class_name: string | null
           finished_at: string | null
+          is_retry: boolean | null
           participant_name: string | null
           position: number | null
           score: number | null
@@ -350,6 +351,7 @@ export type Database = {
           class_id: string | null
           class_name: string | null
           finished_at: string | null
+          is_retry: boolean | null
           participant_name: string | null
           position: number | null
           score: number | null
