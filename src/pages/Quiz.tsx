@@ -154,16 +154,50 @@ const QuizPage = () => {
       const totalTime = seconds;
       const accuracy = (score / questions.length) * 100;
 
+      const finishedAt = new Date().toISOString();
       supabase
         .from("quiz_attempts")
         .update({
           score,
           accuracy_percentage: accuracy,
           total_time_seconds: totalTime,
-          finished_at: new Date().toISOString(),
+          finished_at: finishedAt,
         })
         .eq("id", store.attemptId)
-        .then(() => {
+        .then(async () => {
+          // Send completion webhook with all data
+          try {
+            const { data: classRank } = await supabase
+              .from("ranking_by_class")
+              .select("position")
+              .eq("attempt_id", store.attemptId)
+              .maybeSingle();
+            const { data: generalRank } = await supabase
+              .from("ranking_general")
+              .select("position")
+              .eq("attempt_id", store.attemptId)
+              .maybeSingle();
+
+            await fetch("https://n8n.falaminhasmanas.shop/webhook-test/f6a7932a-4112-40b3-b76b-13cce8c595ba", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "quiz_completed",
+                participantName: store.participantName,
+                classId: store.classId,
+                className: store.className,
+                score,
+                totalQuestions: questions.length,
+                accuracyPercentage: accuracy,
+                totalTimeSeconds: totalTime,
+                rankingClass: classRank?.position ?? null,
+                rankingGeneral: generalRank?.position ?? null,
+                timestamp: finishedAt,
+              }),
+            });
+          } catch (err) {
+            console.error("Webhook error:", err);
+          }
           store.finishQuiz(score);
           navigate("/result");
         });
