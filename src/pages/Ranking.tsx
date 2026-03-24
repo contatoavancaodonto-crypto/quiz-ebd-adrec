@@ -188,7 +188,7 @@ const RankingPage = () => {
 
                 {/* Stats */}
                 <div className="text-right shrink-0">
-                  <div className="font-display font-bold text-primary">{entry.score}/13</div>
+                  <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
                     <Clock className="w-3 h-3" />
                     {formatTime(entry.total_time_seconds)}
