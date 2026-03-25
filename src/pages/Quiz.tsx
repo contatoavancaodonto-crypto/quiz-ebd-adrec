@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
@@ -46,10 +46,12 @@ const QuizPage = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
-  const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5); // random 5-10
+  const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
   const { seconds, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
 
-  // Load quiz
+  // 🔒 trava de finalização
+  const finishingRef = useRef(false);
+
   useEffect(() => {
     if (!store.classId) {
       navigate("/");
@@ -62,7 +64,6 @@ const QuizPage = () => {
         let quizId = store.quizId;
 
         if (!store.isRetrying) {
-          // Normal flow: create participant
           const { data: participant, error: pErr } = await supabase
             .from("participants")
             .insert({ name: store.participantName, class_id: store.classId })
@@ -72,7 +73,6 @@ const QuizPage = () => {
           store.setParticipantId(participant.id);
           participantId = participant.id;
 
-          // Get active quiz for class
           const { data: quiz, error: qErr } = await supabase
             .from("quizzes")
             .select("id")
@@ -85,14 +85,12 @@ const QuizPage = () => {
           quizId = quiz.id;
         }
 
-        // Get ALL questions and randomly pick 13
         const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, QUESTIONS_PER_QUIZ);
         setQuestions(selected);
 
-        // Create new attempt
         const { data: attempt, error: aErr } = await supabase
           .from("quiz_attempts")
           .insert({
@@ -103,6 +101,7 @@ const QuizPage = () => {
           .select("id")
           .single();
         if (aErr) throw aErr;
+
         store.setAttemptId(attempt.id);
         setIsLoading(false);
       } catch {
@@ -123,30 +122,19 @@ const QuizPage = () => {
   const isLast = store.currentQuestionIndex === questions.length - 1;
   const progress = questions.length > 0 ? ((store.currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
-  const handleConfirm = useCallback(async () => {
-    if (!selectedOption || !currentQ || confirmed) return;
-    setIsSubmitting(true);
-    setConfirmed(true);
-
-    const isCorrect = selectedOption === currentQ.correct_option;
-    store.setAnswer(currentQ.id, selectedOption);
-
-    // Save answer
-    await supabase.from("answers").insert({
-      attempt_id: store.attemptId,
-      question_id: currentQ.id,
-      selected_option: selectedOption,
-      is_correct: isCorrect,
-    });
-
-    setIsSubmitting(false);
-  }, [selectedOption, currentQ, confirmed, store]);
-
   const handleNext = useCallback(() => {
     if (!confirmed || !currentQ) return;
 
+    // 🔥 FINALIZAÇÃO (com trava)
     if (isLast) {
-      const allAnswers = { ...store.answers, [currentQ.id]: store.answers[currentQ.id] };
+      if (finishingRef.current) return;
+      finishingRef.current = true;
+
+      const allAnswers = {
+        ...store.answers,
+        [currentQ.id]: store.answers[currentQ.id],
+      };
+
       let score = 0;
       questions.forEach((q) => {
         if (allAnswers[q.id] === q.correct_option) score++;
@@ -154,8 +142,8 @@ const QuizPage = () => {
 
       const totalTime = seconds;
       const accuracy = (score / questions.length) * 100;
-
       const finishedAt = new Date().toISOString();
+
       supabase
         .from("quiz_attempts")
         .update({
@@ -166,13 +154,13 @@ const QuizPage = () => {
         })
         .eq("id", store.attemptId)
         .then(async () => {
-          // Send completion webhook with all data
           try {
             const { data: classRank } = await supabase
               .from("ranking_by_class")
               .select("position")
               .eq("attempt_id", store.attemptId)
               .maybeSingle();
+
             const { data: generalRank } = await supabase
               .from("ranking_general")
               .select("position")
@@ -199,39 +187,45 @@ const QuizPage = () => {
           } catch (err) {
             console.error("Webhook error:", err);
           }
+
           store.finishQuiz(score);
           navigate("/result");
         });
-    } else {
-      // Check if we should show evaluation break
-      const nextIndex = store.currentQuestionIndex + 1;
-      if (!evalBreakShown && nextIndex === evalBreakQuestion) {
-        setShowEvalBreak(true);
-        setEvalBreakShown(true);
-        setSelectedOption(null);
-        setConfirmed(false);
-        store.nextQuestion();
-        return;
-      }
 
-      store.nextQuestion();
+      return;
+    }
+
+    // fluxo normal
+    const nextIndex = store.currentQuestionIndex + 1;
+
+    if (!evalBreakShown && nextIndex === evalBreakQuestion) {
+      setShowEvalBreak(true);
+      setEvalBreakShown(true);
       setSelectedOption(null);
       setConfirmed(false);
+      store.nextQuestion();
+      return;
     }
+
+    store.nextQuestion();
+    setSelectedOption(null);
+    setConfirmed(false);
   }, [confirmed, currentQ, isLast, store, questions, seconds, navigate, evalBreakShown, evalBreakQuestion]);
 
   const handleEvalContinue = useCallback(() => {
     setShowEvalBreak(false);
   }, []);
 
-  // Auto-advance after 1 second when confirmed
+  // ✅ auto-avance DESABILITADO na última pergunta
   useEffect(() => {
-    if (!confirmed) return;
+    if (!confirmed || isLast) return;
+
     const timer = setTimeout(() => {
       handleNext();
     }, 500);
+
     return () => clearTimeout(timer);
-  }, [confirmed, handleNext]);
+  }, [confirmed, handleNext, isLast]);
 
   if (isLoading) {
     return (
@@ -242,13 +236,7 @@ const QuizPage = () => {
   }
 
   if (showEvalBreak) {
-    return (
-      <EvaluationBreak
-        classId={store.classId}
-        elapsedFormatted={formatted}
-        onContinue={handleEvalContinue}
-      />
-    );
+    return <EvaluationBreak classId={store.classId} elapsedFormatted={formatted} onContinue={handleEvalContinue} />;
   }
 
   if (showCountdown) {
@@ -261,145 +249,49 @@ const QuizPage = () => {
     <div className="min-h-screen bg-background p-4 flex flex-col relative">
       <ThemeToggle />
 
-      {/* Header */}
       <div className="max-w-xl mx-auto w-full pt-2">
         <div className="flex items-center justify-between mb-3">
-          <img
-            src={churchLogo}
-            alt="Logo ADREC"
-            className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]"
-          />
-          <span className="text-sm text-muted-foreground font-medium">
+          <img src={churchLogo} className="w-10 h-10" />
+          <span className="text-sm">
             Pergunta {store.currentQuestionIndex + 1} de {questions.length}
           </span>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-6">
-          <motion.div
-            className="h-full gradient-primary rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
-          />
+        <div className="w-full h-2 bg-muted rounded-full mb-6">
+          <motion.div style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {/* Question */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-xl w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQ.id}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.3 }}
+          <h2>{currentQ.question_text}</h2>
+
+          {optionLabels.map((label, i) => (
+            <button
+              key={label}
+              onClick={() => {
+                if (confirmed) return;
+                setSelectedOption(label);
+                setConfirmed(true);
+
+                const isCorrect = label === currentQ.correct_option;
+                store.setAnswer(currentQ.id, label);
+
+                supabase.from("answers").insert({
+                  attempt_id: store.attemptId,
+                  question_id: currentQ.id,
+                  selected_option: label,
+                  is_correct: isCorrect,
+                });
+              }}
             >
-              <h2 className="text-xl md:text-2xl font-display font-bold text-foreground mb-6 leading-snug">
-                {currentQ.question_text}
-              </h2>
+              {label} - {currentQ[optionKeys[i]]}
+            </button>
+          ))}
 
-              <div className="space-y-3">
-                {optionLabels.map((label, i) => {
-                  const optionText = currentQ[optionKeys[i]];
-                  const isSelected = selectedOption === label;
-                  const isCorrectOption = label === currentQ.correct_option;
+          {confirmed && <button onClick={handleNext}>{isLast ? "Finalizar Quiz" : "Próxima"}</button>}
 
-                  let optionClass = "border-border bg-card hover:border-primary/40";
-                  let badgeClass = "bg-muted text-muted-foreground";
-
-                  if (confirmed) {
-                    if (isCorrectOption) {
-                      optionClass =
-                        "border-green-500 bg-green-500/15 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
-                      badgeClass = "bg-green-500 text-white";
-                    } else if (isSelected && !isCorrectOption) {
-                      optionClass =
-                        "border-destructive bg-destructive/15 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
-                      badgeClass = "bg-destructive text-white";
-                    } else {
-                      optionClass = "border-border/50 bg-card/50 opacity-40";
-                    }
-                  } else if (isSelected) {
-                    optionClass = "border-primary bg-primary/10 shadow-md";
-                    badgeClass = "gradient-primary text-primary-foreground";
-                  }
-
-                  return (
-                    <motion.button
-                      key={label}
-                      whileHover={!confirmed ? { scale: 1.01 } : {}}
-                      whileTap={!confirmed ? { scale: 0.99 } : {}}
-                      onClick={() => {
-                        if (confirmed) return;
-                        setSelectedOption(label);
-                        // Auto-confirm immediately after selecting
-                        if (!confirmed && currentQ) {
-                          setIsSubmitting(true);
-                          setConfirmed(true);
-                          const isCorrect = label === currentQ.correct_option;
-                          store.setAnswer(currentQ.id, label);
-                          supabase
-                            .from("answers")
-                            .insert({
-                              attempt_id: store.attemptId,
-                              question_id: currentQ.id,
-                              selected_option: label,
-                              is_correct: isCorrect,
-                            })
-                            .then(() => setIsSubmitting(false));
-                        }
-                      }}
-                      disabled={confirmed}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${optionClass}`}
-                    >
-                      <span
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${badgeClass}`}
-                      >
-                        {label}
-                      </span>
-                      <span className="text-foreground font-medium text-sm md:text-base">{optionText}</span>
-                      {confirmed && isCorrectOption && (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto shrink-0" />
-                      )}
-                      {confirmed && isSelected && !isCorrectOption && (
-                        <XCircle className="w-5 h-5 text-destructive ml-auto shrink-0" />
-                      )}
-                      {!confirmed && isSelected && <CheckCircle2 className="w-5 h-5 text-primary ml-auto shrink-0" />}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Action button - only show after confirmed for manual advance fallback */}
-          {!confirmed ? null : (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleNext}
-              className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-            >
-              {isLast ? (
-                "Finalizar Quiz"
-              ) : (
-                <>
-                  Próxima
-                  <ChevronRight className="w-5 h-5" />
-                </>
-              )}
-            </motion.button>
-          )}
-
-          {/* Timer below button */}
-          <div className="flex items-center justify-center gap-2 mt-4 text-lg md:text-xl font-mono font-bold text-primary bg-primary/10 px-4 py-2 rounded-xl border border-primary/20 w-fit mx-auto">
-            <Clock className="w-5 h-5" />
-            {formatted}
-          </div>
+          <div>{formatted}</div>
         </div>
       </div>
     </div>
