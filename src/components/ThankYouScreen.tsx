@@ -5,7 +5,7 @@ import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const WEBHOOK_URL = "https://n8n.falaminhasmanas.shop/webhook-test/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
+const WEBHOOK_URL = "https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
 
 interface ThankYouScreenProps {
   participantName: string;
@@ -16,7 +16,14 @@ interface ThankYouScreenProps {
   onContinue: () => void;
 }
 
-export function ThankYouScreen({ participantName, classId, className, score, totalTimeSeconds, onContinue }: ThankYouScreenProps) {
+export function ThankYouScreen({
+  participantName,
+  classId,
+  className,
+  score,
+  totalTimeSeconds,
+  onContinue,
+}: ThankYouScreenProps) {
   const [show, setShow] = useState(false);
   const [suggestion, setSuggestion] = useState("");
   const [sending, setSending] = useState(false);
@@ -59,9 +66,7 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
       return;
     }
     setSending(true);
-    const { error } = await supabase
-      .from("suggestions")
-      .insert({ class_id: classId, suggestion_text: text });
+    const { error } = await supabase.from("suggestions").insert({ class_id: classId, suggestion_text: text });
     setSending(false);
     if (error) {
       toast.error("Erro ao enviar sugestão.");
@@ -99,27 +104,19 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
         />
 
-        <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-          Obrigado, {participantName}! 🙏
-        </h1>
-        <p className="text-muted-foreground text-sm mb-8">
-          Agradecemos sua participação no Quiz EBD
-        </p>
+        <h1 className="text-2xl font-display font-bold text-foreground mb-2">Obrigado, {participantName}! 🙏</h1>
+        <p className="text-muted-foreground text-sm mb-8">Agradecemos sua participação no Quiz EBD</p>
 
         <div className="glass-card glow-border p-5 mb-6 text-center space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Pastor Presidente
-            </p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Pastor Presidente</p>
             <p className="text-base font-semibold text-foreground">Pr. Osmael Portilho</p>
           </div>
 
           <div className="w-12 h-px bg-border mx-auto" />
 
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Superintendentes da EBD
-            </p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Superintendentes da EBD</p>
             <p className="text-base font-semibold text-foreground">PB Maicon</p>
             <p className="text-base font-semibold text-foreground">Irmã Raymara</p>
           </div>
@@ -127,12 +124,8 @@ export function ThankYouScreen({ participantName, classId, className, score, tot
           <div className="w-12 h-px bg-border mx-auto" />
 
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Agradecimento Especial
-            </p>
-            <p className="text-sm text-primary font-medium">
-              Equipe de Comunicação da ADREC 📡
-            </p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Agradecimento Especial</p>
+            <p className="text-sm text-primary font-medium">Equipe de Comunicação da ADREC 📡</p>
           </div>
         </div>
 

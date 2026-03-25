@@ -82,10 +82,7 @@ const QuizPage = () => {
         }
 
         // Get ALL questions and randomly pick 13
-        const { data: allQs, error: qsErr } = await supabase
-          .from("questions")
-          .select("*")
-          .eq("quiz_id", quizId);
+        const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, QUESTIONS_PER_QUIZ);
@@ -178,7 +175,7 @@ const QuizPage = () => {
               .eq("attempt_id", store.attemptId)
               .maybeSingle();
 
-            await fetch("https://n8n.falaminhasmanas.shop/webhook-test/f6a7932a-4112-40b3-b76b-13cce8c595ba", {
+            await fetch("https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -238,7 +235,11 @@ const QuizPage = () => {
       {/* Header */}
       <div className="max-w-xl mx-auto w-full pt-2">
         <div className="flex items-center justify-between mb-3">
-          <img src={churchLogo} alt="Logo ADREC" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]" />
+          <img
+            src={churchLogo}
+            alt="Logo ADREC"
+            className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]"
+          />
           <span className="text-sm text-muted-foreground font-medium">
             Pergunta {store.currentQuestionIndex + 1} de {questions.length}
           </span>
@@ -281,10 +282,12 @@ const QuizPage = () => {
 
                   if (confirmed) {
                     if (isCorrectOption) {
-                      optionClass = "border-green-500 bg-green-500/15 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
+                      optionClass =
+                        "border-green-500 bg-green-500/15 shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
                       badgeClass = "bg-green-500 text-white";
                     } else if (isSelected && !isCorrectOption) {
-                      optionClass = "border-destructive bg-destructive/15 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
+                      optionClass =
+                        "border-destructive bg-destructive/15 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-[pulse_1.5s_ease-in-out_infinite]";
                       badgeClass = "bg-destructive text-white";
                     } else {
                       optionClass = "border-border/50 bg-card/50 opacity-40";
@@ -308,32 +311,33 @@ const QuizPage = () => {
                           setConfirmed(true);
                           const isCorrect = label === currentQ.correct_option;
                           store.setAnswer(currentQ.id, label);
-                          supabase.from("answers").insert({
-                            attempt_id: store.attemptId,
-                            question_id: currentQ.id,
-                            selected_option: label,
-                            is_correct: isCorrect,
-                          }).then(() => setIsSubmitting(false));
+                          supabase
+                            .from("answers")
+                            .insert({
+                              attempt_id: store.attemptId,
+                              question_id: currentQ.id,
+                              selected_option: label,
+                              is_correct: isCorrect,
+                            })
+                            .then(() => setIsSubmitting(false));
                         }
                       }}
                       disabled={confirmed}
                       className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 cursor-pointer ${optionClass}`}
                     >
-                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${badgeClass}`}>
+                      <span
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${badgeClass}`}
+                      >
                         {label}
                       </span>
-                      <span className="text-foreground font-medium text-sm md:text-base">
-                        {optionText}
-                      </span>
+                      <span className="text-foreground font-medium text-sm md:text-base">{optionText}</span>
                       {confirmed && isCorrectOption && (
                         <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto shrink-0" />
                       )}
                       {confirmed && isSelected && !isCorrectOption && (
                         <XCircle className="w-5 h-5 text-destructive ml-auto shrink-0" />
                       )}
-                      {!confirmed && isSelected && (
-                        <CheckCircle2 className="w-5 h-5 text-primary ml-auto shrink-0" />
-                      )}
+                      {!confirmed && isSelected && <CheckCircle2 className="w-5 h-5 text-primary ml-auto shrink-0" />}
                     </motion.button>
                   );
                 })}
@@ -351,7 +355,9 @@ const QuizPage = () => {
               onClick={handleNext}
               className="w-full mt-6 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer"
             >
-              {isLast ? "Finalizar Quiz" : (
+              {isLast ? (
+                "Finalizar Quiz"
+              ) : (
                 <>
                   Próxima
                   <ChevronRight className="w-5 h-5" />
