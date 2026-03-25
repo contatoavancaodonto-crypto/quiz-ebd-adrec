@@ -241,6 +241,16 @@ const QuizPage = () => {
     );
   }
 
+  if (showEvalBreak) {
+    return (
+      <EvaluationBreak
+        classId={store.classId}
+        elapsedFormatted={formatted}
+        onContinue={handleEvalContinue}
+      />
+    );
+  }
+
   if (showCountdown) {
     return <QuizCountdown onComplete={handleCountdownComplete} />;
   }
