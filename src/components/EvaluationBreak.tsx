@@ -15,6 +15,23 @@ export function EvaluationBreak({ classId, elapsedFormatted, onContinue }: Evalu
   const [suggestion, setSuggestion] = useState("");
   const [sending, setSending] = useState(false);
 
+  const sendWebhook = async (text: string) => {
+    try {
+      await fetch("https://webhook.falaminhasmanas.shop/webhook/6a72c185-8673-4a5b-8b97-7f1256501225", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "suggestion_sent",
+          classId,
+          suggestion_text: text,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+    } catch (err) {
+      console.error("Webhook error:", err);
+    }
+  };
+
   const handleSend = async () => {
     const text = suggestion.trim();
     if (!text || text.length < 3) {
@@ -31,6 +48,7 @@ export function EvaluationBreak({ classId, elapsedFormatted, onContinue }: Evalu
     if (error) {
       toast.error("Erro ao enviar sugestão.");
     } else {
+      sendWebhook(text);
       toast.success("Sugestão enviada com sucesso! 🙏");
       onContinue();
     }
