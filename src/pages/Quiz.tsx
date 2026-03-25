@@ -44,7 +44,10 @@ const QuizPage = () => {
   const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
-  const { seconds, formatted } = useTimer(!isLoading && !showCountdown);
+  const [showEvalBreak, setShowEvalBreak] = useState(false);
+  const [evalBreakShown, setEvalBreakShown] = useState(false);
+  const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5); // random 5-10
+  const { seconds, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
 
   // Load quiz
   useEffect(() => {
