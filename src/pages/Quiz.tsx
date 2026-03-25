@@ -203,11 +203,26 @@ const QuizPage = () => {
           navigate("/result");
         });
     } else {
+      // Check if we should show evaluation break
+      const nextIndex = store.currentQuestionIndex + 1;
+      if (!evalBreakShown && nextIndex === evalBreakQuestion) {
+        setShowEvalBreak(true);
+        setEvalBreakShown(true);
+        setSelectedOption(null);
+        setConfirmed(false);
+        store.nextQuestion();
+        return;
+      }
+
       store.nextQuestion();
       setSelectedOption(null);
       setConfirmed(false);
     }
-  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate]);
+  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate, evalBreakShown, evalBreakQuestion]);
+
+  const handleEvalContinue = useCallback(() => {
+    setShowEvalBreak(false);
+  }, []);
 
   // Auto-advance after 1 second when confirmed
   useEffect(() => {
