@@ -8,6 +8,7 @@ import { useQuizStore } from "@/stores/quizStore";
 import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { QuizCountdown } from "@/components/QuizCountdown";
+import { EvaluationBreak } from "@/components/EvaluationBreak";
 import { toast } from "sonner";
 
 interface Question {
