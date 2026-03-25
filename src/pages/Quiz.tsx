@@ -8,6 +8,7 @@ import { useQuizStore } from "@/stores/quizStore";
 import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { QuizCountdown } from "@/components/QuizCountdown";
+import { EvaluationBreak } from "@/components/EvaluationBreak";
 import { toast } from "sonner";
 
 interface Question {
@@ -43,7 +44,10 @@ const QuizPage = () => {
   const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
-  const { seconds, formatted } = useTimer(!isLoading && !showCountdown);
+  const [showEvalBreak, setShowEvalBreak] = useState(false);
+  const [evalBreakShown, setEvalBreakShown] = useState(false);
+  const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5); // random 5-10
+  const { seconds, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
 
   // Load quiz
   useEffect(() => {
@@ -199,11 +203,26 @@ const QuizPage = () => {
           navigate("/result");
         });
     } else {
+      // Check if we should show evaluation break
+      const nextIndex = store.currentQuestionIndex + 1;
+      if (!evalBreakShown && nextIndex === evalBreakQuestion) {
+        setShowEvalBreak(true);
+        setEvalBreakShown(true);
+        setSelectedOption(null);
+        setConfirmed(false);
+        store.nextQuestion();
+        return;
+      }
+
       store.nextQuestion();
       setSelectedOption(null);
       setConfirmed(false);
     }
-  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate]);
+  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate, evalBreakShown, evalBreakQuestion]);
+
+  const handleEvalContinue = useCallback(() => {
+    setShowEvalBreak(false);
+  }, []);
 
   // Auto-advance after 1 second when confirmed
   useEffect(() => {
@@ -219,6 +238,16 @@ const QuizPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
+    );
+  }
+
+  if (showEvalBreak) {
+    return (
+      <EvaluationBreak
+        classId={store.classId}
+        elapsedFormatted={formatted}
+        onContinue={handleEvalContinue}
+      />
     );
   }
 
