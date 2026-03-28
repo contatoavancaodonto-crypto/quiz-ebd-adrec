@@ -8,6 +8,7 @@ import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
