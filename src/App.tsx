@@ -8,6 +8,7 @@ import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
+          <Route path="/painel-ebd-2025" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
