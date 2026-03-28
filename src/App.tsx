@@ -23,6 +23,7 @@ const App = () => (
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
+          <Route path="/painel-ebd-2025" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
