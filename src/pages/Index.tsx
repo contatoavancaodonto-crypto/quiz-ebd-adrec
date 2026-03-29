@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Sparkles, ChevronRight } from "lucide-react";
+import { Users, Sparkles, ChevronRight, Trophy, Lock } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,8 @@ const classSubtitles: Record<string, string> = {
   Jovens: "Maranata",
 };
 
+const QUIZ_CLOSED = true;
+
 const Index = () => {
   const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
@@ -38,6 +40,10 @@ const Index = () => {
   });
 
   const handleStart = async () => {
+    if (QUIZ_CLOSED) {
+      toast.error("⏰ Tempo esgotado! O quiz não aceita mais respostas.");
+      return;
+    }
     if (!name.trim()) {
       toast.error("Por favor, informe seu nome.");
       return;
@@ -102,81 +108,95 @@ const Index = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="glass-card glow-border p-6 space-y-5"
         >
-          {/* Name input */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Seu nome
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Digite seu nome completo"
-              maxLength={100}
-              className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
-
-          {/* Class selection */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              <Users className="w-4 h-4 inline mr-1" />
-              Escolha sua turma
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {classes?.map((cls) => (
-                <motion.button
-                  key={cls.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setSelectedClass({ id: cls.id, name: cls.name })}
-                  className={`p-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
-                    selectedClass?.id === cls.id
-                      ? "border-primary bg-primary/10 shadow-lg"
-                      : "border-border bg-muted/50 hover:border-primary/40"
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{classIcons[cls.name] || "📚"}</div>
-                  <div className="text-xs font-medium text-foreground">{cls.name}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{classSubtitles[cls.name] || ""}</div>
-                </motion.button>
-              ))}
+          {QUIZ_CLOSED ? (
+            <div className="text-center space-y-4 py-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-2">
+                <Lock className="w-8 h-8 text-destructive" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Tempo Esgotado!</h2>
+              <p className="text-muted-foreground text-sm">
+                O período para responder o quiz foi encerrado. Confira o ranking abaixo para ver os resultados!
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Name input */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Seu nome
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Digite seu nome completo"
+                  maxLength={100}
+                  className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
 
-          {/* Start button */}
+              {/* Class selection */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Users className="w-4 h-4 inline mr-1" />
+                  Escolha sua turma
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {classes?.map((cls) => (
+                    <motion.button
+                      key={cls.id}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setSelectedClass({ id: cls.id, name: cls.name })}
+                      className={`p-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
+                        selectedClass?.id === cls.id
+                          ? "border-primary bg-primary/10 shadow-lg"
+                          : "border-border bg-muted/50 hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{classIcons[cls.name] || "📚"}</div>
+                      <div className="text-xs font-medium text-foreground">{cls.name}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{classSubtitles[cls.name] || ""}</div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Start button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleStart}
+                disabled={loading}
+                className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Iniciar Quiz
+                    <ChevronRight className="w-5 h-5" />
+                  </>
+                )}
+              </motion.button>
+            </>
+          )}
+
+          {/* Ranking button - always visible, highlighted when closed */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleStart}
-            disabled={loading}
-            className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Iniciar Quiz
-                <ChevronRight className="w-5 h-5" />
-              </>
-            )}
-          </motion.button>
-        </motion.div>
-
-        {/* Rankings link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-6"
-        >
-          <button
             onClick={() => navigate("/ranking")}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+            className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 cursor-pointer transition-all ${
+              QUIZ_CLOSED
+                ? "gradient-primary text-primary-foreground shadow-lg hover:shadow-xl animate-pulse"
+                : "bg-muted text-foreground border border-border hover:border-primary/40"
+            }`}
           >
-            🏆 Ver Ranking Geral
-          </button>
+            <Trophy className="w-5 h-5" />
+            🏆 Ver Ranking
+          </motion.button>
         </motion.div>
       </motion.div>
     </div>
