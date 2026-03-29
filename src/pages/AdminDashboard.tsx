@@ -47,10 +47,7 @@ export default function AdminDashboard() {
       const { data: classes } = await supabase
         .from("classes")
         .select("id, name")
-        .in("name", [
-          "🎺 Jovens - Maranata",
-          "🤵🏻‍♂️🤵🏻‍♀️ Adultos - Homens de valor & Mulheres de fé",
-        ]);
+        .in("name", ["Jovens", "Adultos"]);
 
       if (!classes || classes.length === 0) {
         setLoading(false);
@@ -99,7 +96,7 @@ export default function AdminDashboard() {
               ) / classAttempts.length
             : 0;
 
-        const shortName = cls.name.includes("Jovens") ? "Jovens" : "Adultos";
+        const shortName = cls.name;
 
         return {
           className: shortName,
@@ -113,7 +110,7 @@ export default function AdminDashboard() {
       // Build participant-level data for detailed chart
       const pData: ParticipantData[] = validAttempts.map((a: any) => {
         const cls = classes.find((c) => c.id === a.participants?.class_id);
-        const shortName = cls?.name.includes("Jovens") ? "Jovens" : "Adultos";
+        const shortName = cls?.name || "Desconhecido";
         return {
           name: a.participants?.name || "Anônimo",
           score: a.score,
