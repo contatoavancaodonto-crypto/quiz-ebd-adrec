@@ -47,10 +47,7 @@ export default function AdminDashboard() {
       const { data: classes } = await supabase
         .from("classes")
         .select("id, name")
-        .in("name", [
-          "🎺 Jovens - Maranata",
-          "🤵🏻‍♂️🤵🏻‍♀️ Adultos - Homens de valor & Mulheres de fé",
-        ]);
+        .in("name", ["Jovens", "Adultos"]);
 
       if (!classes || classes.length === 0) {
         setLoading(false);
