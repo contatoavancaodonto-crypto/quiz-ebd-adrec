@@ -96,7 +96,7 @@ export default function AdminDashboard() {
               ) / classAttempts.length
             : 0;
 
-        const shortName = cls.name.includes("Jovens") ? "Jovens" : "Adultos";
+        const shortName = cls.name;
 
         return {
           className: shortName,
