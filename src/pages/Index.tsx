@@ -21,7 +21,7 @@ const classSubtitles: Record<string, string> = {
   Jovens: "Maranata",
 };
 
-const QUIZ_CLOSED = true;
+const QUIZ_CLOSED = false;
 
 const Index = () => {
   const [name, setName] = useState("");
