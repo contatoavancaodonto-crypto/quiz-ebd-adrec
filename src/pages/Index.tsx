@@ -22,12 +22,13 @@ const classSubtitles: Record<string, string> = {
 };
 
 const QUIZ_CLOSED = false;
-const AVAILABLE_TRIMESTERS = [1, 2];
+const AVAILABLE_TRIMESTERS: number[] = [2];
+const CLOSED_TRIMESTERS: number[] = [1];
 
 const Index = () => {
   const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
-  const [selectedTrimester, setSelectedTrimester] = useState<number>(1);
+  const [selectedTrimester, setSelectedTrimester] = useState<number>(2);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setParticipant } = useQuizStore();
@@ -42,6 +43,10 @@ const Index = () => {
   });
 
   const handleTrimesterClick = (trimester: number) => {
+    if (CLOSED_TRIMESTERS.includes(trimester)) {
+      toast.info(`🔒 ${trimester}º Trimestre encerrado. Veja o ranking final!`);
+      return;
+    }
     if (!AVAILABLE_TRIMESTERS.includes(trimester)) {
       toast.info(`📅 ${trimester}º Trimestre - Disponível em breve!`);
       return;
@@ -142,17 +147,21 @@ const Index = () => {
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[1, 2, 3, 4].map((t) => {
+                    const closed = CLOSED_TRIMESTERS.includes(t);
                     const available = AVAILABLE_TRIMESTERS.includes(t);
                     const active = selectedTrimester === t && available;
+                    const interactive = available;
                     return (
                       <motion.button
                         key={t}
-                        whileHover={{ scale: available ? 1.05 : 1 }}
-                        whileTap={{ scale: available ? 0.95 : 1 }}
+                        whileHover={{ scale: interactive ? 1.05 : 1 }}
+                        whileTap={{ scale: interactive ? 0.95 : 1 }}
                         onClick={() => handleTrimesterClick(t)}
                         className={`py-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
                           active
                             ? "border-primary bg-primary/10 shadow-lg"
+                            : closed
+                            ? "border-muted bg-muted/40 opacity-50 grayscale"
                             : available
                             ? "border-border bg-muted/50 hover:border-primary/40"
                             : "border-border bg-muted/30 opacity-60"
@@ -160,7 +169,7 @@ const Index = () => {
                       >
                         <div className="text-sm font-bold text-foreground">{t}º</div>
                         <div className="text-[10px] text-muted-foreground">
-                          {available ? "Tri." : "Em breve"}
+                          {closed ? "Encerrado" : available ? "Tri." : "Em breve"}
                         </div>
                       </motion.button>
                     );
