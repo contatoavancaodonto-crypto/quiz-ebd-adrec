@@ -2,13 +2,22 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Check, Loader2, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { toast } from "sonner";
 import churchLogo from "@/assets/church-logo.png";
+
+const CHURCHES = [
+  "ADREC", "ADVEJA", "ADESC", "ADEVIS", "ADCIM- MORRINHOS",
+  "CIMADSETA SLMB", "AD. AMEE", "ADVEJA EXPANSUL", "ADCANPS",
+];
+const ADD_CHURCH = "ADICIONAR IGREJA";
+const OTHER_CHURCH = "OUTRO";
+const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 
 type Mode = "login" | "signup";
 
@@ -38,6 +47,8 @@ const signupSchema = z
   .object({
     firstName: z.string().trim().min(1, "Digite seu nome").max(50),
     lastName: z.string().trim().min(1, "Digite seu sobrenome").max(50),
+    area: z.string().min(1, "Selecione sua área"),
+    church: z.string().min(1, "Selecione sua igreja"),
     phone: z.string().trim().min(14, "Telefone inválido"),
     email: z.string().trim().email("Digite um email válido").max(255).or(z.literal("")),
     password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
@@ -62,12 +73,32 @@ const Auth = () => {
   // Signup fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [area, setArea] = useState("");
+  const [church, setChurch] = useState("");
+  const [churchModalOpen, setChurchModalOpen] = useState(false);
+  const [churchRequested, setChurchRequested] = useState(false);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptUpdates, setAcceptUpdates] = useState(false);
+
+  const handleChurchChange = (v: string) => {
+    if (v === ADD_CHURCH) {
+      setChurchModalOpen(true);
+      return;
+    }
+    setChurch(v);
+    if (v !== OTHER_CHURCH) setChurchRequested(false);
+  };
+
+  const handleChurchRequestSubmit = (_data: ChurchRequest) => {
+    setChurch(OTHER_CHURCH);
+    setChurchRequested(true);
+    setChurchModalOpen(false);
+    toast.success("Solicitação enviada!");
+  };
 
   useEffect(() => {
     if (!authLoading && user) navigate("/", { replace: true });
