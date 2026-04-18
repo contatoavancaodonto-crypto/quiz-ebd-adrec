@@ -2,13 +2,22 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Check, Loader2, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { toast } from "sonner";
 import churchLogo from "@/assets/church-logo.png";
+
+const CHURCHES = [
+  "ADREC", "ADVEJA", "ADESC", "ADEVIS", "ADCIM- MORRINHOS",
+  "CIMADSETA SLMB", "AD. AMEE", "ADVEJA EXPANSUL", "ADCANPS",
+];
+const ADD_CHURCH = "ADICIONAR IGREJA";
+const OTHER_CHURCH = "OUTRO";
+const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 
 type Mode = "login" | "signup";
 
@@ -38,6 +47,8 @@ const signupSchema = z
   .object({
     firstName: z.string().trim().min(1, "Digite seu nome").max(50),
     lastName: z.string().trim().min(1, "Digite seu sobrenome").max(50),
+    area: z.string().min(1, "Selecione sua área"),
+    church: z.string().min(1, "Selecione sua igreja"),
     phone: z.string().trim().min(14, "Telefone inválido"),
     email: z.string().trim().email("Digite um email válido").max(255).or(z.literal("")),
     password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
@@ -62,12 +73,32 @@ const Auth = () => {
   // Signup fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [area, setArea] = useState("");
+  const [church, setChurch] = useState("");
+  const [churchModalOpen, setChurchModalOpen] = useState(false);
+  const [churchRequested, setChurchRequested] = useState(false);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptUpdates, setAcceptUpdates] = useState(false);
+
+  const handleChurchChange = (v: string) => {
+    if (v === ADD_CHURCH) {
+      setChurchModalOpen(true);
+      return;
+    }
+    setChurch(v);
+    if (v !== OTHER_CHURCH) setChurchRequested(false);
+  };
+
+  const handleChurchRequestSubmit = (_data: ChurchRequest) => {
+    setChurch(OTHER_CHURCH);
+    setChurchRequested(true);
+    setChurchModalOpen(false);
+    toast.success("Solicitação enviada!");
+  };
 
   useEffect(() => {
     if (!authLoading && user) navigate("/", { replace: true });
@@ -109,7 +140,7 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     const parsed = signupSchema.safeParse({
-      firstName, lastName, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
+      firstName, lastName, area, church, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
     });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
@@ -123,7 +154,10 @@ const Auth = () => {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { first_name: firstName.trim(), last_name: lastName.trim(), phone: phone.replace(/\D/g, "") },
+        data: {
+          first_name: firstName.trim(), last_name: lastName.trim(),
+          phone: phone.replace(/\D/g, ""), area, church,
+        },
       },
     });
     setSubmitting(false);
@@ -136,7 +170,7 @@ const Auth = () => {
 
   const pwdStrength = passwordStrength(password);
   const signupValid =
-    firstName && lastName && phone.length >= 14 && password.length >= 8 &&
+    firstName && lastName && area && church && phone.length >= 14 && password.length >= 8 &&
     password === confirmPassword && acceptTerms && acceptUpdates;
 
   return (
@@ -228,6 +262,21 @@ const Auth = () => {
                   <Field label="Nome" value={firstName} onChange={setFirstName} placeholder="João" error={errors.firstName} />
                   <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
                 </div>
+                <Select
+                  label="Qual sua área?" value={area} onChange={setArea}
+                  placeholder="Selecione sua área" error={errors.area}
+                  options={AREAS.map((a) => ({ value: a, label: `Área ${a}` }))}
+                />
+                <Select
+                  label="Qual o nome da sua igreja?" value={church} onChange={handleChurchChange}
+                  placeholder="Selecione sua igreja" error={errors.church}
+                  options={[
+                    ...CHURCHES.map((c) => ({ value: c, label: c })),
+                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    { value: ADD_CHURCH, label: `+ ${ADD_CHURCH}` },
+                  ]}
+                  hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
+                />
                 <Field
                   label="Telefone" value={phone} onChange={(v) => setPhone(phoneMask(v))}
                   placeholder="(11) 99999-9999" error={errors.phone}
@@ -275,9 +324,40 @@ const Auth = () => {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      <AddChurchModal
+        open={churchModalOpen}
+        onClose={() => setChurchModalOpen(false)}
+        onSubmit={handleChurchRequestSubmit}
+      />
     </div>
   );
 };
+
+const Select = ({ label, value, onChange, placeholder, options, error, hint }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder: string;
+  options: { value: string; label: string }[]; error?: string; hint?: string;
+}) => (
+  <div>
+    <label className="block text-xs font-medium text-foreground mb-1.5">{label}</label>
+    <div className="relative">
+      <select
+        value={value} onChange={(e) => onChange(e.target.value)}
+        className={`w-full appearance-none px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-pointer ${
+          error ? "border-destructive" : "border-transparent focus:border-primary"
+        } ${!value ? "text-muted-foreground/60" : "text-foreground"}`}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value} className="text-foreground bg-background">{o.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+    </div>
+    {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+    {hint && !error && <p className="text-xs text-primary mt-1">{hint}</p>}
+  </div>
+);
 
 const Field = ({ label, value, onChange, placeholder, error, success, type = "text", autoFocus }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string;
