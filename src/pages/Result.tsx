@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, BarChart3, ArrowRight } from "lucide-react";
+import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThankYouScreen } from "@/components/ThankYouScreen";
+import { formatTimeMs } from "@/hooks/useTimer";
 
 function getPerformanceMessage(pct: number) {
   if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };
@@ -15,22 +16,37 @@ function getPerformanceMessage(pct: number) {
   return { text: "Precisa melhorar 📖", color: "text-destructive" };
 }
 
-function formatTime(s: number) {
+function formatTimeFallback(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
 const TOTAL_QUESTIONS = 13;
+
+interface MiniRankEntry {
+  attempt_id: string;
+  position: number;
+  participant_name: string;
+  score: number;
+  total_time_seconds: number;
+  total_time_ms?: number;
+  church_name?: string | null;
+  class_name?: string;
+}
 
 const ResultPage = () => {
   const navigate = useNavigate();
   const store = useQuizStore();
   const [classRank, setClassRank] = useState<number | null>(null);
   const [generalRank, setGeneralRank] = useState<number | null>(null);
+  const [churchRank, setChurchRank] = useState<number | null>(null);
+  const [churchTop, setChurchTop] = useState<MiniRankEntry[]>([]);
+  const [generalTop, setGeneralTop] = useState<MiniRankEntry[]>([]);
   const [showThankYou, setShowThankYou] = useState(true);
 
   const score = store.score;
   const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
   const perf = getPerformanceMessage(pct);
+  const timeStr = store.totalTimeMs > 0 ? formatTimeMs(store.totalTimeMs) : formatTimeFallback(store.totalTimeSeconds);
 
   useEffect(() => {
     if (!store.attemptId) {
@@ -38,23 +54,42 @@ const ResultPage = () => {
       return;
     }
 
-    const fetchRanks = async () => {
-      const { data: cr } = await supabase
-        .from("ranking_by_class")
-        .select("position")
-        .eq("attempt_id", store.attemptId)
-        .maybeSingle();
+    const fetchAll = async () => {
+      const [{ data: cr }, { data: gr }] = await Promise.all([
+        supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
+        supabase.from("ranking_general").select("position, church_id").eq("attempt_id", store.attemptId).maybeSingle(),
+      ]);
       if (cr) setClassRank(Number(cr.position));
-
-      const { data: gr } = await supabase
-        .from("ranking_general")
-        .select("position")
-        .eq("attempt_id", store.attemptId)
-        .maybeSingle();
       if (gr) setGeneralRank(Number(gr.position));
+
+      const churchId = store.churchId || (gr as any)?.church_id;
+
+      // Top 5 geral
+      const { data: top } = await supabase
+        .from("ranking_general")
+        .select("attempt_id, position, participant_name, score, total_time_seconds, total_time_ms, church_name, class_name")
+        .eq("trimester", store.trimester)
+        .order("position")
+        .limit(5);
+      setGeneralTop((top as MiniRankEntry[]) || []);
+
+      // Ranking da Igreja
+      if (churchId) {
+        const { data: ch } = await supabase
+          .from("ranking_general")
+          .select("attempt_id, position, participant_name, score, total_time_seconds, total_time_ms, church_name")
+          .eq("trimester", store.trimester)
+          .eq("church_id", churchId)
+          .order("position")
+          .limit(10);
+        const list = (ch as MiniRankEntry[]) || [];
+        setChurchTop(list);
+        const me = list.find((e) => e.attempt_id === store.attemptId);
+        if (me) setChurchRank(me.position);
+      }
     };
-    fetchRanks();
-  }, [store.attemptId, navigate]);
+    fetchAll();
+  }, [store.attemptId, store.churchId, store.trimester, navigate]);
 
   if (showThankYou) {
     return (
@@ -71,13 +106,13 @@ const ResultPage = () => {
 
   const stats = [
     { icon: Target, label: "Pontuação", value: `${score}/${TOTAL_QUESTIONS}`, sub: `${pct}%` },
-    { icon: Clock, label: "Tempo", value: formatTime(store.totalTimeSeconds), sub: "" },
-    { icon: Trophy, label: "Ranking Turma", value: classRank ? `#${classRank}` : "...", sub: store.className },
-    { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "...", sub: "Todas turmas" },
+    { icon: Clock, label: "Tempo", value: timeStr, sub: "mm:ss:cc" },
+    { icon: Trophy, label: "Ranking Turma", value: classRank ? `#${classRank}` : "—", sub: store.className },
+    { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "—", sub: "Todas igrejas" },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start p-4 pt-8 relative">
       <ThemeToggle />
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -97,13 +132,12 @@ const ResultPage = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-background mb-4"
+            className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-background mb-3"
           >
-            <img src={churchLogo} alt="Logo ADREC" className="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
+            <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           </motion.div>
-          <h1 className="text-2xl font-display font-bold text-foreground mb-1">
-            {store.participantName}
-          </h1>
+          <h1 className="text-2xl font-display font-bold text-foreground mb-1">{store.participantName}</h1>
+          {store.churchName && <p className="text-xs text-muted-foreground/70 mb-1">{store.churchName}</p>}
           <p className={`text-lg font-semibold ${perf.color}`}>{perf.text}</p>
         </div>
 
@@ -118,12 +152,96 @@ const ResultPage = () => {
               className="glass-card glow-border p-4 text-center"
             >
               <s.icon className="w-5 h-5 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-display font-bold text-foreground">{s.value}</div>
+              <div className="text-xl font-display font-bold text-foreground">{s.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-              {s.sub && <div className="text-xs text-primary mt-0.5">{s.sub}</div>}
+              {s.sub && <div className="text-[10px] text-primary mt-0.5">{s.sub}</div>}
             </motion.div>
           ))}
         </div>
+
+        {/* Ranking da Igreja */}
+        {churchTop.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass-card glow-border p-4 mb-4"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Church className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Ranking da Igreja</h3>
+              </div>
+              {churchRank && <span className="text-xs text-primary font-bold">Você: #{churchRank}</span>}
+            </div>
+            <div className="space-y-1.5">
+              {churchTop.slice(0, 5).map((e) => {
+                const isMe = e.attempt_id === store.attemptId;
+                const t = e.total_time_ms && e.total_time_ms > 0 ? formatTimeMs(e.total_time_ms) : formatTimeFallback(e.total_time_seconds);
+                return (
+                  <div
+                    key={e.attempt_id}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
+                      isMe ? "bg-primary/15 border border-primary/30" : "bg-muted/40"
+                    }`}
+                  >
+                    <span className={`w-5 text-center font-bold ${isMe ? "text-primary" : "text-muted-foreground"}`}>
+                      {e.position}
+                    </span>
+                    <span className={`flex-1 truncate ${isMe ? "text-foreground font-semibold" : "text-foreground"}`}>
+                      {e.participant_name} {isMe && "← você"}
+                    </span>
+                    <span className="font-mono text-muted-foreground">{e.score}</span>
+                    <span className="font-mono text-muted-foreground text-[10px]">{t}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Ranking Geral - top 5 */}
+        {generalTop.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="glass-card p-4 mb-4"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Medal className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Top 5 Geral</h3>
+            </div>
+            <div className="space-y-1.5">
+              {generalTop.map((e) => {
+                const isMe = e.attempt_id === store.attemptId;
+                const t = e.total_time_ms && e.total_time_ms > 0 ? formatTimeMs(e.total_time_ms) : formatTimeFallback(e.total_time_seconds);
+                return (
+                  <div
+                    key={e.attempt_id}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
+                      isMe ? "bg-primary/15 border border-primary/30" : "bg-muted/40"
+                    }`}
+                  >
+                    <span className={`w-5 text-center font-bold ${isMe ? "text-primary" : "text-muted-foreground"}`}>
+                      {e.position}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className={`truncate ${isMe ? "text-foreground font-semibold" : "text-foreground"}`}>
+                        {e.participant_name}
+                      </div>
+                      {e.church_name && (
+                        <div className="text-[10px] text-muted-foreground/70 truncate">{e.church_name}</div>
+                      )}
+                    </div>
+                    <span className="font-mono text-muted-foreground">{e.score}</span>
+                    <span className="font-mono text-muted-foreground text-[10px]">{t}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
 
         {/* Low score retry */}
         {score < 5 && !store.hasRetried && (
@@ -155,7 +273,7 @@ const ResultPage = () => {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.65 }}
+            transition={{ delay: 0.8 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/gabarito")}
@@ -167,26 +285,18 @@ const ResultPage = () => {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.85 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/ranking", { state: { classId: store.classId, className: store.className } })}
+            onClick={() =>
+              navigate("/ranking", {
+                state: { classId: store.classId, className: store.className, churchId: store.churchId },
+              })
+            }
             className="w-full py-3.5 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 shadow-lg cursor-pointer"
           >
-            🏆 Ver Ranking da Turma
+            🏆 Ver Ranking Completo
             <ArrowRight className="w-4 h-4" />
-          </motion.button>
-
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/ranking")}
-            className="w-full py-3.5 rounded-xl border-2 border-border bg-card text-foreground font-semibold flex items-center justify-center gap-2 hover:border-primary/40 transition-colors cursor-pointer"
-          >
-            📊 Ranking Geral
           </motion.button>
 
           <motion.button
@@ -199,7 +309,7 @@ const ResultPage = () => {
             }}
             className="w-full py-3 text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
           >
-            Jogar Novamente
+            Voltar ao Início
           </motion.button>
         </div>
       </motion.div>

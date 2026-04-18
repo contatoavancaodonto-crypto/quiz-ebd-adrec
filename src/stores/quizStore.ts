@@ -5,6 +5,8 @@ export interface QuizState {
   classId: string;
   className: string;
   trimester: number;
+  churchId: string;
+  churchName: string;
   quizId: string;
   participantId: string;
   attemptId: string;
@@ -13,16 +15,18 @@ export interface QuizState {
   startTime: number | null;
   score: number;
   totalTimeSeconds: number;
+  totalTimeMs: number;
   hasRetried: boolean;
   isRetrying: boolean;
   setParticipant: (name: string, classId: string, className: string, trimester: number) => void;
+  setChurch: (id: string, name: string) => void;
   setQuizId: (id: string) => void;
   setParticipantId: (id: string) => void;
   setAttemptId: (id: string) => void;
   setAnswer: (questionId: string, option: string) => void;
   nextQuestion: () => void;
   startTimer: () => void;
-  finishQuiz: (score: number) => void;
+  finishQuiz: (score: number, totalTimeMs?: number) => void;
   retryQuiz: () => void;
   reset: () => void;
 }
@@ -32,6 +36,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   classId: "",
   className: "",
   trimester: 1,
+  churchId: "",
+  churchName: "",
   quizId: "",
   participantId: "",
   attemptId: "",
@@ -40,10 +46,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   startTime: null,
   score: 0,
   totalTimeSeconds: 0,
+  totalTimeMs: 0,
   hasRetried: false,
   isRetrying: false,
   setParticipant: (name, classId, className, trimester) =>
     set({ participantName: name, classId, className, trimester }),
+  setChurch: (id, name) => set({ churchId: id, churchName: name }),
   setQuizId: (id) => set({ quizId: id }),
   setParticipantId: (id) => set({ participantId: id }),
   setAttemptId: (id) => set({ attemptId: id }),
@@ -51,10 +59,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     set((state) => ({ answers: { ...state.answers, [questionId]: option } })),
   nextQuestion: () => set((state) => ({ currentQuestionIndex: state.currentQuestionIndex + 1 })),
   startTimer: () => set({ startTime: Date.now() }),
-  finishQuiz: (score) => {
+  finishQuiz: (score, totalTimeMs) => {
     const start = get().startTime;
-    const totalTimeSeconds = start ? Math.round((Date.now() - start) / 1000) : 0;
-    set({ score, totalTimeSeconds });
+    const fallbackMs = start ? Date.now() - start : 0;
+    const ms = totalTimeMs ?? fallbackMs;
+    set({ score, totalTimeSeconds: Math.round(ms / 1000), totalTimeMs: ms });
   },
   retryQuiz: () =>
     set({
@@ -64,6 +73,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       startTime: null,
       score: 0,
       totalTimeSeconds: 0,
+      totalTimeMs: 0,
       hasRetried: true,
       isRetrying: true,
     }),
@@ -73,6 +83,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       classId: "",
       className: "",
       trimester: 1,
+      churchId: "",
+      churchName: "",
       quizId: "",
       participantId: "",
       attemptId: "",
@@ -81,6 +93,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       startTime: null,
       score: 0,
       totalTimeSeconds: 0,
+      totalTimeMs: 0,
       hasRetried: false,
       isRetrying: false,
     }),

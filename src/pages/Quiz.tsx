@@ -47,7 +47,7 @@ const QuizPage = () => {
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
-  const { seconds, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
+  const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
 
   // 🔒 trava de finalização
   const finishingRef = useRef(false);
@@ -147,6 +147,7 @@ const QuizPage = () => {
       });
 
       const totalTime = seconds;
+      const totalMs = Math.round(ms);
       const accuracy = (score / questions.length) * 100;
       const finishedAt = new Date().toISOString();
 
@@ -156,6 +157,7 @@ const QuizPage = () => {
           score,
           accuracy_percentage: accuracy,
           total_time_seconds: totalTime,
+          total_time_ms: totalMs,
           finished_at: finishedAt,
         })
         .eq("id", store.attemptId)
@@ -194,7 +196,7 @@ const QuizPage = () => {
             console.error("Webhook error:", err);
           }
 
-          store.finishQuiz(score);
+          store.finishQuiz(score, totalMs);
           navigate("/result");
         });
 
