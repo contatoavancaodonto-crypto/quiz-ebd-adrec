@@ -324,9 +324,40 @@ const Auth = () => {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      <AddChurchModal
+        open={churchModalOpen}
+        onClose={() => setChurchModalOpen(false)}
+        onSubmit={handleChurchRequestSubmit}
+      />
     </div>
   );
 };
+
+const Select = ({ label, value, onChange, placeholder, options, error, hint }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder: string;
+  options: { value: string; label: string }[]; error?: string; hint?: string;
+}) => (
+  <div>
+    <label className="block text-xs font-medium text-foreground mb-1.5">{label}</label>
+    <div className="relative">
+      <select
+        value={value} onChange={(e) => onChange(e.target.value)}
+        className={`w-full appearance-none px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-pointer ${
+          error ? "border-destructive" : "border-transparent focus:border-primary"
+        } ${!value ? "text-muted-foreground/60" : "text-foreground"}`}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value} className="text-foreground bg-background">{o.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+    </div>
+    {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+    {hint && !error && <p className="text-xs text-primary mt-1">{hint}</p>}
+  </div>
+);
 
 const Field = ({ label, value, onChange, placeholder, error, success, type = "text", autoFocus }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string;
