@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Sparkles, ChevronRight, Trophy, Lock } from "lucide-react";
+import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +29,16 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setParticipant } = useQuizStore();
+
+  const handleTrimester = (trimester: number) => {
+    if (trimester === 1) {
+      navigate("/ranking?trimester=1");
+    } else if (trimester === 2) {
+      navigate("/ranking?trimester=2");
+    } else {
+      toast.info(`📅 ${trimester}º Trimestre - Disponível em breve!`);
+    }
+  };
 
   const { data: classes } = useQuery({
     queryKey: ["classes"],
@@ -197,6 +207,28 @@ const Index = () => {
             <Trophy className="w-5 h-5" />
             🏆 Ver Ranking
           </motion.button>
+
+          {/* Trimester results */}
+          <div className="pt-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Resultados por Trimestre
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4].map((t) => (
+                <motion.button
+                  key={t}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleTrimester(t)}
+                  className="py-3 rounded-xl border-2 border-border bg-muted/50 hover:border-primary/40 transition-all text-center cursor-pointer"
+                >
+                  <div className="text-sm font-bold text-foreground">{t}º</div>
+                  <div className="text-[10px] text-muted-foreground">Tri.</div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </div>
