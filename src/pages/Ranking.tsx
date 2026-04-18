@@ -99,7 +99,9 @@ const RankingPage = () => {
     },
   });
 
-  // Filtra por turma e re-numera as posições
+  // 🔴 Realtime: revalida ranking quando alguém finalizar
+  useRealtimeRanking(["ranking", trimester, scope, selectedChurchId]);
+
   const ranking = useMemo(() => {
     if (!rawData) return [];
     const filtered = selectedClassId
