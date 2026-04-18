@@ -24,6 +24,7 @@ const medalColors = [
 ];
 
 interface RankEntry {
+  attempt_id?: string;
   position: number;
   participant_name: string;
   class_id?: string | null;
@@ -138,6 +139,13 @@ const RankingPage = () => {
           <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
           <p className="text-xs text-muted-foreground mt-1">{trimester}º Trimestre</p>
+          <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Ao vivo</span>
+          </div>
         </motion.div>
 
         {/* 1. Trimester */}
