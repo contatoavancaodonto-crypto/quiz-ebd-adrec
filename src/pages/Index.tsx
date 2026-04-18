@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar } from "lucide-react";
+import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar, LogOut } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
@@ -26,12 +28,18 @@ const AVAILABLE_TRIMESTERS: number[] = [2];
 const CLOSED_TRIMESTERS: number[] = [1];
 
 const Index = () => {
-  const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
   const [selectedTrimester, setSelectedTrimester] = useState<number>(2);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setParticipant } = useQuizStore();
+  const { setParticipant, setChurch } = useQuizStore();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
+
+  // Redireciona não-logados para /auth
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth", { replace: true });
+  }, [user, authLoading, navigate]);
 
   const { data: classes } = useQuery({
     queryKey: ["classes"],
@@ -59,8 +67,8 @@ const Index = () => {
       toast.error("⏰ Tempo esgotado! O quiz não aceita mais respostas.");
       return;
     }
-    if (!name.trim()) {
-      toast.error("Por favor, informe seu nome.");
+    if (!profile?.first_name) {
+      toast.error("Perfil incompleto. Atualize seu cadastro.");
       return;
     }
     if (!selectedClass) {
@@ -81,7 +89,11 @@ const Index = () => {
     }
     setLoading(true);
     try {
-      setParticipant(name.trim(), selectedClass.id, selectedClass.name, selectedTrimester);
+      const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+      setParticipant(fullName, selectedClass.id, selectedClass.name, selectedTrimester);
+      if (profile.church_id && profile.church_name) {
+        setChurch(profile.church_id, profile.church_name);
+      }
       navigate("/quiz");
     } catch {
       toast.error("Erro ao iniciar. Tente novamente.");
@@ -90,9 +102,28 @@ const Index = () => {
     }
   };
 
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <ThemeToggle />
+
+      {/* Logout */}
+      <button
+        onClick={() => signOut()}
+        className="absolute top-4 left-4 z-20 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+      >
+        <LogOut className="w-3.5 h-3.5" />
+        Sair
+      </button>
 
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -111,18 +142,28 @@ const Index = () => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1, duration: 0.5 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <div className="inline-flex items-center justify-center w-28 h-28 rounded-2xl bg-background mb-4">
-            <img src={churchLogo} alt="Logo ADREC" className="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-background mb-3">
+            <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-2">
+          <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-1">
             Quiz EBD
           </h1>
-          <p className="text-muted-foreground text-sm font-semibold">
-            2026 - ADREC
-          </p>
+          <p className="text-muted-foreground text-sm font-semibold">2026 - ADREC</p>
         </motion.div>
+
+        {/* Greeting */}
+        {profile && (
+          <div className="text-center mb-4">
+            <p className="text-sm text-muted-foreground">
+              Olá, <span className="text-foreground font-semibold">{profile.first_name}</span>
+              {profile.church_name && (
+                <span className="text-xs text-muted-foreground/70 block mt-0.5">{profile.church_name}</span>
+              )}
+            </p>
+          </div>
+        )}
 
         {/* Card */}
         <motion.div
@@ -177,21 +218,6 @@ const Index = () => {
                     );
                   })}
                 </div>
-              </div>
-
-              {/* Name input */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Seu nome
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Digite seu nome completo"
-                  maxLength={100}
-                  className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground placeholder:text-muted-foreground"
-                />
               </div>
 
               {/* Class selection */}

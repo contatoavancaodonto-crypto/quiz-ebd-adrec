@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, ArrowLeft, Medal, Calendar } from "lucide-react";
+import { Clock, ArrowLeft, Medal, Calendar, Church } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formatTimeMs } from "@/hooks/useTimer";
 
-function formatTime(s: number) {
+function formatRankingTime(entry: RankEntry) {
+  if (entry.total_time_ms && entry.total_time_ms > 0) {
+    return formatTimeMs(entry.total_time_ms);
+  }
+  const s = entry.total_time_seconds;
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
@@ -21,18 +26,23 @@ interface RankEntry {
   position: number;
   participant_name: string;
   class_name: string;
+  church_id?: string | null;
+  church_name?: string | null;
   score: number;
   total_time_seconds: number;
+  total_time_ms?: number;
   accuracy_percentage: number;
   is_retry?: boolean;
 }
+
+type Tab = "general" | "class" | "church";
 
 const RankingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const state = location.state as { classId?: string; className?: string } | null;
-  const [tab, setTab] = useState<"class" | "general">(state?.classId ? "class" : "general");
+  const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
+  const [tab, setTab] = useState<Tab>(state?.classId ? "class" : "general");
   const trimesterParam = parseInt(searchParams.get("trimester") || "1", 10);
   const [trimester, setTrimester] = useState<number>(
     [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
@@ -51,7 +61,20 @@ const RankingPage = () => {
     },
   });
 
+  const { data: churches } = useQuery({
+    queryKey: ["churches-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("churches")
+        .select("id, name")
+        .eq("approved", true)
+        .order("name");
+      return data || [];
+    },
+  });
+
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
+  const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
 
   const { data: classRanking, isLoading: loadingClass } = useQuery({
     queryKey: ["ranking-class", selectedClassId, trimester],
@@ -69,21 +92,40 @@ const RankingPage = () => {
   });
 
   const { data: generalRanking, isLoading: loadingGeneral } = useQuery({
-    queryKey: ["ranking-general", trimester],
+    queryKey: ["ranking-general", trimester, selectedChurchId],
     enabled: tab === "general",
+    queryFn: async () => {
+      let query = supabase
+        .from("ranking_general")
+        .select("*")
+        .eq("trimester", trimester)
+        .order("position")
+        .limit(100);
+      if (selectedChurchId) query = query.eq("church_id", selectedChurchId);
+      const { data } = await query;
+      return (data as RankEntry[]) || [];
+    },
+  });
+
+  const { data: churchRanking, isLoading: loadingChurch } = useQuery({
+    queryKey: ["ranking-church", selectedChurchId, trimester],
+    enabled: tab === "church" && !!selectedChurchId,
     queryFn: async () => {
       const { data } = await supabase
         .from("ranking_general")
         .select("*")
         .eq("trimester", trimester)
+        .eq("church_id", selectedChurchId)
         .order("position")
         .limit(50);
       return (data as RankEntry[]) || [];
     },
   });
 
-  const ranking = tab === "class" ? classRanking : generalRanking;
-  const loading = tab === "class" ? loadingClass : loadingGeneral;
+  const ranking =
+    tab === "class" ? classRanking : tab === "church" ? churchRanking : generalRanking;
+  const loading =
+    tab === "class" ? loadingClass : tab === "church" ? loadingChurch : loadingGeneral;
 
   return (
     <div className="min-h-screen bg-background p-4 relative">
@@ -129,21 +171,41 @@ const RankingPage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-4">
-          {(["class", "general"] as const).map((t) => (
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {(["general", "church", "class"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 tab === t
                   ? "gradient-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "class" ? "Por Classe" : "Geral"}
+              {t === "class" ? "Por Turma" : t === "church" ? "Por Igreja" : "Geral"}
             </button>
           ))}
         </div>
+
+        {/* Church filter (general + church tab) */}
+        {(tab === "general" || tab === "church") && (
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              <Church className="w-3 h-3 inline mr-1" />
+              {tab === "church" ? "Selecione a igreja" : "Filtrar por igreja"}
+            </label>
+            <select
+              value={selectedChurchId}
+              onChange={(e) => setSelectedChurchId(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-muted text-sm text-foreground border border-border focus:border-primary outline-none cursor-pointer"
+            >
+              <option value="">{tab === "church" ? "— Selecione —" : "Todas as igrejas"}</option>
+              {churches?.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Class selector */}
         {tab === "class" && (
@@ -172,7 +234,9 @@ const RankingPage = () => {
         ) : !ranking?.length ? (
           <div className="text-center py-12 text-muted-foreground">
             {tab === "class" && !selectedClassId
-              ? "Selecione uma classe acima"
+              ? "Selecione uma turma acima"
+              : tab === "church" && !selectedChurchId
+              ? "Selecione uma igreja acima"
               : "Nenhum resultado ainda. Seja o primeiro!"}
           </div>
         ) : (
@@ -212,6 +276,9 @@ const RankingPage = () => {
                       </span>
                     )}
                   </div>
+                  {entry.church_name && (
+                    <div className="text-[11px] text-muted-foreground/70 truncate">{entry.church_name}</div>
+                  )}
                   {tab === "general" && (
                     <div className="text-xs text-muted-foreground">{entry.class_name}</div>
                   )}
@@ -220,9 +287,9 @@ const RankingPage = () => {
                 {/* Stats */}
                 <div className="text-right shrink-0">
                   <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
                     <Clock className="w-3 h-3" />
-                    {formatTime(entry.total_time_seconds)}
+                    {formatRankingTime(entry)}
                   </div>
                 </div>
               </motion.div>
