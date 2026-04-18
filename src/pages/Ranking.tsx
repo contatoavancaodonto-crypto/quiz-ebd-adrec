@@ -88,7 +88,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("*")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
