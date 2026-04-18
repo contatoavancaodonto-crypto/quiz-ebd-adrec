@@ -70,6 +70,36 @@ export type Database = {
           },
         ]
       }
+      badges: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          emoji: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          emoji: string
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       churches: {
         Row: {
           approved: boolean
@@ -305,6 +335,7 @@ export type Database = {
           participant_id: string
           quiz_id: string
           score: number
+          season_id: string | null
           started_at: string
           total_questions: number
           total_time_ms: number
@@ -318,6 +349,7 @@ export type Database = {
           participant_id: string
           quiz_id: string
           score?: number
+          season_id?: string | null
           started_at?: string
           total_questions?: number
           total_time_ms?: number
@@ -331,6 +363,7 @@ export type Database = {
           participant_id?: string
           quiz_id?: string
           score?: number
+          season_id?: string | null
           started_at?: string
           total_questions?: number
           total_time_ms?: number
@@ -349,6 +382,13 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -475,6 +515,76 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ranking_general"
             referencedColumns: ["class_id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          attempt_id: string
+          badge_id: string
+          earned_at: string
+          id: string
+          participant_id: string
+          season_id: string | null
+        }
+        Insert: {
+          attempt_id: string
+          badge_id: string
+          earned_at?: string
+          id?: string
+          participant_id: string
+          season_id?: string | null
+        }
+        Update: {
+          attempt_id?: string
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          participant_id?: string
+          season_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "user_badges_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
           },
         ]
       }
