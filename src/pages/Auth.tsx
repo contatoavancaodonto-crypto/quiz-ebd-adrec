@@ -140,7 +140,7 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     const parsed = signupSchema.safeParse({
-      firstName, lastName, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
+      firstName, lastName, area, church, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
     });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
@@ -154,7 +154,10 @@ const Auth = () => {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { first_name: firstName.trim(), last_name: lastName.trim(), phone: phone.replace(/\D/g, "") },
+        data: {
+          first_name: firstName.trim(), last_name: lastName.trim(),
+          phone: phone.replace(/\D/g, ""), area, church,
+        },
       },
     });
     setSubmitting(false);
