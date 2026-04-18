@@ -262,6 +262,21 @@ const Auth = () => {
                   <Field label="Nome" value={firstName} onChange={setFirstName} placeholder="João" error={errors.firstName} />
                   <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
                 </div>
+                <Select
+                  label="Qual sua área?" value={area} onChange={setArea}
+                  placeholder="Selecione sua área" error={errors.area}
+                  options={AREAS.map((a) => ({ value: a, label: `Área ${a}` }))}
+                />
+                <Select
+                  label="Qual o nome da sua igreja?" value={church} onChange={handleChurchChange}
+                  placeholder="Selecione sua igreja" error={errors.church}
+                  options={[
+                    ...CHURCHES.map((c) => ({ value: c, label: c })),
+                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    { value: ADD_CHURCH, label: `+ ${ADD_CHURCH}` },
+                  ]}
+                  hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
+                />
                 <Field
                   label="Telefone" value={phone} onChange={(v) => setPhone(phoneMask(v))}
                   placeholder="(11) 99999-9999" error={errors.phone}
