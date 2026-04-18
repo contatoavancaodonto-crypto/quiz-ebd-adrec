@@ -172,6 +172,7 @@ const Index = () => {
                 <span className="text-xs text-muted-foreground/70 block mt-0.5">{profile.church_name}</span>
               )}
             </p>
+          </div>
         )}
 
         {/* Season countdown */}
