@@ -153,20 +153,18 @@ const Index = () => {
                   {[1, 2, 3, 4].map((t) => {
                     const closed = CLOSED_TRIMESTERS.includes(t);
                     const available = AVAILABLE_TRIMESTERS.includes(t);
-                    const active = selectedTrimester === t && available;
-                    const interactive = available;
+                    const selectable = available || closed;
+                    const active = selectedTrimester === t && selectable;
                     return (
                       <motion.button
                         key={t}
-                        whileHover={{ scale: interactive ? 1.05 : 1 }}
-                        whileTap={{ scale: interactive ? 0.95 : 1 }}
+                        whileHover={{ scale: selectable ? 1.05 : 1 }}
+                        whileTap={{ scale: selectable ? 0.95 : 1 }}
                         onClick={() => handleTrimesterClick(t)}
                         className={`py-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
                           active
                             ? "border-primary bg-primary/10 shadow-lg"
-                            : closed
-                            ? "border-muted bg-muted/40 opacity-50 grayscale"
-                            : available
+                            : selectable
                             ? "border-border bg-muted/50 hover:border-primary/40"
                             : "border-border bg-muted/30 opacity-60"
                         }`}
