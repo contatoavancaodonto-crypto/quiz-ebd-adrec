@@ -160,6 +160,9 @@ const ResultPage = () => {
           ))}
         </div>
 
+        {/* Badges conquistados */}
+        <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
+
         {/* Ranking da Igreja */}
         {churchTop.length > 0 && (
           <motion.div
