@@ -38,6 +38,9 @@ const Index = () => {
   const { setParticipant, setChurch } = useQuizStore();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
+  const { data: season } = useActiveSeason();
+  const seasonCountdown = useCountdown(season?.end_date);
+  const seasonExpired = !!season && seasonCountdown.expired;
 
   // Redireciona não-logados para /auth
   useEffect(() => {
@@ -66,6 +69,10 @@ const Index = () => {
     !AVAILABLE_TRIMESTERS.includes(selectedTrimester);
 
   const handleStart = async () => {
+    if (seasonExpired) {
+      toast.error("Este quiz foi encerrado. Aguarde a próxima temporada.");
+      return;
+    }
     if (QUIZ_CLOSED) {
       toast.error("⏰ Tempo esgotado! O quiz não aceita mais respostas.");
       return;
