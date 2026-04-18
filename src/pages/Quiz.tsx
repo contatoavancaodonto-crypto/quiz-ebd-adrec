@@ -52,6 +52,9 @@ const QuizPage = () => {
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
   const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
+  const { data: season } = useActiveSeason();
+  const seasonCountdown = useCountdown(season?.end_date);
+  const seasonExpired = !!season && seasonCountdown.expired;
 
   // 🔒 trava de finalização
   const finishingRef = useRef(false);
