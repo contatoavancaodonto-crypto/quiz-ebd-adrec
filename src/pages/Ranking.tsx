@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe } from "lucide-react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe, Radio } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatTimeMs } from "@/hooks/useTimer";
+import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
@@ -23,6 +24,7 @@ const medalColors = [
 ];
 
 interface RankEntry {
+  attempt_id?: string;
   position: number;
   participant_name: string;
   class_id?: string | null;
@@ -86,7 +88,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("*")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -98,7 +100,9 @@ const RankingPage = () => {
     },
   });
 
-  // Filtra por turma e re-numera as posições
+  // 🔴 Realtime: revalida ranking quando alguém finalizar
+  useRealtimeRanking(["ranking", trimester, scope, selectedChurchId]);
+
   const ranking = useMemo(() => {
     if (!rawData) return [];
     const filtered = selectedClassId
@@ -135,6 +139,13 @@ const RankingPage = () => {
           <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
           <p className="text-xs text-muted-foreground mt-1">{trimester}º Trimestre</p>
+          <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Ao vivo</span>
+          </div>
         </motion.div>
 
         {/* 1. Trimester */}
@@ -255,52 +266,64 @@ const RankingPage = () => {
             Nenhum resultado para esses filtros.
           </div>
         ) : (
-          <div className="space-y-2">
-            {ranking.map((entry, i) => (
-              <motion.div
-                key={`${entry.participant_name}-${entry.position}-${i}`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className={`glass-card p-4 flex items-center gap-3 ${i < 3 ? "glow-border" : ""}`}
-              >
-                {i < 3 ? (
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0`}>
-                    <Medal className="w-5 h-5 text-foreground" />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
-                  </div>
-                )}
+          <LayoutGroup>
+            <motion.div layout className="space-y-2">
+              <AnimatePresence initial={false}>
+                {ranking.map((entry, i) => {
+                  const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}`;
+                  return (
+                    <motion.div
+                      key={stableKey}
+                      layout
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{
+                        layout: { type: "spring", stiffness: 350, damping: 30 },
+                        opacity: { duration: 0.2 },
+                      }}
+                      className={`glass-card p-4 flex items-center gap-3 ${i < 3 ? "glow-border" : ""}`}
+                    >
+                      {i < 3 ? (
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0`}>
+                          <Medal className="w-5 h-5 text-foreground" />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                          <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
+                        </div>
+                      )}
 
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground truncate flex items-center gap-2">
-                    {entry.participant_name}
-                    {entry.is_retry && (
-                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
-                        2ª tentativa
-                      </span>
-                    )}
-                  </div>
-                  {entry.church_name && (
-                    <div className="text-[11px] text-muted-foreground/70 truncate">{entry.church_name}</div>
-                  )}
-                  {!selectedClassId && (
-                    <div className="text-xs text-muted-foreground">{entry.class_name}</div>
-                  )}
-                </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-foreground truncate flex items-center gap-2">
+                          {entry.participant_name}
+                          {entry.is_retry && (
+                            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
+                              2ª tentativa
+                            </span>
+                          )}
+                        </div>
+                        {entry.church_name && (
+                          <div className="text-[11px] text-muted-foreground/70 truncate">{entry.church_name}</div>
+                        )}
+                        {!selectedClassId && (
+                          <div className="text-xs text-muted-foreground">{entry.class_name}</div>
+                        )}
+                      </div>
 
-                <div className="text-right shrink-0">
-                  <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
-                    <Clock className="w-3 h-3" />
-                    {formatRankingTime(entry)}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
+                          <Clock className="w-3 h-3" />
+                          {formatRankingTime(entry)}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          </LayoutGroup>
         )}
       </div>
     </div>
