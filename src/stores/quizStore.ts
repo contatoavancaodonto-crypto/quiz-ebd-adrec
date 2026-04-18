@@ -4,6 +4,7 @@ export interface QuizState {
   participantName: string;
   classId: string;
   className: string;
+  trimester: number;
   quizId: string;
   participantId: string;
   attemptId: string;
@@ -14,7 +15,7 @@ export interface QuizState {
   totalTimeSeconds: number;
   hasRetried: boolean;
   isRetrying: boolean;
-  setParticipant: (name: string, classId: string, className: string) => void;
+  setParticipant: (name: string, classId: string, className: string, trimester: number) => void;
   setQuizId: (id: string) => void;
   setParticipantId: (id: string) => void;
   setAttemptId: (id: string) => void;
@@ -30,6 +31,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   participantName: "",
   classId: "",
   className: "",
+  trimester: 1,
   quizId: "",
   participantId: "",
   attemptId: "",
@@ -40,7 +42,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   totalTimeSeconds: 0,
   hasRetried: false,
   isRetrying: false,
-  setParticipant: (name, classId, className) => set({ participantName: name, classId, className }),
+  setParticipant: (name, classId, className, trimester) =>
+    set({ participantName: name, classId, className, trimester }),
   setQuizId: (id) => set({ quizId: id }),
   setParticipantId: (id) => set({ participantId: id }),
   setAttemptId: (id) => set({ attemptId: id }),
@@ -69,6 +72,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       participantName: "",
       classId: "",
       className: "",
+      trimester: 1,
       quizId: "",
       participantId: "",
       attemptId: "",
