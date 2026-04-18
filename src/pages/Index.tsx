@@ -43,16 +43,16 @@ const Index = () => {
   });
 
   const handleTrimesterClick = (trimester: number) => {
-    if (CLOSED_TRIMESTERS.includes(trimester)) {
-      toast.info(`🔒 ${trimester}º Trimestre encerrado. Veja o ranking final!`);
-      return;
-    }
-    if (!AVAILABLE_TRIMESTERS.includes(trimester)) {
+    if (!AVAILABLE_TRIMESTERS.includes(trimester) && !CLOSED_TRIMESTERS.includes(trimester)) {
       toast.info(`📅 ${trimester}º Trimestre - Disponível em breve!`);
       return;
     }
     setSelectedTrimester(trimester);
   };
+
+  const isQuizDisabled =
+    CLOSED_TRIMESTERS.includes(selectedTrimester) ||
+    !AVAILABLE_TRIMESTERS.includes(selectedTrimester);
 
   const handleStart = async () => {
     if (QUIZ_CLOSED) {
@@ -65,6 +65,10 @@ const Index = () => {
     }
     if (!selectedClass) {
       toast.error("Por favor, selecione uma turma.");
+      return;
+    }
+    if (CLOSED_TRIMESTERS.includes(selectedTrimester)) {
+      toast.info(`🔒 ${selectedTrimester}º Trimestre encerrado. Confira o ranking final!`);
       return;
     }
     if (!AVAILABLE_TRIMESTERS.includes(selectedTrimester)) {
