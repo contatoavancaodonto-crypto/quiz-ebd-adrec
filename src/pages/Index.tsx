@@ -223,14 +223,23 @@ const Index = () => {
 
               {/* Start button */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isQuizDisabled ? 1 : 1.02 }}
+                whileTap={{ scale: isQuizDisabled ? 1 : 0.98 }}
                 onClick={handleStart}
-                disabled={loading}
-                className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-semibold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 cursor-pointer"
+                disabled={loading || isQuizDisabled}
+                className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-lg transition-shadow disabled:opacity-60 disabled:cursor-not-allowed ${
+                  isQuizDisabled
+                    ? "bg-muted text-muted-foreground"
+                    : "gradient-primary text-primary-foreground hover:shadow-xl cursor-pointer"
+                }`}
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                ) : isQuizDisabled ? (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    {selectedTrimester}º Tri. Encerrado
+                  </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
