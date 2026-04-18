@@ -170,7 +170,7 @@ const Auth = () => {
 
   const pwdStrength = passwordStrength(password);
   const signupValid =
-    firstName && lastName && phone.length >= 14 && password.length >= 8 &&
+    firstName && lastName && area && church && phone.length >= 14 && password.length >= 8 &&
     password === confirmPassword && acceptTerms && acceptUpdates;
 
   return (
