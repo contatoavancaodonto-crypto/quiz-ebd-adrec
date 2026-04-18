@@ -9,6 +9,10 @@ import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { QuizCountdown } from "@/components/QuizCountdown";
 import { EvaluationBreak } from "@/components/EvaluationBreak";
+import { SeasonCountdown } from "@/components/SeasonCountdown";
+import { SeasonClosedScreen } from "@/components/SeasonClosedScreen";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
+import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "sonner";
 
 interface Question {
