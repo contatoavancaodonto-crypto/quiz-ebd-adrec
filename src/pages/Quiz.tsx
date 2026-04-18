@@ -242,6 +242,10 @@ const QuizPage = () => {
     return () => clearTimeout(timer);
   }, [confirmed, handleNext, isLast]);
 
+  if (seasonExpired) {
+    return <SeasonClosedScreen />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -265,10 +269,11 @@ const QuizPage = () => {
       <ThemeToggle />
 
       <div className="max-w-xl mx-auto w-full pt-2">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2">
           <img src={churchLogo} className="w-10 h-10" />
+          <SeasonCountdown variant="compact" />
           <span className="text-sm">
-            Pergunta {store.currentQuestionIndex + 1} de {questions.length}
+            {store.currentQuestionIndex + 1}/{questions.length}
           </span>
         </div>
 
