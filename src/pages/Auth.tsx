@@ -246,7 +246,7 @@ const Auth = () => {
                     {[0, 1, 2].map((i) => (
                       <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
                         i < pwdStrength.score
-                          ? pwdStrength.score === 1 ? "bg-destructive" : pwdStrength.score === 2 ? "bg-yellow-500" : "bg-green-500"
+                          ? pwdStrength.score === 1 ? "bg-destructive" : pwdStrength.score === 2 ? "bg-primary/70" : "bg-primary"
                           : "bg-muted"
                       }`} />
                     ))}
@@ -294,7 +294,7 @@ const Field = ({ label, value, onChange, placeholder, error, success, type = "te
         }`}
       />
       {success && !error && (
-        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
       )}
     </div>
     {error && <p className="text-xs text-destructive mt-1">{error}</p>}
@@ -320,7 +320,7 @@ const PasswordField = ({ label, value, onChange, show, toggle, error, success }:
         {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </button>
       {success && !error && (
-        <Check className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+        <Check className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
       )}
     </div>
     {error && <p className="text-xs text-destructive mt-1">{error}</p>}
