@@ -9,6 +9,9 @@ import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SeasonCountdown } from "@/components/SeasonCountdown";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
+import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
@@ -35,6 +38,9 @@ const Index = () => {
   const { setParticipant, setChurch } = useQuizStore();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
+  const { data: season } = useActiveSeason();
+  const seasonCountdown = useCountdown(season?.end_date);
+  const seasonExpired = !!season && seasonCountdown.expired;
 
   // Redireciona não-logados para /auth
   useEffect(() => {
@@ -63,6 +69,10 @@ const Index = () => {
     !AVAILABLE_TRIMESTERS.includes(selectedTrimester);
 
   const handleStart = async () => {
+    if (seasonExpired) {
+      toast.error("Este quiz foi encerrado. Aguarde a próxima temporada.");
+      return;
+    }
     if (QUIZ_CLOSED) {
       toast.error("⏰ Tempo esgotado! O quiz não aceita mais respostas.");
       return;
@@ -165,21 +175,30 @@ const Index = () => {
           </div>
         )}
 
-        {/* Card */}
+        {/* Season countdown */}
+        <div className="mb-4">
+          <SeasonCountdown />
+        </div>
+
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="glass-card glow-border p-6 space-y-5"
         >
-          {QUIZ_CLOSED ? (
+          {QUIZ_CLOSED || seasonExpired ? (
             <div className="text-center space-y-4 py-4">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-2">
                 <Lock className="w-8 h-8 text-destructive" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">Tempo Esgotado!</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                {seasonExpired ? "Quiz encerrado" : "Tempo Esgotado!"}
+              </h2>
               <p className="text-muted-foreground text-sm">
-                O período para responder o quiz foi encerrado. Confira o ranking abaixo para ver os resultados!
+                {seasonExpired
+                  ? "Este quiz foi encerrado. Aguarde a próxima temporada."
+                  : "O período para responder o quiz foi encerrado. Confira o ranking abaixo para ver os resultados!"}
               </p>
             </div>
           ) : (

@@ -9,6 +9,10 @@ import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { QuizCountdown } from "@/components/QuizCountdown";
 import { EvaluationBreak } from "@/components/EvaluationBreak";
+import { SeasonCountdown } from "@/components/SeasonCountdown";
+import { SeasonClosedScreen } from "@/components/SeasonClosedScreen";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
+import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "sonner";
 
 interface Question {
@@ -48,6 +52,9 @@ const QuizPage = () => {
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
   const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
+  const { data: season } = useActiveSeason();
+  const seasonCountdown = useCountdown(season?.end_date);
+  const seasonExpired = !!season && seasonCountdown.expired;
 
   // 🔒 trava de finalização
   const finishingRef = useRef(false);
@@ -235,6 +242,10 @@ const QuizPage = () => {
     return () => clearTimeout(timer);
   }, [confirmed, handleNext, isLast]);
 
+  if (seasonExpired) {
+    return <SeasonClosedScreen />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -258,10 +269,11 @@ const QuizPage = () => {
       <ThemeToggle />
 
       <div className="max-w-xl mx-auto w-full pt-2">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2">
           <img src={churchLogo} className="w-10 h-10" />
+          <SeasonCountdown variant="compact" />
           <span className="text-sm">
-            Pergunta {store.currentQuestionIndex + 1} de {questions.length}
+            {store.currentQuestionIndex + 1}/{questions.length}
           </span>
         </div>
 
