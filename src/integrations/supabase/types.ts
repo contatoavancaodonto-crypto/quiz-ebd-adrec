@@ -70,6 +70,39 @@ export type Database = {
           },
         ]
       }
+      churches: {
+        Row: {
+          approved: boolean
+          created_at: string
+          id: string
+          name: string
+          requested: boolean
+          requester_area: number | null
+          requester_pastor_name: string | null
+          requester_phone: string | null
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          requested?: boolean
+          requester_area?: number | null
+          requester_pastor_name?: string | null
+          requester_phone?: string | null
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          requested?: boolean
+          requester_area?: number | null
+          requester_pastor_name?: string | null
+          requester_phone?: string | null
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           created_at: string
@@ -133,6 +166,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          area: number | null
+          church_id: string | null
           class_id: string | null
           created_at: string
           email: string | null
@@ -143,6 +178,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          area?: number | null
+          church_id?: string | null
           class_id?: string | null
           created_at?: string
           email?: string | null
@@ -153,6 +190,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          area?: number | null
+          church_id?: string | null
           class_id?: string | null
           created_at?: string
           email?: string | null
@@ -163,6 +202,27 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["church_id"]
+          },
           {
             foreignKeyName: "profiles_class_id_fkey"
             columns: ["class_id"]
@@ -247,6 +307,7 @@ export type Database = {
           score: number
           started_at: string
           total_questions: number
+          total_time_ms: number
           total_time_seconds: number
         }
         Insert: {
@@ -259,6 +320,7 @@ export type Database = {
           score?: number
           started_at?: string
           total_questions?: number
+          total_time_ms?: number
           total_time_seconds?: number
         }
         Update: {
@@ -271,6 +333,7 @@ export type Database = {
           score?: number
           started_at?: string
           total_questions?: number
+          total_time_ms?: number
           total_time_seconds?: number
         }
         Relationships: [
@@ -391,6 +454,8 @@ export type Database = {
         Row: {
           accuracy_percentage: number | null
           attempt_id: string | null
+          church_id: string | null
+          church_name: string | null
           class_id: string | null
           class_name: string | null
           finished_at: string | null
@@ -398,6 +463,7 @@ export type Database = {
           participant_name: string | null
           position: number | null
           score: number | null
+          total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
         }
@@ -407,6 +473,8 @@ export type Database = {
         Row: {
           accuracy_percentage: number | null
           attempt_id: string | null
+          church_id: string | null
+          church_name: string | null
           class_id: string | null
           class_name: string | null
           finished_at: string | null
@@ -414,6 +482,7 @@ export type Database = {
           participant_name: string | null
           position: number | null
           score: number | null
+          total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
         }
