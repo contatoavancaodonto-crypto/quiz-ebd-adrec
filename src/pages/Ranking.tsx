@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, ArrowLeft, Medal } from "lucide-react";
+import { Clock, ArrowLeft, Medal, Calendar } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -30,8 +30,18 @@ interface RankEntry {
 const RankingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const state = location.state as { classId?: string; className?: string } | null;
   const [tab, setTab] = useState<"class" | "general">(state?.classId ? "class" : "general");
+  const trimesterParam = parseInt(searchParams.get("trimester") || "1", 10);
+  const [trimester, setTrimester] = useState<number>(
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
+  );
+
+  const handleTrimesterChange = (t: number) => {
+    setTrimester(t);
+    setSearchParams({ trimester: String(t) });
+  };
 
   const { data: classes } = useQuery({
     queryKey: ["classes-list"],
@@ -44,13 +54,14 @@ const RankingPage = () => {
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
 
   const { data: classRanking, isLoading: loadingClass } = useQuery({
-    queryKey: ["ranking-class", selectedClassId],
+    queryKey: ["ranking-class", selectedClassId, trimester],
     enabled: tab === "class" && !!selectedClassId,
     queryFn: async () => {
       const { data } = await supabase
         .from("ranking_by_class")
         .select("*")
         .eq("class_id", selectedClassId)
+        .eq("trimester", trimester)
         .order("position")
         .limit(50);
       return (data as RankEntry[]) || [];
@@ -58,12 +69,13 @@ const RankingPage = () => {
   });
 
   const { data: generalRanking, isLoading: loadingGeneral } = useQuery({
-    queryKey: ["ranking-general"],
+    queryKey: ["ranking-general", trimester],
     enabled: tab === "general",
     queryFn: async () => {
       const { data } = await supabase
         .from("ranking_general")
         .select("*")
+        .eq("trimester", trimester)
         .order("position")
         .limit(50);
       return (data as RankEntry[]) || [];
@@ -95,7 +107,26 @@ const RankingPage = () => {
         >
           <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
+          <p className="text-xs text-muted-foreground mt-1">{trimester}º Trimestre</p>
         </motion.div>
+
+        {/* Trimester selector */}
+        <div className="flex gap-2 mb-3">
+          {[1, 2, 3, 4].map((t) => (
+            <button
+              key={t}
+              onClick={() => handleTrimesterChange(t)}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                trimester === t
+                  ? "gradient-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Calendar className="w-3 h-3" />
+              {t}º Tri.
+            </button>
+          ))}
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-4">

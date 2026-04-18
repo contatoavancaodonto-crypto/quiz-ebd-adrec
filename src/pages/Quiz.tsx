@@ -78,9 +78,15 @@ const QuizPage = () => {
             .select("id")
             .eq("class_id", store.classId)
             .eq("active", true)
+            .eq("trimester", store.trimester)
             .limit(1)
-            .single();
+            .maybeSingle();
           if (qErr) throw qErr;
+          if (!quiz) {
+            toast.info(`📅 Quiz do ${store.trimester}º trimestre ainda não está disponível para esta classe.`);
+            navigate("/");
+            return;
+          }
           store.setQuizId(quiz.id);
           quizId = quiz.id;
         }

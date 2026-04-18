@@ -243,6 +243,7 @@ export type Database = {
           id: string
           title: string
           total_questions: number
+          trimester: number
         }
         Insert: {
           active?: boolean
@@ -251,6 +252,7 @@ export type Database = {
           id?: string
           title: string
           total_questions?: number
+          trimester?: number
         }
         Update: {
           active?: boolean
@@ -259,6 +261,7 @@ export type Database = {
           id?: string
           title?: string
           total_questions?: number
+          trimester?: number
         }
         Relationships: [
           {
@@ -341,6 +344,7 @@ export type Database = {
           position: number | null
           score: number | null
           total_time_seconds: number | null
+          trimester: number | null
         }
         Relationships: []
       }
@@ -356,6 +360,7 @@ export type Database = {
           position: number | null
           score: number | null
           total_time_seconds: number | null
+          trimester: number | null
         }
         Relationships: []
       }
