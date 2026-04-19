@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
+import revistaAdultos from "@/assets/revista-adultos.png";
 
 type RevistaItem = {
   id: string;
@@ -18,13 +19,13 @@ type RevistaItem = {
 const ALUNOS: RevistaItem[] = [
   { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno" },
   { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
-  { id: "adultos-aluno", title: "Adultos", subtitle: "Revista do Aluno", cover: revistaJovens },
+  { id: "adultos-aluno", title: "Adultos", subtitle: "Revista do Aluno", cover: revistaAdultos },
 ];
 
 const PROFESSORES: RevistaItem[] = [
   { id: "adolescentes-prof", title: "Adolescentes", subtitle: "Revista do Professor" },
   { id: "jovens-prof", title: "Jovens", subtitle: "Revista do Professor", cover: revistaJovens },
-  { id: "adultos-prof", title: "Adultos", subtitle: "Revista do Professor", cover: revistaJovens },
+  { id: "adultos-prof", title: "Adultos", subtitle: "Revista do Professor", cover: revistaAdultos },
 ];
 
 function RevistaCard({ item }: { item: RevistaItem }) {
