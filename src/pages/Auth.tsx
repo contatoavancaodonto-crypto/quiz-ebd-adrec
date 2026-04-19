@@ -128,6 +128,7 @@ const Auth = () => {
       return;
     }
     setSubmitting(true);
+    localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
     const isEmail = detectIdentifier(identifier) === "email";
     const { error } = isEmail
       ? await supabase.auth.signInWithPassword({ email: identifier.trim(), password: loginPwd })
