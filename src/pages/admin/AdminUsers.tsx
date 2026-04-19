@@ -41,6 +41,12 @@ export default function AdminUsers() {
 
   useEffect(() => {
     load();
+    const channel = supabase
+      .channel("admin-users-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const toggleAdmin = async (row: ProfileRow) => {

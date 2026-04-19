@@ -77,6 +77,16 @@ export function ClassMaterialsManager() {
     },
   });
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("materials-classes-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "classes" }, () => {
+        qc.invalidateQueries({ queryKey: ["all-classes"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
   const { data: materials, refetch } = useQuery({
     queryKey: ["class-materials-admin"],
     queryFn: async () => {
