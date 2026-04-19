@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload, Loader2, Trash2, FileText, Download, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,10 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/useRoles";
 
 export function ClassMaterialsManager() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
 
   const [classId, setClassId] = useState("");
   const [trimester, setTrimester] = useState("1");
@@ -28,6 +30,20 @@ export function ClassMaterialsManager() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
+
+  // IDs de turmas permitidas para o admin de igreja (turmas com pelo menos 1 membro da igreja).
+  const { data: allowedClassIds } = useQuery({
+    queryKey: ["allowed-class-ids", churchId, isSuperadmin],
+    enabled: !rolesLoading && !isSuperadmin && !!churchId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("class_id")
+        .eq("church_id", churchId!)
+        .not("class_id", "is", null);
+      return Array.from(new Set((data ?? []).map((p: any) => p.class_id as string)));
+    },
+  });
 
   const handleNotifyAll = async (m: any) => {
     if (
