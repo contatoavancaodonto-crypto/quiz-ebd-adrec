@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,14 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Trash2, Search } from "lucide-react";
+import { useRoles } from "@/hooks/useRoles";
 
 interface Attempt {
-  id: string; score: number; total_questions: number; total_time_seconds: number;
-  finished_at: string | null; participants: { name: string; class_id: string } | null;
+  id: string;
+  score: number;
+  total_questions: number;
+  total_time_seconds: number;
+  finished_at: string | null;
+  participants: { name: string; class_id: string } | null;
 }
 
+const norm = (s: string | null | undefined) =>
+  (s ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+
 export default function AdminAttempts() {
+  const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
   const [rows, setRows] = useState<Attempt[]>([]);
+  const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
 
@@ -21,27 +31,62 @@ export default function AdminAttempts() {
     setLoading(true);
     const { data } = await supabase
       .from("quiz_attempts")
-      .select("id, score, total_questions, total_time_seconds, finished_at, participants(name, class_id)")
+      .select(
+        "id, score, total_questions, total_time_seconds, finished_at, participants(name, class_id)"
+      )
       .order("finished_at", { ascending: false, nullsFirst: false })
       .limit(500);
-    setRows((data as any) ?? []); setLoading(false);
+    setRows((data as any) ?? []);
+
+    if (!isSuperadmin && churchId) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("church_id", churchId);
+      const set = new Set(
+        (profs ?? []).map((p: any) =>
+          norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`)
+        )
+      );
+      setAllowedNames(set);
+    } else {
+      setAllowedNames(null);
+    }
+    setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (rolesLoading) return;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolesLoading, isSuperadmin, churchId]);
 
   const remove = async (id: string) => {
     if (!confirm("Excluir esta tentativa? Essa ação é permanente.")) return;
     const { error } = await supabase.from("quiz_attempts").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Removida"); load();
+    toast.success("Removida");
+    load();
   };
 
-  const filtered = rows.filter((r) => (r.participants?.name ?? "").toLowerCase().includes(q.toLowerCase()));
+  const filtered = useMemo(() => {
+    let list = rows;
+    if (allowedNames) {
+      list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
+    }
+    if (q) list = list.filter((r) => (r.participants?.name ?? "").toLowerCase().includes(q.toLowerCase()));
+    return list;
+  }, [rows, allowedNames, q]);
 
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Tentativas</h2>
-        <p className="text-sm text-muted-foreground">Últimas 500 tentativas · exclusão permanente</p>
+        <p className="text-sm text-muted-foreground">
+          {isSuperadmin
+            ? "Últimas 500 tentativas · exclusão permanente"
+            : "Tentativas dos membros da sua igreja · exclusão permanente"}
+        </p>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -58,6 +103,8 @@ export default function AdminAttempts() {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhuma tentativa.</TableCell></TableRow>
             ) : filtered.map((a) => (
               <TableRow key={a.id}>
                 <TableCell className="font-medium">{a.participants?.name ?? "—"}</TableCell>
