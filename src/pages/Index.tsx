@@ -181,6 +181,13 @@ const Index = () => {
           <SeasonCountdown />
         </div>
 
+        {/* Smart Feed */}
+        <div className="mb-4">
+          <SmartFeed
+            onStartQuiz={handleStart}
+            quizDisabled={isQuizDisabled || loading || seasonExpired}
+          />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
