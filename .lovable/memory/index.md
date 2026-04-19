@@ -17,6 +17,7 @@
 - [Classes and Questions](mem://content/classes-and-questions) — Hardcoded class names, emojis, and availability
 - [n8n Webhooks](mem://integrations/n8n-webhooks) — Three specific webhook triggers for data integration
 - [Admin Dashboard](mem://features/admin-dashboard) — Hidden route /painel-ebd-2025 for analytics
+- [Roles & Superadmin](mem://features/roles-superadmin) — Two-tier roles: superadmin (global) + admin (church-scoped via user_roles.church_id)
 - [Quiz Status Lockout](mem://features/quiz-status-lockout) — Global QUIZ_CLOSED toggle behavior
 - [Seasons & Countdown](mem://features/seasons) — Tabela seasons, countdown global, lockout automático ao expirar
 - [Badges System](mem://features/badges) — 4 badges automáticos via trigger ao finalizar quiz, transferíveis dentro da temporada

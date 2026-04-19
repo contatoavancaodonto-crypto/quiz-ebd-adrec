@@ -5,8 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown } from "lucide-react";
+import { useRoles } from "@/hooks/useRoles";
+import { Navigate } from "react-router-dom";
 
 interface ProfileRow {
   id: string;
@@ -14,28 +31,62 @@ interface ProfileRow {
   last_name: string | null;
   email: string | null;
   phone: string | null;
-  is_admin: boolean;
+  profile_church_id: string | null;
+  role: "superadmin" | "admin" | null;
+  role_church_id: string | null;
+}
+
+interface ChurchOpt {
+  id: string;
+  name: string;
 }
 
 export default function AdminUsers() {
+  const { isSuperadmin, loading: rolesLoading } = useRoles();
   const [rows, setRows] = useState<ProfileRow[]>([]);
+  const [churches, setChurches] = useState<ChurchOpt[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
 
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [target, setTarget] = useState<ProfileRow | null>(null);
+  const [newRole, setNewRole] = useState<"admin" | "superadmin">("admin");
+  const [newChurchId, setNewChurchId] = useState<string>("");
+
   const load = async () => {
     setLoading(true);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name, email, phone")
-      .order("created_at", { ascending: false });
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "admin");
-    const adminIds = new Set((roles ?? []).map((r) => r.user_id));
+    const [profilesRes, rolesRes, churchesRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email, phone, church_id")
+        .order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id, role, church_id"),
+      supabase.from("churches").select("id, name").eq("active", true).order("name"),
+    ]);
+    const rolesByUser = new Map<string, { role: any; church_id: string | null }>();
+    (rolesRes.data ?? []).forEach((r: any) => {
+      // superadmin tem prioridade na exibição
+      const existing = rolesByUser.get(r.user_id);
+      if (!existing || r.role === "superadmin") {
+        rolesByUser.set(r.user_id, { role: r.role, church_id: r.church_id });
+      }
+    });
     setRows(
-      (profiles ?? []).map((p) => ({ ...p, is_admin: adminIds.has(p.id) }))
+      (profilesRes.data ?? []).map((p: any) => {
+        const r = rolesByUser.get(p.id);
+        return {
+          id: p.id,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          email: p.email,
+          phone: p.phone,
+          profile_church_id: p.church_id,
+          role: r?.role ?? null,
+          role_church_id: r?.church_id ?? null,
+        };
+      })
     );
+    setChurches(churchesRes.data ?? []);
     setLoading(false);
   };
 
@@ -45,28 +96,52 @@ export default function AdminUsers() {
       .channel("admin-users-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "churches" }, () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const toggleAdmin = async (row: ProfileRow) => {
-    if (row.is_admin) {
-      const { error } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", row.id)
-        .eq("role", "admin");
-      if (error) return toast.error("Falha ao remover admin: " + error.message);
-      toast.success("Admin removido");
-    } else {
-      const { error } = await supabase
-        .from("user_roles")
-        .insert({ user_id: row.id, role: "admin" });
-      if (error) return toast.error("Falha ao promover: " + error.message);
-      toast.success("Promovido a admin");
+  if (rolesLoading) return null;
+  if (!isSuperadmin) return <Navigate to="/painel-ebd-2025" replace />;
+
+  const openPromote = (row: ProfileRow) => {
+    setTarget(row);
+    setNewRole("admin");
+    setNewChurchId(row.profile_church_id ?? "");
+    setPromoteOpen(true);
+  };
+
+  const confirmPromote = async () => {
+    if (!target) return;
+    if (newRole === "admin" && !newChurchId) {
+      toast.error("Selecione a igreja para o admin");
+      return;
     }
+    // remove papéis anteriores do usuário antes de gravar
+    await supabase.from("user_roles").delete().eq("user_id", target.id);
+    const { error } = await supabase.from("user_roles").insert({
+      user_id: target.id,
+      role: newRole,
+      church_id: newRole === "superadmin" ? null : newChurchId,
+    });
+    if (error) return toast.error("Falha ao promover: " + error.message);
+    toast.success(newRole === "superadmin" ? "Promovido a Superadmin" : "Promovido a Admin de Igreja");
+    setPromoteOpen(false);
+    setTarget(null);
     load();
   };
+
+  const removeRole = async (row: ProfileRow) => {
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", row.id);
+    if (error) return toast.error("Falha ao remover: " + error.message);
+    toast.success("Papel removido");
+    load();
+  };
+
+  const churchName = (id: string | null) =>
+    id ? churches.find((c) => c.id === id)?.name ?? "—" : "—";
 
   const filtered = rows.filter((r) => {
     const t = `${r.first_name ?? ""} ${r.last_name ?? ""} ${r.email ?? ""}`.toLowerCase();
@@ -77,7 +152,9 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Usuários & Roles</h2>
-        <p className="text-sm text-muted-foreground">Promover ou remover administradores</p>
+        <p className="text-sm text-muted-foreground">
+          Promover Admins de Igreja ou Superadmins. Apenas o Superadmin acessa esta tela.
+        </p>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -94,8 +171,8 @@ export default function AdminUsers() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>Papel</TableHead>
+              <TableHead>Igreja vinculada</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -119,29 +196,30 @@ export default function AdminUsers() {
                     {r.first_name} {r.last_name}
                   </TableCell>
                   <TableCell>{r.email}</TableCell>
-                  <TableCell>{r.phone}</TableCell>
                   <TableCell>
-                    {r.is_admin ? (
-                      <Badge>Admin</Badge>
+                    {r.role === "superadmin" ? (
+                      <Badge className="bg-primary text-primary-foreground">
+                        <Crown className="w-3 h-3 mr-1" />
+                        Superadmin
+                      </Badge>
+                    ) : r.role === "admin" ? (
+                      <Badge>Admin Igreja</Badge>
                     ) : (
                       <Badge variant="secondary">User</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant={r.is_admin ? "outline" : "default"}
-                      onClick={() => toggleAdmin(r)}
-                    >
-                      {r.is_admin ? (
-                        <>
-                          <ShieldOff className="w-4 h-4 mr-1" /> Remover Admin
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="w-4 h-4 mr-1" /> Promover
-                        </>
-                      )}
+                  <TableCell>
+                    {r.role === "admin" ? churchName(r.role_church_id) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right space-x-2">
+                    {r.role ? (
+                      <Button size="sm" variant="outline" onClick={() => removeRole(r)}>
+                        <ShieldOff className="w-4 h-4 mr-1" /> Remover
+                      </Button>
+                    ) : null}
+                    <Button size="sm" onClick={() => openPromote(r)}>
+                      <Shield className="w-4 h-4 mr-1" />
+                      {r.role ? "Alterar" : "Promover"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -150,6 +228,54 @@ export default function AdminUsers() {
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={promoteOpen} onOpenChange={setPromoteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Definir papel</DialogTitle>
+            <DialogDescription>
+              {target ? `${target.first_name} ${target.last_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm text-muted-foreground">Papel</label>
+              <Select value={newRole} onValueChange={(v: any) => setNewRole(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin de Igreja</SelectItem>
+                  <SelectItem value="superadmin">Superadmin (acesso total)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newRole === "admin" && (
+              <div>
+                <label className="text-sm text-muted-foreground">Igreja vinculada</label>
+                <Select value={newChurchId} onValueChange={setNewChurchId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma igreja" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {churches.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPromoteOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmPromote}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

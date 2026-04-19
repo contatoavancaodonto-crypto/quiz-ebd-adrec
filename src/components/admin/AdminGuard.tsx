@@ -1,31 +1,26 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useRoles } from "@/hooks/useRoles";
 import { Loader2 } from "lucide-react";
 
 export function AdminGuard({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: rolesLoading } = useRoles();
   const navigate = useNavigate();
-  const [checking, setChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    if (authLoading) return;
     if (!user) {
       navigate("/auth", { replace: true });
       return;
     }
-    supabase
-      .rpc("has_role", { _user_id: user.id, _role: "admin" })
-      .then(({ data }) => {
-        setIsAdmin(!!data);
-        setChecking(false);
-        if (!data) navigate("/", { replace: true });
-      });
-  }, [user, loading, navigate]);
+    if (!rolesLoading && !isAdmin) {
+      navigate("/", { replace: true });
+    }
+  }, [user, authLoading, rolesLoading, isAdmin, navigate]);
 
-  if (loading || checking) {
+  if (authLoading || rolesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

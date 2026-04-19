@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield } from "lucide-react";
 import {
   Sidebar,
@@ -14,9 +13,9 @@ import {
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
@@ -31,33 +30,9 @@ const items = [
 export function MemberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    const check = () => {
-      supabase
-        .rpc("has_role", { _user_id: user.id, _role: "admin" })
-        .then(({ data }) => setIsAdmin(!!data));
-    };
-    check();
-    const channel = supabase
-      .channel(`user-role-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` },
-        () => check()
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+  const { isAdmin } = useRoles();
 
   const handleLogout = async () => {
     await signOut();
