@@ -41,6 +41,7 @@ const App = () => (
     <TooltipProvider>
       <Sonner />
       <BrowserRouter>
+        <KeepLoggedInGuard />
         <ProfileGate />
         <Routes>
           <Route path="/auth" element={<Auth />} />
