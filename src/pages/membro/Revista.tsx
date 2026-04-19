@@ -42,11 +42,21 @@ function RevistaCard({ item }: { item: RevistaItem }) {
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-      <div className="aspect-[3/4] bg-muted flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-[3/4] bg-muted flex items-center justify-center overflow-hidden">
         {item.cover ? (
-          <img src={item.cover} alt={`Capa ${item.title} – ${item.subtitle}`} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={item.cover}
+            alt={`Capa ${item.title} – ${item.subtitle}`}
+            className={`w-full h-full object-cover ${item.unavailable ? "grayscale opacity-60" : ""}`}
+            loading="lazy"
+          />
         ) : (
           <BookOpen className="h-16 w-16 text-muted-foreground/40" />
+        )}
+        {item.unavailable && (
+          <Badge variant="secondary" className="absolute top-2 right-2 gap-1">
+            <Lock className="h-3 w-3" /> Indisponível
+          </Badge>
         )}
       </div>
       <CardContent className="p-4 space-y-3">
@@ -54,8 +64,18 @@ function RevistaCard({ item }: { item: RevistaItem }) {
           <h3 className="font-semibold text-base leading-tight">{item.title}</h3>
           <p className="text-xs text-muted-foreground">{item.subtitle}</p>
         </div>
-        <Button onClick={handleDownload} size="sm" className="w-full">
-          <Download /> Baixar PDF
+        <Button
+          onClick={handleDownload}
+          size="sm"
+          className="w-full"
+          variant={item.unavailable ? "secondary" : "default"}
+          disabled={item.unavailable}
+        >
+          {item.unavailable ? (
+            <><Lock /> Indisponível</>
+          ) : (
+            <><Download /> Baixar PDF</>
+          )}
         </Button>
       </CardContent>
     </Card>
