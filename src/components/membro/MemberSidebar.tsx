@@ -1,4 +1,5 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +16,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
