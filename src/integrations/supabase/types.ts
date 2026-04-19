@@ -72,6 +72,7 @@ export type Database = {
       }
       badges: {
         Row: {
+          active: boolean
           code: string
           created_at: string
           description: string
@@ -81,6 +82,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          active?: boolean
           code: string
           created_at?: string
           description: string
@@ -90,6 +92,7 @@ export type Database = {
           type: string
         }
         Update: {
+          active?: boolean
           code?: string
           created_at?: string
           description?: string
@@ -102,6 +105,7 @@ export type Database = {
       }
       churches: {
         Row: {
+          active: boolean
           approved: boolean
           created_at: string
           id: string
@@ -112,6 +116,7 @@ export type Database = {
           requester_phone: string | null
         }
         Insert: {
+          active?: boolean
           approved?: boolean
           created_at?: string
           id?: string
@@ -122,6 +127,7 @@ export type Database = {
           requester_phone?: string | null
         }
         Update: {
+          active?: boolean
           approved?: boolean
           created_at?: string
           id?: string
@@ -196,16 +202,19 @@ export type Database = {
       }
       classes: {
         Row: {
+          active: boolean
           created_at: string
           id: string
           name: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
           name: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
           name?: string
@@ -243,18 +252,21 @@ export type Database = {
       }
       participants: {
         Row: {
+          active: boolean
           class_id: string
           created_at: string
           id: string
           name: string
         }
         Insert: {
+          active?: boolean
           class_id: string
           created_at?: string
           id?: string
           name: string
         }
         Update: {
+          active?: boolean
           class_id?: string
           created_at?: string
           id?: string
@@ -736,6 +748,7 @@ export type Database = {
       }
       verses: {
         Row: {
+          active: boolean
           book: string
           chapter: number
           created_at: string
@@ -745,6 +758,7 @@ export type Database = {
           verse: number
         }
         Insert: {
+          active?: boolean
           book: string
           chapter: number
           created_at?: string
@@ -754,6 +768,7 @@ export type Database = {
           verse: number
         }
         Update: {
+          active?: boolean
           book?: string
           chapter?: number
           created_at?: string
