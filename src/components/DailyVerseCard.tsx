@@ -77,7 +77,7 @@ export const DailyVerseCard = () => {
             <Heart
               className={cn(
                 "h-4 w-4 transition-all",
-                isSaved && "fill-red-500 text-red-500",
+                isSaved && "fill-destructive text-destructive",
                 animateHeart && "scale-125",
               )}
             />
