@@ -8,13 +8,10 @@ import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
+import { useChurches } from "@/hooks/useChurches";
 import { toast } from "sonner";
 import churchLogo from "@/assets/church-logo.png";
 
-const CHURCHES = [
-  "AD. AMEE", "ADCANPS", "ADCIM- MORRINHOS", "ADESC", "ADEVIS",
-  "ADREC", "ADVEJA", "ADVEJA EXPANSUL", "CIMADSETA SLMB", "IEADU",
-];
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
 const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
@@ -61,6 +58,7 @@ const signupSchema = z
 const Auth = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { churches: CHURCHES } = useChurches();
   const [mode, setMode] = useState<Mode>("login");
   const [showPwd, setShowPwd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
