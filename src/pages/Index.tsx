@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar, LogOut } from "lucide-react";
+import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { SeasonCountdown } from "@/components/SeasonCountdown";
 import { SmartFeed } from "@/components/SmartFeed";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
+import { MemberLayout } from "@/components/membro/MemberLayout";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
@@ -37,7 +37,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setParticipant, setChurch } = useQuizStore();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
@@ -124,23 +124,13 @@ const Index = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <ThemeToggle />
-
-      {/* Logout */}
-      <button
-        onClick={() => signOut()}
-        className="absolute top-4 left-4 z-20 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
-      >
-        <LogOut className="w-3.5 h-3.5" />
-        Sair
-      </button>
-
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-secondary/5 blur-3xl" />
-      </div>
+    <MemberLayout title="Início">
+      <div className="flex flex-col items-center p-4 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-secondary/5 blur-3xl" />
+        </div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -320,7 +310,8 @@ const Index = () => {
           </motion.button>
         </motion.div>
       </motion.div>
-    </div>
+      </div>
+    </MemberLayout>
   );
 };
 
