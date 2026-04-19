@@ -102,26 +102,15 @@ export function useSmartFeed() {
         totalParticipants = count ?? 0;
       }
 
-      // Latest material for user's class
+      // Latest material (most recent across all classes)
       let latestMaterial: SmartFeedData["latestMaterial"] = null;
-      if (profile?.class_id) {
-        const { data: mat } = await supabase
-          .from("class_materials")
-          .select("id, title, file_url, trimester, created_at")
-          .eq("class_id", profile.class_id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (mat) latestMaterial = mat as any;
-      } else {
-        const { data: mat } = await supabase
-          .from("class_materials")
-          .select("id, title, file_url, trimester, created_at")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (mat) latestMaterial = mat as any;
-      }
+      const { data: mat } = await supabase
+        .from("class_materials")
+        .select("id, title, file_url, trimester, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (mat) latestMaterial = mat as any;
 
       const isHighPerformer = !!lastAttempt && lastAttempt.accuracy_percentage >= 80;
 

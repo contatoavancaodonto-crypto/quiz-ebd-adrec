@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SeasonCountdown } from "@/components/SeasonCountdown";
+import { SmartFeed } from "@/components/SmartFeed";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "sonner";
