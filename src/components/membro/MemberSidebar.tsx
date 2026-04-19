@@ -40,9 +40,23 @@ export function MemberSidebar() {
       setIsAdmin(false);
       return;
     }
-    supabase
-      .rpc("has_role", { _user_id: user.id, _role: "admin" })
-      .then(({ data }) => setIsAdmin(!!data));
+    const check = () => {
+      supabase
+        .rpc("has_role", { _user_id: user.id, _role: "admin" })
+        .then(({ data }) => setIsAdmin(!!data));
+    };
+    check();
+    const channel = supabase
+      .channel(`user-role-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` },
+        () => check()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const handleLogout = async () => {
