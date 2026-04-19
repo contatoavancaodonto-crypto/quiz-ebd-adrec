@@ -47,6 +47,7 @@ export default function AdminUsers() {
   const [churches, setChurches] = useState<ChurchOpt[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "none" | "admin" | "superadmin">("all");
 
   const [promoteOpen, setPromoteOpen] = useState(false);
   const [target, setTarget] = useState<ProfileRow | null>(null);
@@ -144,9 +145,19 @@ export default function AdminUsers() {
     id ? churches.find((c) => c.id === id)?.name ?? "—" : "—";
 
   const filtered = rows.filter((r) => {
+    if (roleFilter === "none" && r.role !== null) return false;
+    if (roleFilter === "admin" && r.role !== "admin") return false;
+    if (roleFilter === "superadmin" && r.role !== "superadmin") return false;
     const t = `${r.first_name ?? ""} ${r.last_name ?? ""} ${r.email ?? ""}`.toLowerCase();
     return t.includes(q.toLowerCase());
   });
+
+  const counts = {
+    all: rows.length,
+    none: rows.filter((r) => r.role === null).length,
+    admin: rows.filter((r) => r.role === "admin").length,
+    superadmin: rows.filter((r) => r.role === "superadmin").length,
+  };
 
   return (
     <div className="space-y-4">
@@ -156,14 +167,27 @@ export default function AdminUsers() {
           Promover Admins de Igreja ou Superadmins. Apenas o Superadmin acessa esta tela.
         </p>
       </div>
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Buscar por nome ou email…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Buscar por nome ou email…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <Select value={roleFilter} onValueChange={(v: any) => setRoleFilter(v)}>
+          <SelectTrigger className="w-full sm:w-56">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos ({counts.all})</SelectItem>
+            <SelectItem value="none">Sem papel ({counts.none})</SelectItem>
+            <SelectItem value="admin">Admin Igreja ({counts.admin})</SelectItem>
+            <SelectItem value="superadmin">Superadmin ({counts.superadmin})</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <Card>
         <Table>
