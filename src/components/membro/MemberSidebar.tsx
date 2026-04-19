@@ -29,6 +29,14 @@ const items = [
 export function MemberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Você saiu com sucesso");
+    navigate("/auth");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -69,6 +77,19 @@ export function MemberSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Sair</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
