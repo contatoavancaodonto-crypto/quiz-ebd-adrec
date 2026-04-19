@@ -1,16 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-/**
- * Retorna os papéis do usuário logado em tempo real.
- * - isSuperadmin: pode gerenciar todos os admins e tudo do app.
- * - isAdmin: admin de igreja (escopo restrito a churchId) OU superadmin.
- * - churchId: igreja vinculada (somente para admin de igreja). Null para superadmin.
- */
-export function useRoles() {
+interface RolesValue {
+  isSuperadmin: boolean;
+  isChurchAdmin: boolean;
+  isAdmin: boolean;
+  churchId: string | null;
+  loading: boolean;
+}
+
+const RolesContext = createContext<RolesValue>({
+  isSuperadmin: false,
+  isChurchAdmin: false,
+  isAdmin: false,
+  churchId: null,
+  loading: true,
+});
+
+export function RolesProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const instanceIdRef = useRef(`roles-${Math.random().toString(36).slice(2, 10)}`);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
   const [isChurchAdmin, setIsChurchAdmin] = useState(false);
   const [churchId, setChurchId] = useState<string | null>(null);
@@ -49,7 +58,7 @@ export function useRoles() {
     load();
 
     const channel = supabase
-      .channel(`user-roles-${user.id}-${instanceIdRef.current}`)
+      .channel(`user-roles-${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` },
@@ -65,11 +74,25 @@ export function useRoles() {
     };
   }, [user?.id, authLoading]);
 
-  return {
-    isSuperadmin,
-    isChurchAdmin,
-    isAdmin: isSuperadmin || isChurchAdmin,
-    churchId,
-    loading,
-  };
+  return (
+    <RolesContext.Provider
+      value={{
+        isSuperadmin,
+        isChurchAdmin,
+        isAdmin: isSuperadmin || isChurchAdmin,
+        churchId,
+        loading,
+      }}
+    >
+      {children}
+    </RolesContext.Provider>
+  );
+}
+
+/**
+ * Retorna os papéis do usuário logado em tempo real.
+ * Requer <RolesProvider> acima na árvore (montado em App.tsx).
+ */
+export function useRoles() {
+  return useContext(RolesContext);
 }
