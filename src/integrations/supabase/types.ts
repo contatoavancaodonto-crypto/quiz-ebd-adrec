@@ -212,6 +212,35 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_verse: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          verse_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          verse_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          verse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_verse_verse_id_fkey"
+            columns: ["verse_id"]
+            isOneToOne: false
+            referencedRelation: "verses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participants: {
         Row: {
           class_id: string
@@ -512,6 +541,35 @@ export type Database = {
           },
         ]
       }
+      saved_verses: {
+        Row: {
+          id: string
+          saved_at: string
+          user_id: string
+          verse_id: string
+        }
+        Insert: {
+          id?: string
+          saved_at?: string
+          user_id: string
+          verse_id: string
+        }
+        Update: {
+          id?: string
+          saved_at?: string
+          user_id?: string
+          verse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_verses_verse_id_fkey"
+            columns: ["verse_id"]
+            isOneToOne: false
+            referencedRelation: "verses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           created_at: string
@@ -655,6 +713,36 @@ export type Database = {
           },
         ]
       }
+      verses: {
+        Row: {
+          book: string
+          chapter: number
+          created_at: string
+          id: string
+          text: string
+          theme: string
+          verse: number
+        }
+        Insert: {
+          book: string
+          chapter: number
+          created_at?: string
+          id?: string
+          text: string
+          theme?: string
+          verse: number
+        }
+        Update: {
+          book?: string
+          chapter?: number
+          created_at?: string
+          id?: string
+          text?: string
+          theme?: string
+          verse?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       ranking_by_class: {
@@ -700,6 +788,17 @@ export type Database = {
       award_season_end_badges: {
         Args: { p_season_id: string }
         Returns: undefined
+      }
+      get_or_create_daily_verse: {
+        Args: never
+        Returns: {
+          book: string
+          chapter: number
+          text: string
+          theme: string
+          verse: number
+          verse_id: string
+        }[]
       }
     }
     Enums: {
