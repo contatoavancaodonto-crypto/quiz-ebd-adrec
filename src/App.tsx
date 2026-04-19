@@ -11,7 +11,6 @@ import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/AdminDashboard";
 import { ProfileGate } from "./components/ProfileGate";
 import MeuPerfil from "./pages/membro/MeuPerfil";
 import MeuDesempenho from "./pages/membro/MeuDesempenho";
@@ -20,6 +19,17 @@ import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Biblia from "./pages/membro/Biblia";
 import Harpa from "./pages/membro/Harpa";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminChurches from "./pages/admin/AdminChurches";
+import AdminClasses from "./pages/admin/AdminClasses";
+import AdminQuizzes from "./pages/admin/AdminQuizzes";
+import AdminSeasons from "./pages/admin/AdminSeasons";
+import AdminAttempts from "./pages/admin/AdminAttempts";
+import AdminBadges from "./pages/admin/AdminBadges";
+import AdminVerses from "./pages/admin/AdminVerses";
+import AdminMaterials from "./pages/admin/AdminMaterials";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +60,18 @@ const App = () => (
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
-          <Route path="/painel-ebd-2025" element={<AdminDashboard />} />
+          <Route path="/painel-ebd-2025" element={<AdminLayout />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="usuarios" element={<AdminUsers />} />
+            <Route path="igrejas" element={<AdminChurches />} />
+            <Route path="turmas" element={<AdminClasses />} />
+            <Route path="quizzes" element={<AdminQuizzes />} />
+            <Route path="temporadas" element={<AdminSeasons />} />
+            <Route path="tentativas" element={<AdminAttempts />} />
+            <Route path="badges" element={<AdminBadges />} />
+            <Route path="versiculos" element={<AdminVerses />} />
+            <Route path="materiais" element={<AdminMaterials />} />
+          </Route>
           <Route path="/membro" element={<MeuPerfil />} />
           <Route path="/membro/perfil" element={<MeuPerfil />} />
           <Route path="/membro/desempenho" element={<MeuDesempenho />} />
