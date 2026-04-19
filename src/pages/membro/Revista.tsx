@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Download, BookOpen } from "lucide-react";
+import { Download, BookOpen, Lock } from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
