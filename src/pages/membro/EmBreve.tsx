@@ -23,13 +23,6 @@ export function EmBreve({ title, description }: EmBreveProps) {
   );
 }
 
-export const Biblia = () => (
-  <EmBreve
-    title="Bíblia Online"
-    description="Estamos preparando a Bíblia completa (Antigo e Novo Testamento) para leitura direta no app, livro por livro, capítulo por capítulo."
-  />
-);
-
 export const Harpa = () => (
   <EmBreve
     title="Harpa Cristã"
