@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
+import revistaAdultos from "@/assets/revista-adultos.png";
 
 type RevistaItem = {
   id: string;
