@@ -267,9 +267,9 @@ const Auth = () => {
                   placeholder="Selecione sua área" error={errors.area}
                   options={AREAS.map((a) => ({ value: a, label: `Área ${a}` }))}
                 />
-                <Select
+                <SearchableSelect
                   label="Qual o nome da sua igreja?" value={church} onChange={handleChurchChange}
-                  placeholder="Selecione sua igreja" error={errors.church}
+                  placeholder="Digite ou selecione sua igreja" error={errors.church}
                   options={[
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
                     ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
