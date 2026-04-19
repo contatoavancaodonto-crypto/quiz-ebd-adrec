@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar, LogOut } from "lucide-react";
+import { Users, Sparkles, ChevronRight, Trophy, Lock, Calendar } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { SeasonCountdown } from "@/components/SeasonCountdown";
 import { SmartFeed } from "@/components/SmartFeed";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
+import { MemberLayout } from "@/components/membro/MemberLayout";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
