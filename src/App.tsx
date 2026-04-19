@@ -83,7 +83,8 @@ const App = () => (
           <Route path="/membro/harpa" element={<Harpa />} />
           <Route path="/membro/configuracoes" element={<Configuracoes />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </RolesProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
