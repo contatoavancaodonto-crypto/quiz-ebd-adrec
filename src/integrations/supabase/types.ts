@@ -630,7 +630,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      award_season_end_badges: {
+        Args: { p_season_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
