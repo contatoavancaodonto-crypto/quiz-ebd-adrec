@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload, Loader2, Trash2, FileText, Download, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,10 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/useRoles";
 
 export function ClassMaterialsManager() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
 
   const [classId, setClassId] = useState("");
   const [trimester, setTrimester] = useState("1");
@@ -28,6 +30,20 @@ export function ClassMaterialsManager() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
+
+  // IDs de turmas permitidas para o admin de igreja (turmas com pelo menos 1 membro da igreja).
+  const { data: allowedClassIds } = useQuery({
+    queryKey: ["allowed-class-ids", churchId, isSuperadmin],
+    enabled: !rolesLoading && !isSuperadmin && !!churchId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("class_id")
+        .eq("church_id", churchId!)
+        .not("class_id", "is", null);
+      return Array.from(new Set((data ?? []).map((p: any) => p.class_id as string)));
+    },
+  });
 
   const handleNotifyAll = async (m: any) => {
     if (
@@ -98,6 +114,16 @@ export function ClassMaterialsManager() {
       return data ?? [];
     },
   });
+
+  const visibleClasses = useMemo(() => {
+    if (isSuperadmin || !allowedClassIds) return classes ?? [];
+    return (classes ?? []).filter((c: any) => allowedClassIds.includes(c.id));
+  }, [classes, isSuperadmin, allowedClassIds]);
+
+  const visibleMaterials = useMemo(() => {
+    if (isSuperadmin || !allowedClassIds) return materials ?? [];
+    return (materials ?? []).filter((m: any) => allowedClassIds.includes(m.class_id));
+  }, [materials, isSuperadmin, allowedClassIds]);
 
   const handleUpload = async () => {
     if (!classId || !file || !title) {
@@ -175,7 +201,7 @@ export function ClassMaterialsManager() {
           <Select value={classId} onValueChange={setClassId}>
             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>
-              {classes?.map((c) => (
+              {visibleClasses?.map((c: any) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>
@@ -224,11 +250,11 @@ export function ClassMaterialsManager() {
 
       <div className="space-y-2 pt-4 border-t border-border">
         <h3 className="font-medium text-foreground">Revistas publicadas</h3>
-        {!materials || materials.length === 0 ? (
+        {!visibleMaterials || visibleMaterials.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma revista ainda.</p>
         ) : (
           <ul className="space-y-2">
-            {materials.map((m: any) => (
+            {visibleMaterials.map((m: any) => (
               <li key={m.id} className="flex items-center justify-between gap-3 p-3 bg-muted/40 rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
                   <FileText className="h-5 w-5 text-primary shrink-0" />
