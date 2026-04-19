@@ -69,6 +69,10 @@ const Auth = () => {
   // Login fields
   const [identifier, setIdentifier] = useState("");
   const [loginPwd, setLoginPwd] = useState("");
+  const [keepLoggedIn, setKeepLoggedIn] = useState(() => {
+    const v = localStorage.getItem("keepLoggedIn");
+    return v === null ? true : v === "true";
+  });
 
   // Signup fields
   const [firstName, setFirstName] = useState("");
