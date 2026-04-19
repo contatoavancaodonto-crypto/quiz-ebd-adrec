@@ -17,6 +17,7 @@ import {
 import { useSmartFeed } from "@/hooks/useSmartFeed";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
+import { DailyVerseCard } from "@/components/DailyVerseCard";
 
 interface SmartFeedProps {
   onStartQuiz?: () => void;
