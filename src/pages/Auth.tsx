@@ -12,8 +12,8 @@ import { toast } from "sonner";
 import churchLogo from "@/assets/church-logo.png";
 
 const CHURCHES = [
-  "ADREC", "ADVEJA", "ADESC", "ADEVIS", "ADCIM- MORRINHOS",
-  "CIMADSETA SLMB", "AD. AMEE", "ADVEJA EXPANSUL", "ADCANPS", "IEADU",
+  "AD. AMEE", "ADCANPS", "ADCIM- MORRINHOS", "ADESC", "ADEVIS",
+  "ADREC", "ADVEJA", "ADVEJA EXPANSUL", "CIMADSETA SLMB", "IEADU",
 ];
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
