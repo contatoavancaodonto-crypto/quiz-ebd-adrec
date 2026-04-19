@@ -11,6 +11,11 @@ import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import { ProfileGate } from "./components/ProfileGate";
+import MeuPerfil from "./pages/membro/MeuPerfil";
+import MeuDesempenho from "./pages/membro/MeuDesempenho";
+import Historico from "./pages/membro/Historico";
+import Configuracoes from "./pages/membro/Configuracoes";
+import { Revista, Biblia, Harpa } from "./pages/membro/EmBreve";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +33,14 @@ const App = () => (
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
           <Route path="/painel-ebd-2025" element={<AdminDashboard />} />
+          <Route path="/membro" element={<MeuPerfil />} />
+          <Route path="/membro/perfil" element={<MeuPerfil />} />
+          <Route path="/membro/desempenho" element={<MeuDesempenho />} />
+          <Route path="/membro/historico" element={<Historico />} />
+          <Route path="/membro/revista" element={<Revista />} />
+          <Route path="/membro/biblia" element={<Biblia />} />
+          <Route path="/membro/harpa" element={<Harpa />} />
+          <Route path="/membro/configuracoes" element={<Configuracoes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

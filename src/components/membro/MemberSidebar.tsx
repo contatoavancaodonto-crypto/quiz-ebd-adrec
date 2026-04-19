@@ -1,0 +1,70 @@
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { NavLink } from "@/components/NavLink";
+
+const items = [
+  { title: "Meu Perfil", url: "/membro/perfil", icon: User },
+  { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
+  { title: "Histórico", url: "/membro/historico", icon: History },
+  { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
+  { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen },
+  { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2 },
+  { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
+];
+
+export function MemberSidebar() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Área de Membros</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/"
+                    end
+                    className="hover:bg-muted/50"
+                    activeClassName="bg-muted text-primary font-medium"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Início</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
