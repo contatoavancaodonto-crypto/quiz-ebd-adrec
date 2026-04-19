@@ -310,7 +310,8 @@ const Index = () => {
           </motion.button>
         </motion.div>
       </motion.div>
-    </div>
+      </div>
+    </MemberLayout>
   );
 };
 
