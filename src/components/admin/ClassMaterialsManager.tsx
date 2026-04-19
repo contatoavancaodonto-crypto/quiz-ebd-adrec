@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Loader2, Trash2, FileText, Download } from "lucide-react";
+import { Upload, Loader2, Trash2, FileText, Download, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,47 @@ export function ClassMaterialsManager() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
+
+  const handleNotifyAll = async (m: any) => {
+    if (
+      !confirm(
+        `Disparar email para TODOS os usuários cadastrados sobre "${m.title}"?`,
+      )
+    ) {
+      return;
+    }
+    setNotifyingId(m.id);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "send-bulk-material-notification",
+        {
+          body: {
+            materialId: m.id,
+            className: m.classes?.name ?? "",
+            trimester: m.trimester,
+            year: m.year,
+            title: m.title,
+            fileUrl: m.file_url,
+          },
+        },
+      );
+      if (error) throw error;
+      if ((data as any)?.error === "email_not_configured") {
+        toast.error(
+          "Sistema de email ainda não ativado. Configure o domínio em Cloud → Emails.",
+        );
+      } else {
+        toast.success(
+          `📧 Emails disparados! ${(data as any)?.sent ?? 0} enviados, ${(data as any)?.skipped ?? 0} ignorados.`,
+        );
+      }
+    } catch (e: any) {
+      toast.error("Erro ao disparar emails: " + (e?.message ?? "desconhecido"));
+    } finally {
+      setNotifyingId(null);
+    }
+  };
 
   const { data: classes } = useQuery({
     queryKey: ["all-classes"],
@@ -189,6 +230,19 @@ export function ClassMaterialsManager() {
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleNotifyAll(m)}
+                    disabled={notifyingId === m.id}
+                    title="Disparar email para todos os usuários"
+                  >
+                    {notifyingId === m.id ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Mail />
+                    )}
+                  </Button>
                   <Button size="sm" variant="outline" asChild>
                     <a href={m.file_url} target="_blank" rel="noopener noreferrer">
                       <Download />
