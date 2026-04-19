@@ -13,7 +13,7 @@ import churchLogo from "@/assets/church-logo.png";
 
 const CHURCHES = [
   "ADREC", "ADVEJA", "ADESC", "ADEVIS", "ADCIM- MORRINHOS",
-  "CIMADSETA SLMB", "AD. AMEE", "ADVEJA EXPANSUL", "ADCANPS",
+  "CIMADSETA SLMB", "AD. AMEE", "ADVEJA EXPANSUL", "ADCANPS", "IEADU",
 ];
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
