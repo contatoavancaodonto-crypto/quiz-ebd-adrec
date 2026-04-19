@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
 import revistaAdultos from "@/assets/revista-adultos.png";
+import revistaAdolescentes from "@/assets/revista-adolescentes.png";
 
 type RevistaItem = {
   id: string;
