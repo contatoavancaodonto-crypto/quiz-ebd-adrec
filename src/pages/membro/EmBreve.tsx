@@ -23,13 +23,6 @@ export function EmBreve({ title, description }: EmBreveProps) {
   );
 }
 
-export const Revista = () => (
-  <EmBreve
-    title="Revista da Classe"
-    description="Em breve você poderá baixar a revista do trimestre direto por aqui. O administrador disponibilizará o PDF de cada classe."
-  />
-);
-
 export const Biblia = () => (
   <EmBreve
     title="Bíblia Online"
