@@ -252,6 +252,15 @@ const Auth = () => {
                   label="Senha" value={loginPwd} onChange={setLoginPwd}
                   show={showPwd} toggle={() => setShowPwd(!showPwd)} error={errors.password}
                 />
+                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={keepLoggedIn}
+                    onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                    className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                  />
+                  Manter conectado
+                </label>
                 <button type="button" className="text-xs text-primary hover:underline">
                   Esqueci minha senha
                 </button>
