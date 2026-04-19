@@ -198,7 +198,7 @@ export default function AdminUsers() {
                   <TableCell>{r.email}</TableCell>
                   <TableCell>
                     {r.role === "superadmin" ? (
-                      <Badge className="bg-amber-500 hover:bg-amber-500">
+                      <Badge className="bg-primary text-primary-foreground">
                         <Crown className="w-3 h-3 mr-1" />
                         Superadmin
                       </Badge>
