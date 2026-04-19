@@ -14,18 +14,19 @@ type RevistaItem = {
   id: string;
   title: string;
   subtitle: string;
-  cover?: string; // será preenchido quando o usuário enviar as capas
-  downloadUrl?: string; // será preenchido depois
+  cover?: string;
+  downloadUrl?: string;
+  unavailable?: boolean;
 };
 
 const ALUNOS: RevistaItem[] = [
-  { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno", cover: revistaAdolescentes },
+  { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno", cover: revistaAdolescentes, unavailable: true },
   { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
   { id: "adultos-aluno", title: "Adultos", subtitle: "Revista do Aluno", cover: revistaAdultos },
 ];
 
 const PROFESSORES: RevistaItem[] = [
-  { id: "adolescentes-prof", title: "Adolescentes", subtitle: "Revista do Professor", cover: revistaAdolescentes },
+  { id: "adolescentes-prof", title: "Adolescentes", subtitle: "Revista do Professor", cover: revistaAdolescentes, unavailable: true },
   { id: "jovens-prof", title: "Jovens", subtitle: "Revista do Professor", cover: revistaJovens },
   { id: "adultos-prof", title: "Adultos", subtitle: "Revista do Professor", cover: revistaAdultos },
 ];
