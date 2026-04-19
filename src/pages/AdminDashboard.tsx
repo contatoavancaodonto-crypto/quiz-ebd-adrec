@@ -159,13 +159,16 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground font-['Space_Grotesk']">
-            📊 Painel Administrativo
-          </h1>
-          <p className="text-muted-foreground">
-            Análise de desempenho por turma — Quiz EBD ADREC
-          </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-foreground font-['Space_Grotesk']">
+              📊 Painel Administrativo
+            </h1>
+            <p className="text-muted-foreground">
+              Análise de desempenho por turma — Quiz EBD ADREC
+            </p>
+          </div>
+          <CloseSeasonButton />
         </div>
 
         {/* Summary Cards */}
