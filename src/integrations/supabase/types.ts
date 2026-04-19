@@ -133,6 +133,67 @@ export type Database = {
         }
         Relationships: []
       }
+      class_materials: {
+        Row: {
+          class_id: string
+          created_at: string
+          description: string | null
+          file_path: string
+          file_url: string
+          id: string
+          title: string
+          trimester: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_url: string
+          id?: string
+          title: string
+          trimester: number
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_url?: string
+          id?: string
+          title?: string
+          trimester?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "class_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
