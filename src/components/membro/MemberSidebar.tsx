@@ -1,4 +1,5 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +16,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
@@ -29,8 +31,19 @@ const items = [
 export function MemberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    supabase
+      .rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -73,6 +86,21 @@ export function MemberSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/painel-ebd-2025"
+                      end
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Painel Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
