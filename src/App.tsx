@@ -12,6 +12,7 @@ import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
 import { ProfileGate } from "./components/ProfileGate";
+import { RolesProvider } from "./hooks/useRoles";
 import MeuPerfil from "./pages/membro/MeuPerfil";
 import MeuDesempenho from "./pages/membro/MeuDesempenho";
 import Historico from "./pages/membro/Historico";
@@ -52,8 +53,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <KeepLoggedInGuard />
-        <ProfileGate />
-        <Routes>
+        <RolesProvider>
+          <ProfileGate />
+          <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
           <Route path="/quiz" element={<QuizPage />} />
