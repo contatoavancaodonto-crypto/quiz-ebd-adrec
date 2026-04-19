@@ -13,6 +13,7 @@ import { SmartFeed } from "@/components/SmartFeed";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
@@ -56,6 +57,8 @@ const Index = () => {
       return data;
     },
   });
+
+  useRealtimeInvalidate("classes", [["classes"]], "index");
 
   const handleTrimesterClick = (trimester: number) => {
     if (!AVAILABLE_TRIMESTERS.includes(trimester) && !CLOSED_TRIMESTERS.includes(trimester)) {
