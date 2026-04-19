@@ -16,6 +16,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Target, Clock, TrendingUp } from "lucide-react";
+import { CloseSeasonButton } from "@/components/CloseSeasonButton";
 
 interface ClassStats {
   className: string;
