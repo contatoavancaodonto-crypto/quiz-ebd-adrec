@@ -69,6 +69,10 @@ const Auth = () => {
   // Login fields
   const [identifier, setIdentifier] = useState("");
   const [loginPwd, setLoginPwd] = useState("");
+  const [keepLoggedIn, setKeepLoggedIn] = useState(() => {
+    const v = localStorage.getItem("keepLoggedIn");
+    return v === null ? true : v === "true";
+  });
 
   // Signup fields
   const [firstName, setFirstName] = useState("");
@@ -124,6 +128,7 @@ const Auth = () => {
       return;
     }
     setSubmitting(true);
+    localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
     const isEmail = detectIdentifier(identifier) === "email";
     const { error } = isEmail
       ? await supabase.auth.signInWithPassword({ email: identifier.trim(), password: loginPwd })
@@ -247,6 +252,15 @@ const Auth = () => {
                   label="Senha" value={loginPwd} onChange={setLoginPwd}
                   show={showPwd} toggle={() => setShowPwd(!showPwd)} error={errors.password}
                 />
+                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={keepLoggedIn}
+                    onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                    className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                  />
+                  Manter conectado
+                </label>
                 <button type="button" className="text-xs text-primary hover:underline">
                   Esqueci minha senha
                 </button>
