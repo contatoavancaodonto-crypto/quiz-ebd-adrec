@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -10,6 +10,7 @@ import { useAuth } from "./useAuth";
  */
 export function useRoles() {
   const { user, loading: authLoading } = useAuth();
+  const instanceIdRef = useRef(`roles-${Math.random().toString(36).slice(2, 10)}`);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
   const [isChurchAdmin, setIsChurchAdmin] = useState(false);
   const [churchId, setChurchId] = useState<string | null>(null);
@@ -17,6 +18,9 @@ export function useRoles() {
 
   useEffect(() => {
     if (authLoading) return;
+
+    let cancelled = false;
+
     if (!user) {
       setIsSuperadmin(false);
       setIsChurchAdmin(false);
@@ -30,6 +34,9 @@ export function useRoles() {
         .from("user_roles")
         .select("role, church_id")
         .eq("user_id", user.id);
+
+      if (cancelled) return;
+
       const rows = data ?? [];
       setIsSuperadmin(rows.some((r) => r.role === "superadmin"));
       const adminRow = rows.find((r) => r.role === "admin");
@@ -37,20 +44,26 @@ export function useRoles() {
       setChurchId(adminRow?.church_id ?? null);
       setLoading(false);
     };
+
+    setLoading(true);
     load();
 
     const channel = supabase
-      .channel(`user-roles-${user.id}`)
+      .channel(`user-roles-${user.id}-${instanceIdRef.current}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` },
-        () => load()
+        () => {
+          void load();
+        }
       )
       .subscribe();
+
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
   return {
     isSuperadmin,
