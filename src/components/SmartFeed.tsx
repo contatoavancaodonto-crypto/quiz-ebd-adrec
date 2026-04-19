@@ -63,6 +63,9 @@ export function SmartFeed({ onStartQuiz, quizDisabled }: SmartFeedProps) {
 
   const cards: React.ReactNode[] = [];
 
+  // 📖 Versículo do Dia — sempre presente, no topo
+  cards.push(<DailyVerseCard key="daily-verse" />);
+
   // 🔴 Urgência leve — final de temporada
   if (showUrgency) {
     cards.push(
