@@ -18,9 +18,6 @@ type RevistaItem = {
 const ALUNOS: RevistaItem[] = [
   { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno" },
   { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
-const ALUNOS: RevistaItem[] = [
-  { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno" },
-  { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
   { id: "adultos-aluno", title: "Adultos", subtitle: "Revista do Aluno", cover: revistaJovens },
 ];
 
