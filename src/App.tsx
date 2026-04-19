@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import QuizPage from "./pages/Quiz";
@@ -20,6 +22,19 @@ import Biblia from "./pages/membro/Biblia";
 import Harpa from "./pages/membro/Harpa";
 
 const queryClient = new QueryClient();
+
+const KeepLoggedInGuard = () => {
+  useEffect(() => {
+    const handler = () => {
+      if (localStorage.getItem("keepLoggedIn") === "false") {
+        supabase.auth.signOut();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
