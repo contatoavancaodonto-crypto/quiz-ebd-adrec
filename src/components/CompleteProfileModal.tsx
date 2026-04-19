@@ -33,6 +33,7 @@ interface Props {
 }
 
 export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
+  const { churches: CHURCHES } = useChurches();
   const [phone, setPhone] = useState("");
   const [area, setArea] = useState("");
   const [church, setChurch] = useState("");

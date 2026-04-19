@@ -58,6 +58,7 @@ const signupSchema = z
 const Auth = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { churches: CHURCHES } = useChurches();
   const [mode, setMode] = useState<Mode>("login");
   const [showPwd, setShowPwd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
