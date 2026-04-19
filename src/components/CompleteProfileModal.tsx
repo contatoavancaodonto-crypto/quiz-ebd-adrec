@@ -5,19 +5,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
+import { useChurches } from "@/hooks/useChurches";
 
-const CHURCHES = [
-  "AD. AMEE",
-  "ADCANPS",
-  "ADCIM- MORRINHOS",
-  "ADESC",
-  "ADEVIS",
-  "ADREC",
-  "ADVEJA",
-  "ADVEJA EXPANSUL",
-  "CIMADSETA SLMB",
-  "IEADU",
-];
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
 const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
