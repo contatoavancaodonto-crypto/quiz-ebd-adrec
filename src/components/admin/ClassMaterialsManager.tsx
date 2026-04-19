@@ -115,6 +115,16 @@ export function ClassMaterialsManager() {
     },
   });
 
+  const visibleClasses = useMemo(() => {
+    if (isSuperadmin || !allowedClassIds) return classes ?? [];
+    return (classes ?? []).filter((c: any) => allowedClassIds.includes(c.id));
+  }, [classes, isSuperadmin, allowedClassIds]);
+
+  const visibleMaterials = useMemo(() => {
+    if (isSuperadmin || !allowedClassIds) return materials ?? [];
+    return (materials ?? []).filter((m: any) => allowedClassIds.includes(m.class_id));
+  }, [materials, isSuperadmin, allowedClassIds]);
+
   const handleUpload = async () => {
     if (!classId || !file || !title) {
       toast.error("Preencha classe, título e selecione um PDF");
