@@ -37,7 +37,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setParticipant, setChurch } = useQuizStore();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
