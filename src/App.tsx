@@ -10,6 +10,7 @@ import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
+import { ProfileGate } from "./components/ProfileGate";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
     <TooltipProvider>
       <Sonner />
       <BrowserRouter>
+        <ProfileGate />
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
