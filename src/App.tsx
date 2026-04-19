@@ -17,7 +17,7 @@ import Historico from "./pages/membro/Historico";
 import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Biblia from "./pages/membro/Biblia";
-import { Harpa } from "./pages/membro/EmBreve";
+import Harpa from "./pages/membro/Harpa";
 
 const queryClient = new QueryClient();
 

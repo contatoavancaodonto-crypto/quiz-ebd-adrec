@@ -23,9 +23,3 @@ export function EmBreve({ title, description }: EmBreveProps) {
   );
 }
 
-export const Harpa = () => (
-  <EmBreve
-    title="Harpa Cristã"
-    description="Em breve você terá acesso a todos os hinos da Harpa Cristã, com busca por número e letra completa."
-  />
-);
