@@ -189,8 +189,8 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-background mb-3">
             <img src={churchLogo} alt="ADREC" className="w-16 h-16 object-contain" />
           </div>
-          <h1 className="text-2xl font-display font-bold gradient-text">Quiz EBD</h1>
-          <p className="text-sm text-muted-foreground">2026 - ADREC</p>
+          <h1 className="text-2xl font-display font-bold gradient-text">Quiz EBD online</h1>
+          <p className="text-sm text-muted-foreground">CIMADSETA</p>
         </div>
 
         <div className="glass-card glow-border p-6">
