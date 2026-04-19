@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Target, Clock, TrendingUp } from "lucide-react";
 import { CloseSeasonButton } from "@/components/CloseSeasonButton";
+import { ClassMaterialsManager } from "@/components/admin/ClassMaterialsManager";
 
 interface ClassStats {
   className: string;
@@ -407,6 +408,8 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <ClassMaterialsManager />
 
         {/* Stats table */}
         <Card className="p-6">
