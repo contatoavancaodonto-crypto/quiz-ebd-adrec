@@ -149,9 +149,9 @@ const Index = () => {
             <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text glow-text mb-1">
-            Quiz EBD
+            Quiz EBD online
           </h1>
-          <p className="text-muted-foreground text-sm font-semibold">2026 - ADREC</p>
+          <p className="text-muted-foreground text-sm font-semibold">CIMADSETA</p>
         </motion.div>
 
         {/* Greeting */}
