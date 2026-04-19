@@ -68,9 +68,7 @@ export default function MeuDesempenho() {
   return (
     <MemberLayout title="Meu Desempenho">
       <div className="space-y-6">
-        {season && !seasonCountdown.expired && (
-          <SeasonCountdown endDate={season.end_date} />
-        )}
+        {season && !seasonCountdown.expired && <SeasonCountdown />}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((c) => (
