@@ -139,7 +139,7 @@ export function BulkQuestionImportDialog({ open, onOpenChange, quizId, startOrde
           </div>
           {text.trim() && (
             <div className="text-sm">
-              <span className="text-emerald-500 font-medium">{preview.ok.length} válida(s)</span>
+              <span className="text-primary font-medium">{preview.ok.length} válida(s)</span>
               {preview.errors.length > 0 && (
                 <span className="text-destructive font-medium ml-3">
                   {preview.errors.length} com erro
