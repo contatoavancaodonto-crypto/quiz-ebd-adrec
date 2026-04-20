@@ -10,6 +10,7 @@ import QuizPage from "./pages/Quiz";
 import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
+import PreviewTelas from "./pages/PreviewTelas";
 import NotFound from "./pages/NotFound";
 import { ProfileGate } from "./components/ProfileGate";
 import { RolesProvider } from "./hooks/useRoles";
@@ -62,6 +63,7 @@ const App = () => (
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
+          <Route path="/preview-telas" element={<PreviewTelas />} />
           <Route path="/painel-ebd-2025" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
             <Route path="usuarios" element={<AdminUsers />} />
