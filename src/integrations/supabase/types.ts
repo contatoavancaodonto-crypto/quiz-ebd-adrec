@@ -386,6 +386,7 @@ export type Database = {
       }
       questions: {
         Row: {
+          active: boolean
           correct_option: string
           created_at: string
           explanation: string | null
@@ -399,6 +400,7 @@ export type Database = {
           quiz_id: string
         }
         Insert: {
+          active?: boolean
           correct_option: string
           created_at?: string
           explanation?: string | null
@@ -412,6 +414,7 @@ export type Database = {
           quiz_id: string
         }
         Update: {
+          active?: boolean
           correct_option?: string
           created_at?: string
           explanation?: string | null
