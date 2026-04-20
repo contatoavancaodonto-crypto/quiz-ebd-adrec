@@ -9,9 +9,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, ListChecks, Trash2 } from "lucide-react";
+import { Plus, ListChecks, Trash2, FileUp, Eraser } from "lucide-react";
+import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 
 interface Quiz { id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number; }
 interface Cls { id: string; name: string; }
@@ -32,6 +37,8 @@ export default function AdminQuizzes() {
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionDialog, setQuestionDialog] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [wipeOpen, setWipeOpen] = useState(false);
   const [editingQ, setEditingQ] = useState<Question | null>(null);
   const [qnForm, setQnForm] = useState({
     question_text: "", option_a: "", option_b: "", option_c: "", option_d: "",
@@ -52,9 +59,29 @@ export default function AdminQuizzes() {
 
   const loadQuestions = async (quiz: Quiz) => {
     setQuestionsOf(quiz);
-    const { data } = await supabase.from("questions").select("*").eq("quiz_id", quiz.id).order("order_index");
+    const { data } = await supabase
+      .from("questions")
+      .select("*")
+      .eq("quiz_id", quiz.id)
+      .eq("active", true)
+      .order("order_index");
     setQuestions((data as any) ?? []);
   };
+
+  // Realtime: quando perguntas mudam, recarrega para o admin atual
+  useEffect(() => {
+    if (!questionsOf) return;
+    const channel = supabase
+      .channel(`admin-questions-${questionsOf.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "questions", filter: `quiz_id=eq.${questionsOf.id}` },
+        () => { loadQuestions(questionsOf); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionsOf?.id]);
 
   const saveQuiz = async () => {
     if (!qForm.title || !qForm.class_id) return toast.error("Preencha título e turma");
@@ -91,27 +118,54 @@ export default function AdminQuizzes() {
     loadQuestions(questionsOf);
   };
 
+  // Soft-delete: preserva no banco para histórico/gabarito, mas oculta do painel e do quiz
   const deleteQuestion = async (id: string) => {
-    if (!confirm("Excluir esta pergunta? Essa ação é permanente.")) return;
-    const { error } = await supabase.from("questions").delete().eq("id", id);
+    if (!confirm("Ocultar esta pergunta? Ela some do painel e do quiz, mas continua salva para preservar histórico e gabarito.")) return;
+    const { error } = await supabase.from("questions").update({ active: false }).eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Removida"); if (questionsOf) loadQuestions(questionsOf);
+    toast.success("Pergunta ocultada"); if (questionsOf) loadQuestions(questionsOf);
+  };
+
+  const wipeAll = async () => {
+    if (!questionsOf) return;
+    const { error } = await supabase
+      .from("questions")
+      .update({ active: false })
+      .eq("quiz_id", questionsOf.id)
+      .eq("active", true);
+    if (error) return toast.error(error.message);
+    toast.success("Todas as perguntas foram ocultadas");
+    setWipeOpen(false);
+    loadQuestions(questionsOf);
   };
 
   if (questionsOf) {
     return (
       <div className="space-y-4">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between flex-wrap gap-2">
           <div>
             <Button variant="ghost" size="sm" onClick={() => setQuestionsOf(null)}>← Voltar</Button>
             <h2 className="text-2xl font-bold text-foreground mt-2">{questionsOf.title}</h2>
-            <p className="text-sm text-muted-foreground">{questions.length} perguntas</p>
+            <p className="text-sm text-muted-foreground">{questions.length} perguntas ativas</p>
           </div>
-          <Button onClick={() => {
-            setEditingQ(null);
-            setQnForm({ question_text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", order_index: questions.length + 1, explanation: "" });
-            setQuestionDialog(true);
-          }}><Plus className="w-4 h-4 mr-1" /> Nova Pergunta</Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setBulkOpen(true)}>
+              <FileUp className="w-4 h-4 mr-1" /> Importar TXT
+            </Button>
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setWipeOpen(true)}
+              disabled={!questions.length}
+            >
+              <Eraser className="w-4 h-4 mr-1" /> Apagar tudo
+            </Button>
+            <Button onClick={() => {
+              setEditingQ(null);
+              setQnForm({ question_text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "A", order_index: questions.length + 1, explanation: "" });
+              setQuestionDialog(true);
+            }}><Plus className="w-4 h-4 mr-1" /> Nova Pergunta</Button>
+          </div>
         </div>
         <Card>
           <Table>
@@ -119,7 +173,13 @@ export default function AdminQuizzes() {
               <TableRow><TableHead>#</TableHead><TableHead>Pergunta</TableHead><TableHead>Resp.</TableHead><TableHead className="text-right">Ações</TableHead></TableRow>
             </TableHeader>
             <TableBody>
-              {questions.map((q) => (
+              {questions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    Nenhuma pergunta ativa. Adicione manualmente ou importe via TXT.
+                  </TableCell>
+                </TableRow>
+              ) : questions.map((q) => (
                 <TableRow key={q.id}>
                   <TableCell>{q.order_index}</TableCell>
                   <TableCell className="max-w-md truncate">{q.question_text}</TableCell>
@@ -187,6 +247,35 @@ export default function AdminQuizzes() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <BulkQuestionImportDialog
+          open={bulkOpen}
+          onOpenChange={setBulkOpen}
+          quizId={questionsOf.id}
+          startOrder={questions.length + 1}
+          onImported={() => loadQuestions(questionsOf)}
+        />
+
+        <AlertDialog open={wipeOpen} onOpenChange={setWipeOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Apagar todas as perguntas?</AlertDialogTitle>
+              <AlertDialogDescription>
+                As {questions.length} perguntas ativas deste quiz serão ocultadas. Elas continuam salvas no banco para preservar
+                o histórico e o gabarito dos alunos que já responderam, mas não aparecerão mais no painel nem em novos quizzes.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={wipeAll}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Apagar tudo
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }

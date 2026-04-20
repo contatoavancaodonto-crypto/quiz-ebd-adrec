@@ -98,7 +98,7 @@ const QuizPage = () => {
           quizId = quiz.id;
         }
 
-        const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId);
+        const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId).eq("active", true);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, QUESTIONS_PER_QUIZ);
