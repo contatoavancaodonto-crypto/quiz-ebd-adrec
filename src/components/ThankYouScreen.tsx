@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Trophy, BarChart3 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
+import { useSound } from "@/hooks/useSound";
 
 const WEBHOOK_URL = "https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
 
@@ -30,6 +31,7 @@ export function ThankYouScreen({
   onContinue,
 }: ThankYouScreenProps) {
   const [stepIndex, setStepIndex] = useState(0);
+  const { playSound } = useSound();
 
   const sendWebhook = async (event: string) => {
     try {
@@ -53,10 +55,26 @@ export function ThankYouScreen({
 
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
+    
+    // Play initial sound
+    playSound('tick');
+    
     // Step transitions: ~900ms each → ~3.6s total
-    timers.push(setTimeout(() => setStepIndex(1), 900));
-    timers.push(setTimeout(() => setStepIndex(2), 1800));
-    timers.push(setTimeout(() => setStepIndex(3), 2700));
+    timers.push(setTimeout(() => {
+      setStepIndex(1);
+      playSound('tick');
+    }, 900));
+    
+    timers.push(setTimeout(() => {
+      setStepIndex(2);
+      playSound('tick');
+    }, 1800));
+    
+    timers.push(setTimeout(() => {
+      setStepIndex(3);
+      playSound('ding'); // Final step gets a ding
+    }, 2700));
+    
     timers.push(
       setTimeout(() => {
         sendWebhook("view_result");
