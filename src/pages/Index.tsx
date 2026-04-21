@@ -257,15 +257,17 @@ const Index = () => {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setSelectedClass({ id: cls.id, name: cls.name })}
-                      className={`p-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
+                      className={`p-2 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col items-center justify-start min-h-[110px] ${
                         selectedClass?.id === cls.id
                           ? "border-primary bg-primary/10 shadow-lg"
                           : "border-border bg-muted/50 hover:border-primary/40"
                       }`}
                     >
-                      <div className="text-2xl mb-1">{classIcons[cls.name] || "📚"}</div>
-                      <div className="text-xs font-medium text-foreground">{cls.name}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{classSubtitles[cls.name] || ""}</div>
+                      <div className="text-lg mb-1 whitespace-nowrap leading-none h-6 flex items-center justify-center">
+                        {classIcons[cls.name] || "📚"}
+                      </div>
+                      <div className="text-xs font-semibold text-foreground leading-tight">{cls.name}</div>
+                      <div className="text-[10px] text-muted-foreground mt-1 leading-tight px-0.5">{classSubtitles[cls.name] || ""}</div>
                     </motion.button>
                   ))}
                 </div>
