@@ -22,11 +22,8 @@ const classIcons: Record<string, string> = {
   Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
 };
 
-const classSubtitles: Record<string, string> = {
-  Adolescentes: "Geração JC",
-  Adultos: "Homens de valor & Mulheres de fé",
-  Jovens: "Maranata",
-};
+
+
 
 const QUIZ_CLOSED = false;
 const AVAILABLE_TRIMESTERS: number[] = [2];
@@ -267,7 +264,6 @@ const Index = () => {
                         {classIcons[cls.name] || "📚"}
                       </div>
                       <div className="text-xs font-semibold text-foreground leading-tight">{cls.name}</div>
-                      <div className="text-[10px] text-muted-foreground mt-1 leading-tight px-0.5">{classSubtitles[cls.name] || ""}</div>
                     </motion.button>
                   ))}
                 </div>
