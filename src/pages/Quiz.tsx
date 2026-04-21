@@ -43,6 +43,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 const QuizPage = () => {
   const navigate = useNavigate();
   const store = useQuizStore();
+  const { playSound } = useSound();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -230,8 +231,9 @@ const QuizPage = () => {
   }, [confirmed, currentQ, isLast, store, questions, seconds, navigate, evalBreakShown, evalBreakQuestion]);
 
   const handleEvalContinue = useCallback(() => {
+    playSound('tick');
     setShowEvalBreak(false);
-  }, []);
+  }, [playSound]);
 
   // ✅ auto-avance DESABILITADO na última pergunta
   useEffect(() => {
@@ -286,34 +288,91 @@ const QuizPage = () => {
 
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-xl w-full">
-          <h2>{currentQ.question_text}</h2>
+          <h2 className="text-xl font-bold mb-6 text-foreground leading-tight">
+            {currentQ.question_text}
+          </h2>
 
-          {optionLabels.map((label, i) => (
-            <button
-              key={label}
-              onClick={() => {
-                if (confirmed) return;
-                setSelectedOption(label);
-                setConfirmed(true);
+          <div className="space-y-3 mb-8">
+            {optionLabels.map((label, i) => {
+              const isSelected = selectedOption === label;
+              const isCorrect = label === currentQ.correct_option;
+              
+              return (
+                <motion.button
+                  key={label}
+                  whileHover={!confirmed ? { scale: 1.01 } : {}}
+                  whileTap={!confirmed ? { scale: 0.99 } : {}}
+                  onClick={() => {
+                    if (confirmed) return;
+                    playSound('ding');
+                    setSelectedOption(label);
+                    setConfirmed(true);
 
-                const isCorrect = label === currentQ.correct_option;
-                store.setAnswer(currentQ.id, label);
+                    const isCorrectAnswer = label === currentQ.correct_option;
+                    store.setAnswer(currentQ.id, label);
 
-                supabase.from("answers").insert({
-                  attempt_id: store.attemptId,
-                  question_id: currentQ.id,
-                  selected_option: label,
-                  is_correct: isCorrect,
-                });
-              }}
-            >
-              {label} - {currentQ[optionKeys[i]]}
-            </button>
-          ))}
+                    supabase.from("answers").insert({
+                      attempt_id: store.attemptId,
+                      question_id: currentQ.id,
+                      selected_option: label,
+                      is_correct: isCorrectAnswer,
+                    });
+                  }}
+                  className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
+                    confirmed
+                      ? isCorrect
+                        ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                        : isSelected
+                        ? "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400"
+                        : "border-border opacity-50"
+                      : isSelected
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border hover:border-primary/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0 ${
+                      confirmed
+                        ? isCorrect
+                          ? "bg-green-500 text-white"
+                          : isSelected
+                          ? "bg-red-500 text-white"
+                          : "bg-muted text-muted-foreground"
+                        : isSelected
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}>
+                      {label}
+                    </span>
+                    <span className="text-base font-medium">{currentQ[optionKeys[i]]}</span>
+                  </div>
+                  
+                  {confirmed && isCorrect && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
+                  {confirmed && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-500 shrink-0" />}
+                </motion.button>
+              );
+            })}
+          </div>
 
-          {confirmed && <button onClick={handleNext}>{isLast ? "Finalizar Quiz" : "Próxima"}</button>}
+          <AnimatePresence>
+            {confirmed && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                onClick={handleNext}
+                className="w-full py-4 rounded-xl gradient-primary text-primary-foreground font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                {isLast ? "Finalizar Quiz" : "Próxima Pergunta"}
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
 
-          <div>{formatted}</div>
+          <div className="mt-8 flex items-center justify-center gap-2 text-muted-foreground font-mono text-sm bg-muted/30 py-2 rounded-full w-fit mx-auto px-4">
+            <Clock className="w-4 h-4" />
+            {formatted}
+          </div>
         </div>
       </div>
     </div>
