@@ -22,11 +22,8 @@ const classIcons: Record<string, string> = {
   Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
 };
 
-const classSubtitles: Record<string, string> = {
-  Adolescentes: "Geração JC",
-  Adultos: "Homens de valor & Mulheres de fé",
-  Jovens: "Maranata",
-};
+
+
 
 const QUIZ_CLOSED = false;
 const AVAILABLE_TRIMESTERS: number[] = [2];
