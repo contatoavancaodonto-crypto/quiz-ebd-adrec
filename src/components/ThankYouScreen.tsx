@@ -31,6 +31,7 @@ export function ThankYouScreen({
   onContinue,
 }: ThankYouScreenProps) {
   const [stepIndex, setStepIndex] = useState(0);
+  const { playSound } = useSound();
 
   const sendWebhook = async (event: string) => {
     try {
