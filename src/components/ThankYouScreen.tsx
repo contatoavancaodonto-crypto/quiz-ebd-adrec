@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Trophy, BarChart3 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
+import { useSound } from "@/hooks/useSound";
 
 const WEBHOOK_URL = "https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
 
