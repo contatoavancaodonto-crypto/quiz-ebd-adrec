@@ -264,7 +264,6 @@ const Index = () => {
                         {classIcons[cls.name] || "📚"}
                       </div>
                       <div className="text-xs font-semibold text-foreground leading-tight">{cls.name}</div>
-                      <div className="text-[10px] text-muted-foreground mt-1 leading-tight px-0.5">{classSubtitles[cls.name] || ""}</div>
                     </motion.button>
                   ))}
                 </div>
