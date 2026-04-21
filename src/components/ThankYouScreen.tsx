@@ -55,10 +55,26 @@ export function ThankYouScreen({
 
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
+    
+    // Play initial sound
+    playSound('tick');
+    
     // Step transitions: ~900ms each → ~3.6s total
-    timers.push(setTimeout(() => setStepIndex(1), 900));
-    timers.push(setTimeout(() => setStepIndex(2), 1800));
-    timers.push(setTimeout(() => setStepIndex(3), 2700));
+    timers.push(setTimeout(() => {
+      setStepIndex(1);
+      playSound('tick');
+    }, 900));
+    
+    timers.push(setTimeout(() => {
+      setStepIndex(2);
+      playSound('tick');
+    }, 1800));
+    
+    timers.push(setTimeout(() => {
+      setStepIndex(3);
+      playSound('ding'); // Final step gets a ding
+    }, 2700));
+    
     timers.push(
       setTimeout(() => {
         sendWebhook("view_result");
