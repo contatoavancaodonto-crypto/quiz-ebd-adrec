@@ -138,6 +138,7 @@ const QuizPage = () => {
 
   const handleNext = useCallback(() => {
     if (!confirmed || !currentQ) return;
+    playSound('tick');
 
     // 🔥 FINALIZAÇÃO (com trava)
     if (isLast) {
