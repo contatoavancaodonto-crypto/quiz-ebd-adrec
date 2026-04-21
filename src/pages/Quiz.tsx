@@ -13,6 +13,7 @@ import { SeasonCountdown } from "@/components/SeasonCountdown";
 import { SeasonClosedScreen } from "@/components/SeasonClosedScreen";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useSound } from "@/hooks/useSound";
 import { toast } from "sonner";
 
 interface Question {
