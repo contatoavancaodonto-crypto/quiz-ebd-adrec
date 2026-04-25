@@ -15,7 +15,6 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { useWeeklyQuiz, useNextScheduledQuiz, useParticipantStreak } from "@/hooks/useWeeklyQuiz";
-import { useCountdown as useCountdownHook } from "@/hooks/useCountdown";
 import { Flame } from "lucide-react";
 import { toast } from "sonner";
 
