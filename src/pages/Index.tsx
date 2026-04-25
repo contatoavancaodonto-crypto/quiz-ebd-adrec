@@ -49,8 +49,8 @@ const Index = () => {
   const { data: nextQuiz } = useNextScheduledQuiz(userClassId);
   const fullName = profile ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() : "";
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
-  const weekClose = useCountdownHook(weeklyQuiz?.closes_at);
-  const nextOpen = useCountdownHook(nextQuiz?.opens_at);
+  const weekClose = useCountdown(weeklyQuiz?.closes_at);
+  const nextOpen = useCountdown(nextQuiz?.opens_at);
 
   // Redireciona não-logados para /auth
   useEffect(() => {
