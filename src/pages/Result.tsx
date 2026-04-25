@@ -177,6 +177,43 @@ const ResultPage = () => {
           ))}
         </div>
 
+        {/* Streak / bônus semanal */}
+        {weekNumber !== null && streakAt > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="glass-card glow-border p-4 mb-4"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {streakAt} {streakAt === 1 ? "semana" : "semanas"} seguidas
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Semana {weekNumber}</div>
+                </div>
+              </div>
+              {streakBonus > 0 && (
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">Bônus</div>
+                  <div className="text-lg font-bold text-primary">+{streakBonus}</div>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
+              <span className="text-muted-foreground">Acertos: <strong className="text-foreground">{score}</strong> + Bônus: <strong className="text-primary">{streakBonus}</strong></span>
+              <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+            </div>
+            {streakAt >= 3 && (
+              <p className="text-[11px] text-primary mt-2 text-center">
+                Continue assim! Sua consistência está fazendo a diferença. 🙌
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {/* Badges conquistados */}
         <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
 
