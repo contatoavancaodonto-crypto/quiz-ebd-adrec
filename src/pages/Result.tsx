@@ -224,6 +224,14 @@ const ResultPage = () => {
               <span className="text-muted-foreground">Acertos: <strong className="text-foreground">{score}</strong> + Bônus: <strong className="text-primary">{streakBonus}</strong></span>
               <span className="font-bold text-foreground">Total: {finalScore} pts</span>
             </div>
+            <div className="flex items-center justify-between text-[11px] border-t border-border/50 pt-2 mt-2">
+              <span className="text-muted-foreground">
+                Streak atual: <strong className="text-foreground">🔥 {currentStreak} {currentStreak === 1 ? "semana" : "semanas"}</strong>
+              </span>
+              <span className="text-muted-foreground">
+                Última semana: <strong className="text-foreground">{lastWeekCompleted ?? "—"}</strong>
+              </span>
+            </div>
             {streakAt >= 3 && (
               <p className="text-[11px] text-primary mt-2 text-center">
                 Continue assim! Sua consistência está fazendo a diferença. 🙌
