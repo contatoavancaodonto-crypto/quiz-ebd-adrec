@@ -347,7 +347,7 @@ const RankingPage = () => {
         </div>
 
         {/* List */}
-        {!enabled ? (
+        {!enabledForMode ? (
           <div className="text-center py-12 text-muted-foreground text-sm">{emptyMessage}</div>
         ) : isLoading ? (
           <div className="flex justify-center py-12">
@@ -355,14 +355,19 @@ const RankingPage = () => {
           </div>
         ) : !ranking.length ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            Nenhum resultado para esses filtros.
+            {emptyMessage}
           </div>
         ) : (
           <LayoutGroup>
             <motion.div layout className="space-y-2">
               <AnimatePresence initial={false}>
-                {ranking.map((entry, i) => {
-                  const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}`;
+                {ranking.map((entry: any, i) => {
+                  const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
+                  const isSeason = mode === "season";
+                  const isWeekly = mode === "weekly";
+                  const mainScore = isSeason ? entry.total_score : (isWeekly ? entry.final_score : entry.score);
+                  const baseScore = isWeekly ? entry.score : null;
+                  const bonus = isWeekly ? entry.streak_bonus : null;
                   return (
                     <motion.div
                       key={stableKey}
@@ -389,26 +394,47 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
+                          {isSeason && entry.current_streak > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
+                              <Flame className="w-3 h-3" />{entry.current_streak}
+                            </span>
+                          )}
                           {entry.is_retry && (
                             <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
-                              2ª tentativa
+                              2ª tent.
                             </span>
                           )}
                         </div>
                         {entry.church_name && (
                           <div className="text-[11px] text-muted-foreground/70 truncate">{entry.church_name}</div>
                         )}
-                        {!selectedClassId && (
+                        {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
+                        )}
+                        {isSeason && (
+                          <div className="text-[10px] text-muted-foreground/80">
+                            {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
+                          </div>
                         )}
                       </div>
 
                       <div className="text-right shrink-0">
-                        <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
-                          <Clock className="w-3 h-3" />
-                          {formatRankingTime(entry)}
-                        </div>
+                        {isSeason ? (
+                          <div className="font-display font-bold text-primary">{mainScore} pts</div>
+                        ) : (
+                          <>
+                            <div className="font-display font-bold text-primary">
+                              {mainScore}{isWeekly ? "" : `/13`}
+                            </div>
+                            {isWeekly && bonus > 0 && (
+                              <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
+                            )}
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
+                              <Clock className="w-3 h-3" />
+                              {formatRankingTime(entry)}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </motion.div>
                   );
