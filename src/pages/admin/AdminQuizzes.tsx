@@ -32,11 +32,15 @@ interface Question {
 export default function AdminQuizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [classes, setClasses] = useState<Cls[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
-  const [qForm, setQForm] = useState({ title: "", class_id: "", trimester: 1 });
+  const [qForm, setQForm] = useState({
+    title: "", class_id: "", trimester: 1,
+    week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "",
+  });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
