@@ -1088,6 +1088,13 @@ export type Database = {
         Returns: undefined
       }
       current_admin_church_id: { Args: never; Returns: string }
+      current_week_window: {
+        Args: never
+        Returns: {
+          week_end: string
+          week_start: string
+        }[]
+      }
       get_or_create_daily_verse: {
         Args: never
         Returns: {
@@ -1106,6 +1113,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "superadmin"
