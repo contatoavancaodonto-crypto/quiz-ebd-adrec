@@ -46,6 +46,8 @@ const ResultPage = () => {
   const [streakBonus, setStreakBonus] = useState<number>(0);
   const [streakAt, setStreakAt] = useState<number>(0);
   const [weekNumber, setWeekNumber] = useState<number | null>(null);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [lastWeekCompleted, setLastWeekCompleted] = useState<number | null>(null);
 
   const score = store.score;
   const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
