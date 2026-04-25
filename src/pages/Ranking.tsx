@@ -40,6 +40,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church";
+type Mode = "weekly" | "season" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -51,14 +52,38 @@ const RankingPage = () => {
   const [trimester, setTrimester] = useState<number>(
     [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
   );
+  const modeParam = (searchParams.get("mode") as Mode) || "weekly";
+  const [mode, setMode] = useState<Mode>(["weekly", "season", "classic"].includes(modeParam) ? modeParam : "weekly");
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
 
   const handleTrimesterChange = (t: number) => {
     setTrimester(t);
-    setSearchParams({ trimester: String(t) });
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("trimester", String(t));
+      return p;
+    });
   };
+
+  const handleModeChange = (m: Mode) => {
+    setMode(m);
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("mode", m);
+      return p;
+    });
+  };
+
+  // Active season (para o modo season/weekly)
+  const { data: activeSeason } = useQuery({
+    queryKey: ["active-season"],
+    queryFn: async () => {
+      const { data } = await supabase.from("seasons").select("id, name").eq("status", "active").maybeSingle();
+      return data;
+    },
+  });
 
   const { data: classes } = useQuery({
     queryKey: ["classes-list"],
