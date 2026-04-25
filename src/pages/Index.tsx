@@ -44,6 +44,15 @@ const Index = () => {
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
 
+  // Quiz da semana (se houver janela aberta para a turma do usuário)
+  const userClassId = (profile as any)?.class_id ?? selectedClass?.id ?? null;
+  const { data: weeklyQuiz } = useWeeklyQuiz(userClassId);
+  const { data: nextQuiz } = useNextScheduledQuiz(userClassId);
+  const fullName = profile ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() : "";
+  const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
+  const weekClose = useCountdownHook(weeklyQuiz?.closes_at);
+  const nextOpen = useCountdownHook(nextQuiz?.opens_at);
+
   // Redireciona não-logados para /auth
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
