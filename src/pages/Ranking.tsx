@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe, Radio } from "lucide-react";
+import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe, Flame } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatTimeMs } from "@/hooks/useTimer";
 import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
@@ -39,6 +40,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church";
+type Mode = "weekly" | "season" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -50,14 +52,38 @@ const RankingPage = () => {
   const [trimester, setTrimester] = useState<number>(
     [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
   );
+  const modeParam = (searchParams.get("mode") as Mode) || "weekly";
+  const [mode, setMode] = useState<Mode>(["weekly", "season", "classic"].includes(modeParam) ? modeParam : "weekly");
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
 
   const handleTrimesterChange = (t: number) => {
     setTrimester(t);
-    setSearchParams({ trimester: String(t) });
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("trimester", String(t));
+      return p;
+    });
   };
+
+  const handleModeChange = (m: Mode) => {
+    setMode(m);
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("mode", m);
+      return p;
+    });
+  };
+
+  // Active season (para o modo season/weekly)
+  const { data: activeSeason } = useQuery({
+    queryKey: ["active-season"],
+    queryFn: async () => {
+      const { data } = await supabase.from("seasons").select("id, name").eq("status", "active").maybeSingle();
+      return data;
+    },
+  });
 
   const { data: classes } = useQuery({
     queryKey: ["classes-list"],
@@ -79,12 +105,16 @@ const RankingPage = () => {
     },
   });
 
-  // Fetch tudo do trimestre e filtra no client (mais simples, dados pequenos)
+  // Modo CLASSIC (legado, ranking_general por trimestre)
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
+  const seasonId = activeSeason?.id;
+  const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const seasonEnabled = mode === "season" && !!seasonId && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const classicEnabled = mode === "classic" && enabled;
 
-  const { data: rawData, isLoading } = useQuery({
-    queryKey: ["ranking", trimester, scope, selectedChurchId],
-    enabled,
+  const { data: classicData, isLoading: classicLoading } = useQuery({
+    queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
+    enabled: classicEnabled,
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
@@ -100,21 +130,68 @@ const RankingPage = () => {
     },
   });
 
-  // 🔴 Realtime: revalida ranking quando alguém finalizar
-  useRealtimeRanking(["ranking", trimester, scope, selectedChurchId]);
+  const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
+    queryKey: ["ranking-weekly", scope, selectedChurchId],
+    enabled: weeklyEnabled,
+    queryFn: async () => {
+      let query = supabase
+        .from("ranking_weekly")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, week_number")
+        .order("position")
+        .limit(500);
+      if (scope === "church" && selectedChurchId) {
+        query = query.eq("church_id", selectedChurchId);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const { data: seasonData, isLoading: seasonLoading } = useQuery({
+    queryKey: ["ranking-season", seasonId, scope, selectedChurchId],
+    enabled: seasonEnabled,
+    queryFn: async () => {
+      let query = supabase
+        .from("ranking_season_accumulated")
+        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
+        .eq("season_id", seasonId!)
+        .order("position")
+        .limit(500);
+      if (scope === "church" && selectedChurchId) {
+        query = query.eq("church_id", selectedChurchId);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const isLoading = classicLoading || weeklyLoading || seasonLoading;
+
+  // 🔴 Realtime
+  useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
+  useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
+  useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
 
   const ranking = useMemo(() => {
-    if (!rawData) return [];
-    const filtered = selectedClassId
-      ? rawData.filter((e) => e.class_id === selectedClassId)
-      : rawData;
-    return filtered.map((e, i) => ({ ...e, position: i + 1 }));
-  }, [rawData, selectedClassId]);
+    const raw =
+      mode === "classic" ? classicData :
+      mode === "weekly" ? weeklyData :
+      seasonData;
+    if (!raw) return [];
+    const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
+    return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+  }, [mode, classicData, weeklyData, seasonData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
+      : mode === "weekly"
+      ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
+      : mode === "season"
+      ? "Nenhum participante ainda nesta temporada."
       : "Nenhum resultado ainda. Seja o primeiro!";
+
+  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "season" ? seasonEnabled : classicEnabled;
 
   return (
     <div className="min-h-screen bg-background p-4 relative">
@@ -138,7 +215,11 @@ const RankingPage = () => {
         >
           <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
           <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
-          <p className="text-xs text-muted-foreground mt-1">{trimester}º Trimestre</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {mode === "weekly" && "Semana atual"}
+            {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
+            {mode === "classic" && `${trimester}º Trimestre`}
+          </p>
           <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -148,28 +229,39 @@ const RankingPage = () => {
           </div>
         </motion.div>
 
-        {/* 1. Trimester */}
-        <div className="mb-3">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-            <Calendar className="w-3 h-3 inline mr-1" />
-            Trimestre
-          </label>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4].map((t) => (
-              <button
-                key={t}
-                onClick={() => handleTrimesterChange(t)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  trimester === t
-                    ? "gradient-primary text-primary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}º Tri.
-              </button>
-            ))}
+        {/* Mode tabs: Semana / Temporada / Trimestral */}
+        <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="weekly">Semana</TabsTrigger>
+            <TabsTrigger value="season">Temporada</TabsTrigger>
+            <TabsTrigger value="classic">Trimestral</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* 1. Trimester (apenas no modo Trimestral) */}
+        {mode === "classic" && (
+          <div className="mb-3">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <Calendar className="w-3 h-3 inline mr-1" />
+              Trimestre
+            </label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => handleTrimesterChange(t)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    trimester === t
+                      ? "gradient-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t}º Tri.
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 2. Scope: Geral ou Igreja */}
         <div className="mb-3">
@@ -255,7 +347,7 @@ const RankingPage = () => {
         </div>
 
         {/* List */}
-        {!enabled ? (
+        {!enabledForMode ? (
           <div className="text-center py-12 text-muted-foreground text-sm">{emptyMessage}</div>
         ) : isLoading ? (
           <div className="flex justify-center py-12">
@@ -263,14 +355,19 @@ const RankingPage = () => {
           </div>
         ) : !ranking.length ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            Nenhum resultado para esses filtros.
+            {emptyMessage}
           </div>
         ) : (
           <LayoutGroup>
             <motion.div layout className="space-y-2">
               <AnimatePresence initial={false}>
-                {ranking.map((entry, i) => {
-                  const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}`;
+                {ranking.map((entry: any, i) => {
+                  const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
+                  const isSeason = mode === "season";
+                  const isWeekly = mode === "weekly";
+                  const mainScore = isSeason ? entry.total_score : (isWeekly ? entry.final_score : entry.score);
+                  const baseScore = isWeekly ? entry.score : null;
+                  const bonus = isWeekly ? entry.streak_bonus : null;
                   return (
                     <motion.div
                       key={stableKey}
@@ -297,26 +394,47 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
+                          {isSeason && entry.current_streak > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
+                              <Flame className="w-3 h-3" />{entry.current_streak}
+                            </span>
+                          )}
                           {entry.is_retry && (
                             <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
-                              2ª tentativa
+                              2ª tent.
                             </span>
                           )}
                         </div>
                         {entry.church_name && (
                           <div className="text-[11px] text-muted-foreground/70 truncate">{entry.church_name}</div>
                         )}
-                        {!selectedClassId && (
+                        {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
+                        )}
+                        {isSeason && (
+                          <div className="text-[10px] text-muted-foreground/80">
+                            {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
+                          </div>
                         )}
                       </div>
 
                       <div className="text-right shrink-0">
-                        <div className="font-display font-bold text-primary">{entry.score}/{13}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
-                          <Clock className="w-3 h-3" />
-                          {formatRankingTime(entry)}
-                        </div>
+                        {isSeason ? (
+                          <div className="font-display font-bold text-primary">{mainScore} pts</div>
+                        ) : (
+                          <>
+                            <div className="font-display font-bold text-primary">
+                              {mainScore}{isWeekly ? "" : `/13`}
+                            </div>
+                            {isWeekly && bonus > 0 && (
+                              <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
+                            )}
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
+                              <Clock className="w-3 h-3" />
+                              {formatRankingTime(entry)}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </motion.div>
                   );

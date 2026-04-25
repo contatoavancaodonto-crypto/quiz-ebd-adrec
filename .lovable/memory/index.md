@@ -22,3 +22,4 @@
 - [Seasons & Countdown](mem://features/seasons) — Tabela seasons, countdown global, lockout automático ao expirar
 - [Badges System](mem://features/badges) — 4 badges automáticos via trigger ao finalizar quiz, transferíveis dentro da temporada
 - [Realtime Leaderboard](mem://features/realtime-leaderboard) — Ranking ao vivo via Supabase Realtime com animação de reordenação
+- [Weekly Quizzes](mem://features/weekly-quizzes) — Quizzes semanais com janela fixa, streak (+bônus) e ranking semanal/temporada

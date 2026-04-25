@@ -18,8 +18,12 @@ import { toast } from "sonner";
 import { Plus, ListChecks, Trash2, FileUp, Eraser } from "lucide-react";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 
-interface Quiz { id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number; }
+interface Quiz {
+  id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number;
+  week_number: number | null; opens_at: string | null; closes_at: string | null; season_id: string | null;
+}
 interface Cls { id: string; name: string; }
+interface Season { id: string; name: string; status: string; }
 interface Question {
   id: string; quiz_id: string; question_text: string; option_a: string; option_b: string;
   option_c: string; option_d: string; correct_option: string; order_index: number; explanation: string | null;
@@ -28,11 +32,15 @@ interface Question {
 export default function AdminQuizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [classes, setClasses] = useState<Cls[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
-  const [qForm, setQForm] = useState({ title: "", class_id: "", trimester: 1 });
+  const [qForm, setQForm] = useState({
+    title: "", class_id: "", trimester: 1,
+    week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "",
+  });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -45,14 +53,18 @@ export default function AdminQuizzes() {
     correct_option: "A", order_index: 1, explanation: "",
   });
 
+  const emptyForm = { title: "", class_id: "", trimester: 1, week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "" };
+
   const load = async () => {
     setLoading(true);
-    const [qz, cl] = await Promise.all([
-      supabase.from("quizzes").select("*").order("created_at", { ascending: false }),
+    const [qz, cl, ss] = await Promise.all([
+      supabase.from("quizzes").select("*").order("week_number", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }),
       supabase.from("classes").select("id, name").order("name"),
+      supabase.from("seasons").select("id, name, status").order("created_at", { ascending: false }),
     ]);
     setQuizzes((qz.data as any) ?? []);
     setClasses((cl.data as any) ?? []);
+    setSeasons((ss.data as any) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -85,15 +97,27 @@ export default function AdminQuizzes() {
 
   const saveQuiz = async () => {
     if (!qForm.title || !qForm.class_id) return toast.error("Preencha título e turma");
+    const payload: any = {
+      title: qForm.title,
+      class_id: qForm.class_id,
+      trimester: qForm.trimester,
+      week_number: qForm.week_number === "" ? null : Number(qForm.week_number),
+      opens_at: qForm.opens_at ? new Date(qForm.opens_at).toISOString() : null,
+      closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
+      season_id: qForm.season_id || null,
+    };
+    if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
+      return toast.error("Data de abertura deve ser anterior à de fechamento");
+    }
     if (editingQuiz) {
-      const { error } = await supabase.from("quizzes").update(qForm).eq("id", editingQuiz.id);
+      const { error } = await supabase.from("quizzes").update(payload).eq("id", editingQuiz.id);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from("quizzes").insert(qForm);
+      const { error } = await supabase.from("quizzes").insert(payload);
       if (error) return toast.error(error.message);
     }
     toast.success("Salvo");
-    setQuizDialog(false); setEditingQuiz(null); setQForm({ title: "", class_id: "", trimester: 1 }); load();
+    setQuizDialog(false); setEditingQuiz(null); setQForm(emptyForm); load();
   };
 
   const toggleActive = async (q: Quiz) => {
@@ -280,14 +304,36 @@ export default function AdminQuizzes() {
     );
   }
 
+  const fmtLocal = (iso: string | null) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const fmtDisplay = (iso: string | null) => {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  };
+
+  const isOpen = (q: Quiz) => {
+    if (!q.opens_at || !q.closes_at) return null;
+    const now = new Date();
+    const o = new Date(q.opens_at);
+    const c = new Date(q.closes_at);
+    if (now < o) return "agendado";
+    if (now > c) return "encerrado";
+    return "aberto";
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Quizzes</h2>
-          <p className="text-sm text-muted-foreground">Criar quizzes e gerenciar perguntas</p>
+          <p className="text-sm text-muted-foreground">Crie quizzes semanais com janela de abertura/fechamento</p>
         </div>
-        <Button onClick={() => { setEditingQuiz(null); setQForm({ title: "", class_id: "", trimester: 1 }); setQuizDialog(true); }}>
+        <Button onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}>
           <Plus className="w-4 h-4 mr-1" /> Novo Quiz
         </Button>
       </div>
@@ -295,51 +341,106 @@ export default function AdminQuizzes() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Título</TableHead><TableHead>Turma</TableHead><TableHead>Trimestre</TableHead>
-              <TableHead>Ativo</TableHead><TableHead className="text-right">Ações</TableHead>
+              <TableHead>Título</TableHead><TableHead>Turma</TableHead>
+              <TableHead>Sem.</TableHead><TableHead>Janela</TableHead>
+              <TableHead>Status</TableHead><TableHead>Ativo</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
-            ) : quizzes.map((q) => (
-              <TableRow key={q.id}>
-                <TableCell className="font-medium">{q.title}</TableCell>
-                <TableCell>{classes.find((c) => c.id === q.class_id)?.name ?? "—"}</TableCell>
-                <TableCell>{q.trimester}º</TableCell>
-                <TableCell><Switch checked={q.active} onCheckedChange={() => toggleActive(q)} /></TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button size="sm" variant="outline" onClick={() => loadQuestions(q)}>
-                    <ListChecks className="w-4 h-4 mr-1" /> Perguntas
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    setEditingQuiz(q);
-                    setQForm({ title: q.title, class_id: q.class_id, trimester: q.trimester });
-                    setQuizDialog(true);
-                  }}>Editar</Button>
-                </TableCell>
-              </TableRow>
-            ))}
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+            ) : quizzes.map((q) => {
+              const status = isOpen(q);
+              return (
+                <TableRow key={q.id}>
+                  <TableCell className="font-medium">{q.title}</TableCell>
+                  <TableCell>{classes.find((c) => c.id === q.class_id)?.name ?? "—"}</TableCell>
+                  <TableCell>{q.week_number ?? "—"}</TableCell>
+                  <TableCell className="text-xs">
+                    {q.opens_at || q.closes_at ? (
+                      <div className="leading-tight">
+                        <div>↑ {fmtDisplay(q.opens_at)}</div>
+                        <div>↓ {fmtDisplay(q.closes_at)}</div>
+                      </div>
+                    ) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell>
+                    {status === "aberto" && <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Aberto</Badge>}
+                    {status === "agendado" && <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">Agendado</Badge>}
+                    {status === "encerrado" && <Badge variant="outline" className="text-muted-foreground">Encerrado</Badge>}
+                    {status === null && <Badge variant="outline">Sem janela</Badge>}
+                  </TableCell>
+                  <TableCell><Switch checked={q.active} onCheckedChange={() => toggleActive(q)} /></TableCell>
+                  <TableCell className="text-right space-x-1">
+                    <Button size="sm" variant="outline" onClick={() => loadQuestions(q)}>
+                      <ListChecks className="w-4 h-4 mr-1" /> Perguntas
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setEditingQuiz(q);
+                      setQForm({
+                        title: q.title, class_id: q.class_id, trimester: q.trimester,
+                        week_number: q.week_number ?? "",
+                        opens_at: fmtLocal(q.opens_at),
+                        closes_at: fmtLocal(q.closes_at),
+                        season_id: q.season_id ?? "",
+                      });
+                      setQuizDialog(true);
+                    }}>Editar</Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
 
       <Dialog open={quizDialog} onOpenChange={setQuizDialog}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz Semanal</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} /></div>
-            <div>
-              <Label>Turma</Label>
-              <Select value={qForm.class_id} onValueChange={(v) => setQForm({ ...qForm, class_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
-                <SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
+            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Semana 3 — Êxodo" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Turma</Label>
+                <Select value={qForm.class_id} onValueChange={(v) => setQForm({ ...qForm, class_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                  <SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Temporada</Label>
+                <Select value={qForm.season_id} onValueChange={(v) => setQForm({ ...qForm, season_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                  <SelectContent>
+                    {seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} {s.status === "active" ? "(ativa)" : ""}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label>Trimestre</Label>
-              <Input type="number" min={1} max={4} value={qForm.trimester} onChange={(e) => setQForm({ ...qForm, trimester: Number(e.target.value) })} />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Trimestre</Label>
+                <Input type="number" min={1} max={4} value={qForm.trimester} onChange={(e) => setQForm({ ...qForm, trimester: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label>Nº Semana</Label>
+                <Input type="number" min={1} value={qForm.week_number} onChange={(e) => setQForm({ ...qForm, week_number: e.target.value })} placeholder="1, 2, 3…" />
+              </div>
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Abre em</Label>
+                <Input type="datetime-local" value={qForm.opens_at} onChange={(e) => setQForm({ ...qForm, opens_at: e.target.value })} />
+              </div>
+              <div>
+                <Label>Fecha em</Label>
+                <Input type="datetime-local" value={qForm.closes_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Quizzes sem janela funcionam como antes (sem bloqueio). Defina <strong>nº semana</strong> + <strong>temporada</strong> + <strong>janela</strong> para ativar streak e ranking semanal.
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setQuizDialog(false)}>Cancelar</Button>

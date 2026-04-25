@@ -82,17 +82,38 @@ const QuizPage = () => {
           store.setParticipantId(participant.id);
           participantId = participant.id;
 
-          const { data: quiz, error: qErr } = await supabase
+          // Tenta encontrar quiz com janela aberta agora
+          const nowIso = new Date().toISOString();
+          const { data: openQuizzes, error: oqErr } = await supabase
             .from("quizzes")
-            .select("id")
+            .select("id, season_id, week_number, opens_at, closes_at")
             .eq("class_id", store.classId)
             .eq("active", true)
-            .eq("trimester", store.trimester)
-            .limit(1)
-            .maybeSingle();
-          if (qErr) throw qErr;
+            .lte("opens_at", nowIso)
+            .gte("closes_at", nowIso)
+            .order("week_number", { ascending: false })
+            .limit(1);
+          if (oqErr) throw oqErr;
+
+          let quiz: { id: string; season_id?: string | null } | null = openQuizzes?.[0] ?? null;
+
+          // Fallback: quiz legado (sem janela) por trimestre
           if (!quiz) {
-            toast.info(`📅 Quiz do ${store.trimester}º trimestre ainda não está disponível para esta classe.`);
+            const { data: legacyQuiz, error: qErr } = await supabase
+              .from("quizzes")
+              .select("id, season_id")
+              .eq("class_id", store.classId)
+              .eq("active", true)
+              .eq("trimester", store.trimester)
+              .is("opens_at", null)
+              .limit(1)
+              .maybeSingle();
+            if (qErr) throw qErr;
+            quiz = legacyQuiz;
+          }
+
+          if (!quiz) {
+            toast.info("Nenhum quiz disponível para esta turma no momento. Volte na próxima janela!");
             navigate("/");
             return;
           }
@@ -115,7 +136,15 @@ const QuizPage = () => {
           })
           .select("id")
           .single();
-        if (aErr) throw aErr;
+        if (aErr) {
+          // mensagem clara se trigger de janela rejeitar
+          if (aErr.message?.includes("já está encerrado") || aErr.message?.includes("ainda não está aberto")) {
+            toast.error(aErr.message);
+            navigate("/");
+            return;
+          }
+          throw aErr;
+        }
 
         store.setAttemptId(attempt.id);
         setIsLoading(false);

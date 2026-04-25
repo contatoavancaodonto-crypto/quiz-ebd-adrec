@@ -14,6 +14,8 @@ import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
+import { useWeeklyQuiz, useNextScheduledQuiz, useParticipantStreak } from "@/hooks/useWeeklyQuiz";
+import { Flame } from "lucide-react";
 import { toast } from "sonner";
 
 const classIcons: Record<string, string> = {
@@ -40,6 +42,15 @@ const Index = () => {
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
+
+  // Quiz da semana (se houver janela aberta para a turma do usuário)
+  const userClassId = (profile as any)?.class_id ?? selectedClass?.id ?? null;
+  const { data: weeklyQuiz } = useWeeklyQuiz(userClassId);
+  const { data: nextQuiz } = useNextScheduledQuiz(userClassId);
+  const fullName = profile ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() : "";
+  const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
+  const weekClose = useCountdown(weeklyQuiz?.closes_at);
+  const nextOpen = useCountdown(nextQuiz?.opens_at);
 
   // Redireciona não-logados para /auth
   useEffect(() => {
@@ -117,6 +128,20 @@ const Index = () => {
     }
   };
 
+  const handleStartWeekly = async () => {
+    if (!profile?.first_name) { toast.error("Perfil incompleto."); return; }
+    if (!weeklyQuiz) { toast.error("Quiz da semana não está disponível."); return; }
+    // descobre nome da turma
+    const cls = classes?.find((c) => c.id === weeklyQuiz.class_id);
+    if (!cls) { toast.error("Turma não encontrada."); return; }
+    const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    setParticipant(fullName, cls.id, cls.name, selectedTrimester);
+    if (profile.church_id && profile.church_name) {
+      setChurch(profile.church_id, profile.church_name);
+    }
+    navigate("/quiz");
+  };
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -182,6 +207,68 @@ const Index = () => {
             quizDisabled={isQuizDisabled || loading || seasonExpired}
           />
         </div>
+
+        {/* Quiz da Semana */}
+        {weeklyQuiz && !seasonExpired && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card glow-border p-5 mb-4 relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-start justify-between gap-3 mb-3 relative">
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1">
+                  Quiz da Semana {weeklyQuiz.week_number ? `· #${weeklyQuiz.week_number}` : ""}
+                </div>
+                <h3 className="text-lg font-bold text-foreground truncate">{weeklyQuiz.title}</h3>
+              </div>
+              {streak > 0 && (
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 shrink-0">
+                  <Flame className="w-3.5 h-3.5 text-orange-500" />
+                  <span className="text-xs font-bold text-orange-500">{streak}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 relative">
+              <span>Fecha em:</span>
+              <span className="font-mono text-foreground">
+                {weekClose.expired
+                  ? "Encerrado"
+                  : weekClose.days > 0
+                  ? `${weekClose.days}d ${weekClose.hours}h`
+                  : `${String(weekClose.hours).padStart(2, "0")}:${String(weekClose.minutes).padStart(2, "0")}:${String(weekClose.seconds).padStart(2, "0")}`}
+              </span>
+            </div>
+            <motion.button
+              whileHover={{ scale: weekClose.expired ? 1 : 1.02 }}
+              whileTap={{ scale: weekClose.expired ? 1 : 0.98 }}
+              onClick={handleStartWeekly}
+              disabled={weekClose.expired}
+              className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative"
+            >
+              <Sparkles className="w-4 h-4" />
+              Responder Quiz da Semana
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Próximo quiz agendado */}
+        {!weeklyQuiz && nextQuiz && !seasonExpired && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-4 mb-4 text-center"
+          >
+            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+              Próximo quiz {nextQuiz.week_number ? `· semana #${nextQuiz.week_number}` : ""}
+            </div>
+            <div className="text-sm font-semibold text-foreground mb-2">{nextQuiz.title}</div>
+            <div className="text-xs text-primary font-mono">
+              Abre em {nextOpen.days > 0 ? `${nextOpen.days}d ${nextOpen.hours}h` : `${String(nextOpen.hours).padStart(2, "0")}:${String(nextOpen.minutes).padStart(2, "0")}`}
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

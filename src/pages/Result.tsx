@@ -43,11 +43,15 @@ const ResultPage = () => {
   const [churchTop, setChurchTop] = useState<MiniRankEntry[]>([]);
   const [generalTop, setGeneralTop] = useState<MiniRankEntry[]>([]);
   const [showThankYou, setShowThankYou] = useState(true);
+  const [streakBonus, setStreakBonus] = useState<number>(0);
+  const [streakAt, setStreakAt] = useState<number>(0);
+  const [weekNumber, setWeekNumber] = useState<number | null>(null);
 
   const score = store.score;
   const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
   const perf = getPerformanceMessage(pct);
   const timeStr = store.totalTimeMs > 0 ? formatTimeMs(store.totalTimeMs) : formatTimeFallback(store.totalTimeSeconds);
+  const finalScore = score + streakBonus;
 
   useEffect(() => {
     if (!store.attemptId) {
@@ -56,6 +60,18 @@ const ResultPage = () => {
     }
 
     const fetchAll = async () => {
+      // Refetch attempt para pegar streak_bonus calculado pelo trigger
+      const { data: attempt } = await supabase
+        .from("quiz_attempts")
+        .select("streak_bonus, streak_at_attempt, week_number")
+        .eq("id", store.attemptId)
+        .maybeSingle();
+      if (attempt) {
+        setStreakBonus(attempt.streak_bonus ?? 0);
+        setStreakAt(attempt.streak_at_attempt ?? 0);
+        setWeekNumber(attempt.week_number ?? null);
+      }
+
       const [{ data: cr }, { data: gr }] = await Promise.all([
         supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
         supabase.from("ranking_general").select("position, church_id").eq("attempt_id", store.attemptId).maybeSingle(),
@@ -89,7 +105,8 @@ const ResultPage = () => {
         if (me) setChurchRank(me.position);
       }
     };
-    fetchAll();
+    // pequeno delay para garantir trigger ter rodado
+    setTimeout(fetchAll, 600);
   }, [store.attemptId, store.churchId, store.trimester, navigate]);
 
   if (showThankYou) {
@@ -159,6 +176,43 @@ const ResultPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Streak / bônus semanal */}
+        {weekNumber !== null && streakAt > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="glass-card glow-border p-4 mb-4"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {streakAt} {streakAt === 1 ? "semana" : "semanas"} seguidas
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Semana {weekNumber}</div>
+                </div>
+              </div>
+              {streakBonus > 0 && (
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">Bônus</div>
+                  <div className="text-lg font-bold text-primary">+{streakBonus}</div>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
+              <span className="text-muted-foreground">Acertos: <strong className="text-foreground">{score}</strong> + Bônus: <strong className="text-primary">{streakBonus}</strong></span>
+              <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+            </div>
+            {streakAt >= 3 && (
+              <p className="text-[11px] text-primary mt-2 text-center">
+                Continue assim! Sua consistência está fazendo a diferença. 🙌
+              </p>
+            )}
+          </motion.div>
+        )}
 
         {/* Badges conquistados */}
         <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
