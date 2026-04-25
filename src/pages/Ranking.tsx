@@ -225,28 +225,39 @@ const RankingPage = () => {
           </div>
         </motion.div>
 
-        {/* 1. Trimester */}
-        <div className="mb-3">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-            <Calendar className="w-3 h-3 inline mr-1" />
-            Trimestre
-          </label>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4].map((t) => (
-              <button
-                key={t}
-                onClick={() => handleTrimesterChange(t)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  trimester === t
-                    ? "gradient-primary text-primary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}º Tri.
-              </button>
-            ))}
+        {/* Mode tabs: Semana / Temporada / Trimestral */}
+        <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="weekly">Semana</TabsTrigger>
+            <TabsTrigger value="season">Temporada</TabsTrigger>
+            <TabsTrigger value="classic">Trimestral</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* 1. Trimester (apenas no modo Trimestral) */}
+        {mode === "classic" && (
+          <div className="mb-3">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <Calendar className="w-3 h-3 inline mr-1" />
+              Trimestre
+            </label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => handleTrimesterChange(t)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    trimester === t
+                      ? "gradient-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t}º Tri.
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 2. Scope: Geral ou Igreja */}
         <div className="mb-3">
