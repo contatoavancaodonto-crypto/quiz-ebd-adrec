@@ -46,6 +46,8 @@ const ResultPage = () => {
   const [streakBonus, setStreakBonus] = useState<number>(0);
   const [streakAt, setStreakAt] = useState<number>(0);
   const [weekNumber, setWeekNumber] = useState<number | null>(null);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [lastWeekCompleted, setLastWeekCompleted] = useState<number | null>(null);
 
   const score = store.score;
   const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
@@ -63,14 +65,30 @@ const ResultPage = () => {
       // Refetch attempt para pegar streak_bonus calculado pelo trigger
       const { data: attempt } = await supabase
         .from("quiz_attempts")
-        .select("streak_bonus, streak_at_attempt, week_number")
+        .select("streak_bonus, streak_at_attempt, week_number, season_id")
         .eq("id", store.attemptId)
         .maybeSingle();
       if (attempt) {
         setStreakBonus(attempt.streak_bonus ?? 0);
         setStreakAt(attempt.streak_at_attempt ?? 0);
         setWeekNumber(attempt.week_number ?? null);
+
+        // Buscar streak persistido (atual + última semana concluída)
+        if (attempt.season_id && store.participantName) {
+          const key = store.participantName.toLowerCase().trim();
+          const { data: streakRow } = await supabase
+            .from("participant_streaks")
+            .select("current_streak, last_week_completed")
+            .eq("participant_name", key)
+            .eq("season_id", attempt.season_id)
+            .maybeSingle();
+          if (streakRow) {
+            setCurrentStreak(streakRow.current_streak ?? 0);
+            setLastWeekCompleted(streakRow.last_week_completed ?? null);
+          }
+        }
       }
+
 
       const [{ data: cr }, { data: gr }] = await Promise.all([
         supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
@@ -205,6 +223,14 @@ const ResultPage = () => {
             <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
               <span className="text-muted-foreground">Acertos: <strong className="text-foreground">{score}</strong> + Bônus: <strong className="text-primary">{streakBonus}</strong></span>
               <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] border-t border-border/50 pt-2 mt-2">
+              <span className="text-muted-foreground">
+                Streak atual: <strong className="text-foreground">🔥 {currentStreak} {currentStreak === 1 ? "semana" : "semanas"}</strong>
+              </span>
+              <span className="text-muted-foreground">
+                Última semana: <strong className="text-foreground">{lastWeekCompleted ?? "—"}</strong>
+              </span>
             </div>
             {streakAt >= 3 && (
               <p className="text-[11px] text-primary mt-2 text-center">
