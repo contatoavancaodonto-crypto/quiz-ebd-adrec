@@ -29,7 +29,7 @@ interface Question {
 
 const optionLabels = ["A", "B", "C", "D"] as const;
 const optionKeys = ["option_a", "option_b", "option_c", "option_d"] as const;
-const QUESTIONS_PER_QUIZ = 13;
+const DEFAULT_QUESTIONS_PER_QUIZ = 13;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -86,7 +86,7 @@ const QuizPage = () => {
           const nowIso = new Date().toISOString();
           const { data: openQuizzes, error: oqErr } = await supabase
             .from("quizzes")
-            .select("id, season_id, week_number, opens_at, closes_at")
+            .select("id, season_id, week_number, opens_at, closes_at, total_questions")
             .eq("class_id", store.classId)
             .eq("active", true)
             .lte("opens_at", nowIso)
@@ -95,13 +95,13 @@ const QuizPage = () => {
             .limit(1);
           if (oqErr) throw oqErr;
 
-          let quiz: { id: string; season_id?: string | null } | null = openQuizzes?.[0] ?? null;
+          let quiz: { id: string; season_id?: string | null; total_questions?: number | null } | null = openQuizzes?.[0] ?? null;
 
           // Fallback: quiz legado (sem janela) por trimestre
           if (!quiz) {
             const { data: legacyQuiz, error: qErr } = await supabase
               .from("quizzes")
-              .select("id, season_id")
+              .select("id, season_id, total_questions")
               .eq("class_id", store.classId)
               .eq("active", true)
               .eq("trimester", store.trimester)
