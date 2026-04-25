@@ -62,6 +62,13 @@ export type Database = {
             referencedColumns: ["attempt_id"]
           },
           {
+            foreignKeyName: "answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["attempt_id"]
+          },
+          {
             foreignKeyName: "answers_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
@@ -198,6 +205,13 @@ export type Database = {
             referencedRelation: "ranking_general"
             referencedColumns: ["class_id"]
           },
+          {
+            foreignKeyName: "class_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
         ]
       }
       classes: {
@@ -250,6 +264,30 @@ export type Database = {
           },
         ]
       }
+      participant_streaks: {
+        Row: {
+          current_streak: number
+          last_week_completed: number | null
+          participant_name: string
+          season_id: string
+          updated_at: string
+        }
+        Insert: {
+          current_streak?: number
+          last_week_completed?: number | null
+          participant_name: string
+          season_id: string
+          updated_at?: string
+        }
+        Update: {
+          current_streak?: number
+          last_week_completed?: number | null
+          participant_name?: string
+          season_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       participants: {
         Row: {
           active: boolean
@@ -292,6 +330,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
         ]
@@ -382,6 +427,13 @@ export type Database = {
             referencedRelation: "ranking_general"
             referencedColumns: ["class_id"]
           },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
         ]
       }
       questions: {
@@ -435,12 +487,20 @@ export type Database = {
             referencedRelation: "quizzes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["quiz_id"]
+          },
         ]
       }
       quiz_attempts: {
         Row: {
           accuracy_percentage: number
           created_at: string
+          final_score: number | null
           finished_at: string | null
           id: string
           participant_id: string
@@ -448,13 +508,17 @@ export type Database = {
           score: number
           season_id: string | null
           started_at: string
+          streak_at_attempt: number
+          streak_bonus: number
           total_questions: number
           total_time_ms: number
           total_time_seconds: number
+          week_number: number | null
         }
         Insert: {
           accuracy_percentage?: number
           created_at?: string
+          final_score?: number | null
           finished_at?: string | null
           id?: string
           participant_id: string
@@ -462,13 +526,17 @@ export type Database = {
           score?: number
           season_id?: string | null
           started_at?: string
+          streak_at_attempt?: number
+          streak_bonus?: number
           total_questions?: number
           total_time_ms?: number
           total_time_seconds?: number
+          week_number?: number | null
         }
         Update: {
           accuracy_percentage?: number
           created_at?: string
+          final_score?: number | null
           finished_at?: string | null
           id?: string
           participant_id?: string
@@ -476,9 +544,12 @@ export type Database = {
           score?: number
           season_id?: string | null
           started_at?: string
+          streak_at_attempt?: number
+          streak_bonus?: number
           total_questions?: number
           total_time_ms?: number
           total_time_seconds?: number
+          week_number?: number | null
         }
         Relationships: [
           {
@@ -496,6 +567,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["quiz_id"]
+          },
+          {
             foreignKeyName: "quiz_attempts_season_id_fkey"
             columns: ["season_id"]
             isOneToOne: false
@@ -508,29 +586,41 @@ export type Database = {
         Row: {
           active: boolean
           class_id: string
+          closes_at: string | null
           created_at: string
           id: string
+          opens_at: string | null
+          season_id: string | null
           title: string
           total_questions: number
           trimester: number
+          week_number: number | null
         }
         Insert: {
           active?: boolean
           class_id: string
+          closes_at?: string | null
           created_at?: string
           id?: string
+          opens_at?: string | null
+          season_id?: string | null
           title: string
           total_questions?: number
           trimester?: number
+          week_number?: number | null
         }
         Update: {
           active?: boolean
           class_id?: string
+          closes_at?: string | null
           created_at?: string
           id?: string
+          opens_at?: string | null
+          season_id?: string | null
           title?: string
           total_questions?: number
           trimester?: number
+          week_number?: number | null
         }
         Relationships: [
           {
@@ -552,6 +642,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
         ]
@@ -656,6 +753,13 @@ export type Database = {
             referencedRelation: "ranking_general"
             referencedColumns: ["class_id"]
           },
+          {
+            foreignKeyName: "suggestions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
         ]
       }
       user_badges: {
@@ -703,6 +807,13 @@ export type Database = {
             columns: ["attempt_id"]
             isOneToOne: false
             referencedRelation: "ranking_general"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "user_badges_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
             referencedColumns: ["attempt_id"]
           },
           {
@@ -846,6 +957,129 @@ export type Database = {
           trimester: number | null
         }
         Relationships: []
+      }
+      ranking_season_accumulated: {
+        Row: {
+          church_id: string | null
+          church_name: string | null
+          class_id: string | null
+          class_name: string | null
+          current_streak: number | null
+          participant_name: string | null
+          position: number | null
+          season_id: string | null
+          total_score: number | null
+          total_time_ms: number | null
+          weeks_completed: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ranking_weekly: {
+        Row: {
+          accuracy_percentage: number | null
+          attempt_id: string | null
+          church_id: string | null
+          church_name: string | null
+          class_id: string | null
+          class_name: string | null
+          final_score: number | null
+          participant_name: string | null
+          position: number | null
+          quiz_id: string | null
+          score: number | null
+          season_id: string | null
+          streak_bonus: number | null
+          total_time_ms: number | null
+          total_time_seconds: number | null
+          week_number: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
