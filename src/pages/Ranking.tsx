@@ -105,12 +105,16 @@ const RankingPage = () => {
     },
   });
 
-  // Fetch tudo do trimestre e filtra no client (mais simples, dados pequenos)
+  // Modo CLASSIC (legado, ranking_general por trimestre)
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
+  const seasonId = activeSeason?.id;
+  const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const seasonEnabled = mode === "season" && !!seasonId && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const classicEnabled = mode === "classic" && enabled;
 
-  const { data: rawData, isLoading } = useQuery({
-    queryKey: ["ranking", trimester, scope, selectedChurchId],
-    enabled,
+  const { data: classicData, isLoading: classicLoading } = useQuery({
+    queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
+    enabled: classicEnabled,
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
@@ -126,21 +130,68 @@ const RankingPage = () => {
     },
   });
 
-  // 🔴 Realtime: revalida ranking quando alguém finalizar
-  useRealtimeRanking(["ranking", trimester, scope, selectedChurchId]);
+  const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
+    queryKey: ["ranking-weekly", scope, selectedChurchId],
+    enabled: weeklyEnabled,
+    queryFn: async () => {
+      let query = supabase
+        .from("ranking_weekly")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, week_number")
+        .order("position")
+        .limit(500);
+      if (scope === "church" && selectedChurchId) {
+        query = query.eq("church_id", selectedChurchId);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const { data: seasonData, isLoading: seasonLoading } = useQuery({
+    queryKey: ["ranking-season", seasonId, scope, selectedChurchId],
+    enabled: seasonEnabled,
+    queryFn: async () => {
+      let query = supabase
+        .from("ranking_season_accumulated")
+        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
+        .eq("season_id", seasonId!)
+        .order("position")
+        .limit(500);
+      if (scope === "church" && selectedChurchId) {
+        query = query.eq("church_id", selectedChurchId);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const isLoading = classicLoading || weeklyLoading || seasonLoading;
+
+  // 🔴 Realtime
+  useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
+  useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
+  useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
 
   const ranking = useMemo(() => {
-    if (!rawData) return [];
-    const filtered = selectedClassId
-      ? rawData.filter((e) => e.class_id === selectedClassId)
-      : rawData;
-    return filtered.map((e, i) => ({ ...e, position: i + 1 }));
-  }, [rawData, selectedClassId]);
+    const raw =
+      mode === "classic" ? classicData :
+      mode === "weekly" ? weeklyData :
+      seasonData;
+    if (!raw) return [];
+    const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
+    return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+  }, [mode, classicData, weeklyData, seasonData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
+      : mode === "weekly"
+      ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
+      : mode === "season"
+      ? "Nenhum participante ainda nesta temporada."
       : "Nenhum resultado ainda. Seja o primeiro!";
+
+  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "season" ? seasonEnabled : classicEnabled;
 
   return (
     <div className="min-h-screen bg-background p-4 relative">
