@@ -18,8 +18,12 @@ import { toast } from "sonner";
 import { Plus, ListChecks, Trash2, FileUp, Eraser } from "lucide-react";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 
-interface Quiz { id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number; }
+interface Quiz {
+  id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number;
+  week_number: number | null; opens_at: string | null; closes_at: string | null; season_id: string | null;
+}
 interface Cls { id: string; name: string; }
+interface Season { id: string; name: string; status: string; }
 interface Question {
   id: string; quiz_id: string; question_text: string; option_a: string; option_b: string;
   option_c: string; option_d: string; correct_option: string; order_index: number; explanation: string | null;
