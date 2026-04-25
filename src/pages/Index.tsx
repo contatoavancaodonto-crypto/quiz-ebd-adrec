@@ -128,6 +128,20 @@ const Index = () => {
     }
   };
 
+  const handleStartWeekly = async () => {
+    if (!profile?.first_name) { toast.error("Perfil incompleto."); return; }
+    if (!weeklyQuiz) { toast.error("Quiz da semana não está disponível."); return; }
+    // descobre nome da turma
+    const cls = classes?.find((c) => c.id === weeklyQuiz.class_id);
+    if (!cls) { toast.error("Turma não encontrada."); return; }
+    const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    setParticipant(fullName, cls.id, cls.name, selectedTrimester);
+    if (profile.church_id && profile.church_name) {
+      setChurch(profile.church_id, profile.church_name);
+    }
+    navigate("/quiz");
+  };
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
