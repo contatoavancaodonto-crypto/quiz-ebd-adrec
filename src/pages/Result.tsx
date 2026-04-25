@@ -65,14 +65,30 @@ const ResultPage = () => {
       // Refetch attempt para pegar streak_bonus calculado pelo trigger
       const { data: attempt } = await supabase
         .from("quiz_attempts")
-        .select("streak_bonus, streak_at_attempt, week_number")
+        .select("streak_bonus, streak_at_attempt, week_number, season_id")
         .eq("id", store.attemptId)
         .maybeSingle();
       if (attempt) {
         setStreakBonus(attempt.streak_bonus ?? 0);
         setStreakAt(attempt.streak_at_attempt ?? 0);
         setWeekNumber(attempt.week_number ?? null);
+
+        // Buscar streak persistido (atual + última semana concluída)
+        if (attempt.season_id && store.participantName) {
+          const key = store.participantName.toLowerCase().trim();
+          const { data: streakRow } = await supabase
+            .from("participant_streaks")
+            .select("current_streak, last_week_completed")
+            .eq("participant_name", key)
+            .eq("season_id", attempt.season_id)
+            .maybeSingle();
+          if (streakRow) {
+            setCurrentStreak(streakRow.current_streak ?? 0);
+            setLastWeekCompleted(streakRow.last_week_completed ?? null);
+          }
+        }
       }
+
 
       const [{ data: cr }, { data: gr }] = await Promise.all([
         supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
