@@ -97,15 +97,27 @@ export default function AdminQuizzes() {
 
   const saveQuiz = async () => {
     if (!qForm.title || !qForm.class_id) return toast.error("Preencha título e turma");
+    const payload: any = {
+      title: qForm.title,
+      class_id: qForm.class_id,
+      trimester: qForm.trimester,
+      week_number: qForm.week_number === "" ? null : Number(qForm.week_number),
+      opens_at: qForm.opens_at ? new Date(qForm.opens_at).toISOString() : null,
+      closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
+      season_id: qForm.season_id || null,
+    };
+    if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
+      return toast.error("Data de abertura deve ser anterior à de fechamento");
+    }
     if (editingQuiz) {
-      const { error } = await supabase.from("quizzes").update(qForm).eq("id", editingQuiz.id);
+      const { error } = await supabase.from("quizzes").update(payload).eq("id", editingQuiz.id);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from("quizzes").insert(qForm);
+      const { error } = await supabase.from("quizzes").insert(payload);
       if (error) return toast.error(error.message);
     }
     toast.success("Salvo");
-    setQuizDialog(false); setEditingQuiz(null); setQForm({ title: "", class_id: "", trimester: 1 }); load();
+    setQuizDialog(false); setEditingQuiz(null); setQForm(emptyForm); load();
   };
 
   const toggleActive = async (q: Quiz) => {
