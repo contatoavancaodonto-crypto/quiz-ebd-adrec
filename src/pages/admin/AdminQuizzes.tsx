@@ -53,14 +53,18 @@ export default function AdminQuizzes() {
     correct_option: "A", order_index: 1, explanation: "",
   });
 
+  const emptyForm = { title: "", class_id: "", trimester: 1, week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "" };
+
   const load = async () => {
     setLoading(true);
-    const [qz, cl] = await Promise.all([
-      supabase.from("quizzes").select("*").order("created_at", { ascending: false }),
+    const [qz, cl, ss] = await Promise.all([
+      supabase.from("quizzes").select("*").order("week_number", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }),
       supabase.from("classes").select("id, name").order("name"),
+      supabase.from("seasons").select("id, name, status").order("created_at", { ascending: false }),
     ]);
     setQuizzes((qz.data as any) ?? []);
     setClasses((cl.data as any) ?? []);
+    setSeasons((ss.data as any) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
