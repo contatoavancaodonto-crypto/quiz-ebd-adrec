@@ -8,6 +8,7 @@ import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThankYouScreen } from "@/components/ThankYouScreen";
 import { BadgesShowcase } from "@/components/BadgesShowcase";
+import { WeeklyRankings } from "@/components/WeeklyRankings";
 import { formatTimeMs } from "@/hooks/useTimer";
 
 function getPerformanceMessage(pct: number) {
@@ -242,6 +243,14 @@ const ResultPage = () => {
 
         {/* Badges conquistados */}
         <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
+
+        {/* Rankings da SEMANA (por lesson_number, tempo como desempate) */}
+        <WeeklyRankings
+          quizId={store.quizId}
+          attemptId={store.attemptId}
+          classId={store.classId}
+          className={store.className}
+        />
 
         {/* Ranking da Igreja */}
         {churchTop.length > 0 && (
