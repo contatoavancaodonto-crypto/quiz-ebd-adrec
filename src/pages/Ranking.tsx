@@ -179,7 +179,7 @@ const RankingPage = () => {
         "ranking_churches_classic";
       let query = supabase
         .from(view as any)
-        .select("position, church_id, church_name, avg_score, participants_count" + (mode === "classic" ? ", trimester" : ""))
+        .select("position, church_id, church_name, pastor_president, avg_score, participants_count" + (mode === "classic" ? ", trimester" : ""))
         .order("position")
         .limit(500);
       if (mode === "classic") {
