@@ -110,9 +110,11 @@ const RankingPage = () => {
   // Modo CLASSIC (legado, ranking_general por trimestre)
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
   const seasonId = activeSeason?.id;
-  const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const monthlyEnabled = mode === "monthly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const classicEnabled = mode === "classic" && enabled;
+  const isInter = scope === "interchurch";
+  const weeklyEnabled = mode === "weekly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const monthlyEnabled = mode === "monthly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const classicEnabled = mode === "classic" && !isInter && enabled;
+  const interEnabled = isInter;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
     queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
@@ -166,17 +168,44 @@ const RankingPage = () => {
     },
   });
 
-  const isLoading = classicLoading || weeklyLoading || monthlyLoading;
+  // Entre Igrejas (uma view por modo de tempo)
+  const { data: interData, isLoading: interLoading } = useQuery({
+    queryKey: ["ranking-interchurch", mode, trimester],
+    enabled: interEnabled,
+    queryFn: async () => {
+      const view =
+        mode === "weekly" ? "ranking_churches_weekly" :
+        mode === "monthly" ? "ranking_churches_monthly" :
+        "ranking_churches_classic";
+      let query = supabase
+        .from(view as any)
+        .select("position, church_id, church_name, avg_score, participants_count" + (mode === "classic" ? ", trimester" : ""))
+        .order("position")
+        .limit(500);
+      if (mode === "classic") {
+        query = (query as any).eq("trimester", trimester);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const isLoading = classicLoading || weeklyLoading || monthlyLoading || interLoading;
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
   const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
   const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
-  const activeRt = mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3;
+  const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
+  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3);
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
 
   const ranking = useMemo(() => {
+    if (isInter) {
+      const raw = interData ?? [];
+      return raw.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+    }
     const raw =
       mode === "classic" ? classicData :
       mode === "weekly" ? weeklyData :
@@ -184,18 +213,20 @@ const RankingPage = () => {
     if (!raw) return [];
     const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
     return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [mode, classicData, weeklyData, monthlyData, selectedClassId]);
+  }, [isInter, interData, mode, classicData, weeklyData, monthlyData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
+      : isInter
+      ? "Nenhuma igreja com participantes neste período."
       : mode === "weekly"
       ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
       : mode === "monthly"
       ? "Nenhum participante ainda neste mês."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled;
+  const enabledForMode = isInter ? interEnabled : (mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled);
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
