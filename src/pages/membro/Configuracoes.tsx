@@ -115,7 +115,7 @@ export default function Configuracoes() {
             </button>
           </div>
         </section>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }
