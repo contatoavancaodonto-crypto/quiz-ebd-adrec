@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, FileSearch, Trophy, Calendar, Clock, ChevronRight, History as HistoryIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { supabase } from "@/integrations/supabase/client";
 
