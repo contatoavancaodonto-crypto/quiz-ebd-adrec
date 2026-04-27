@@ -185,7 +185,7 @@ export default function MeuPerfil() {
             <div className="flex-1 min-w-0">
               <div className="text-[10px] uppercase tracking-widest opacity-80 font-bold">Bem-vindo</div>
               <h1 className="text-xl font-display font-extrabold leading-tight truncate">
-                {firstName || "—"} {lastName}
+                {displayName || `${firstName} ${lastName}`.trim() || "—"}
               </h1>
               <p className="text-xs opacity-85 truncate flex items-center gap-1 mt-0.5">
                 <Mail className="w-3 h-3" /> {profile?.email}
