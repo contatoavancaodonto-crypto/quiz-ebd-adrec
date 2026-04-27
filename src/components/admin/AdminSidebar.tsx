@@ -12,6 +12,9 @@ import {
   FolderOpen,
   ArrowLeft,
   LogOut,
+  Building2,
+  UsersRound,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,13 +34,28 @@ import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const allItems = [
+type Item = {
+  title: string;
+  url: string;
+  icon: any;
+  end?: boolean;
+  superadminOnly?: boolean;
+  churchAdminOnly?: boolean;
+};
+
+const allItems: Item[] = [
   { title: "Visão Geral", url: "/painel-ebd-2025", icon: LayoutDashboard, end: true },
+  // Admin de igreja (oculto para superadmin)
+  { title: "Minha Igreja", url: "/painel-ebd-2025/minha-igreja", icon: Building2, churchAdminOnly: true },
+  { title: "Membros da Igreja", url: "/painel-ebd-2025/membros", icon: UsersRound, churchAdminOnly: true },
+  { title: "Admins Locais", url: "/painel-ebd-2025/admins-locais", icon: ShieldCheck, churchAdminOnly: true },
+  // Superadmin
   { title: "Usuários & Roles", url: "/painel-ebd-2025/usuarios", icon: Users, superadminOnly: true },
   { title: "Igrejas", url: "/painel-ebd-2025/igrejas", icon: Church, superadminOnly: true },
   { title: "Turmas", url: "/painel-ebd-2025/turmas", icon: GraduationCap, superadminOnly: true },
   { title: "Quizzes & Perguntas", url: "/painel-ebd-2025/quizzes", icon: HelpCircle, superadminOnly: true },
   { title: "Temporadas", url: "/painel-ebd-2025/temporadas", icon: CalendarRange, superadminOnly: true },
+  // Compartilhados
   { title: "Tentativas", url: "/painel-ebd-2025/tentativas", icon: ListChecks },
   { title: "Respostas Membros", url: "/painel-ebd-2025/respostas-membros", icon: ClipboardCheck },
   { title: "Badges", url: "/painel-ebd-2025/badges", icon: Award, superadminOnly: true },
@@ -49,10 +67,14 @@ export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
-  const { isSuperadmin } = useRoles();
+  const { isSuperadmin, isChurchAdmin } = useRoles();
   const navigate = useNavigate();
 
-  const items = allItems.filter((i) => isSuperadmin || !i.superadminOnly);
+  const items = allItems.filter((i) => {
+    if (i.superadminOnly && !isSuperadmin) return false;
+    if (i.churchAdminOnly && (!isChurchAdmin || isSuperadmin)) return false;
+    return true;
+  });
 
   const handleLogout = async () => {
     await signOut();

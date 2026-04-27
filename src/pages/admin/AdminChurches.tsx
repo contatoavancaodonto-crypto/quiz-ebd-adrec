@@ -1,13 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Check, X, Power } from "lucide-react";
+import { Plus, Check, X, Power, Inbox } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 interface Church {
   id: string;
@@ -21,7 +38,35 @@ interface Church {
   requester_area: number | null;
 }
 
+interface EditRequest {
+  id: string;
+  church_id: string;
+  proposed_name: string | null;
+  proposed_pastor_president: string | null;
+  proposed_requester_phone: string | null;
+  proposed_requester_area: number | null;
+  status: "pending" | "approved" | "rejected";
+  review_note: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  requested_by: string;
+}
+
+interface RequesterProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+}
+
 export default function AdminChurches() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab") === "solicitacoes" ? "solicitacoes" : "igrejas";
+  const [tab, setTab] = useState<string>(tabParam);
+
+  useEffect(() => {
+    setTab(tabParam);
+  }, [tabParam]);
+
   const [rows, setRows] = useState<Church[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -29,18 +74,60 @@ export default function AdminChurches() {
   const [name, setName] = useState("");
   const [pastorPresident, setPastorPresident] = useState("");
 
+  const [requests, setRequests] = useState<EditRequest[]>([]);
+  const [requesters, setRequesters] = useState<Record<string, RequesterProfile>>({});
+  const [reviewing, setReviewing] = useState<EditRequest | null>(null);
+  const [reviewAction, setReviewAction] = useState<"approve" | "reject">("approve");
+  const [reviewNote, setReviewNote] = useState("");
+
+  const churchById = useMemo(() => {
+    const m = new Map<string, Church>();
+    rows.forEach((c) => m.set(c.id, c));
+    return m;
+  }, [rows]);
+
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("churches")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setRows((data as any) ?? []);
+    const [chRes, reqRes] = await Promise.all([
+      supabase.from("churches").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("church_edit_requests")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200),
+    ]);
+    setRows((chRes.data as any) ?? []);
+    const reqs = (reqRes.data as EditRequest[]) ?? [];
+    setRequests(reqs);
+
+    // Carrega nomes dos solicitantes
+    const ids = Array.from(new Set(reqs.map((r) => r.requested_by)));
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name")
+        .in("id", ids);
+      const map: Record<string, RequesterProfile> = {};
+      (profs ?? []).forEach((p: any) => (map[p.id] = p));
+      setRequesters(map);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
     load();
+    const channel = supabase
+      .channel("admin-churches-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "churches" }, () => load())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "church_edit_requests" },
+        () => load()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const save = async () => {
@@ -81,75 +168,306 @@ export default function AdminChurches() {
     load();
   };
 
+  const openReview = (r: EditRequest, action: "approve" | "reject") => {
+    setReviewing(r);
+    setReviewAction(action);
+    setReviewNote("");
+  };
+
+  const confirmReview = async () => {
+    if (!reviewing) return;
+    const fn = reviewAction === "approve"
+      ? "approve_church_edit_request"
+      : "reject_church_edit_request";
+    const { error } = await supabase.rpc(fn as any, {
+      p_request_id: reviewing.id,
+      p_note: reviewNote || null,
+    });
+    if (error) return toast.error("Falha: " + error.message);
+    toast.success(reviewAction === "approve" ? "Solicitação aprovada" : "Solicitação rejeitada");
+    setReviewing(null);
+    load();
+  };
+
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
+
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Igrejas</h2>
-          <p className="text-sm text-muted-foreground">Aprovar solicitações e gerenciar igrejas</p>
+          <p className="text-sm text-muted-foreground">
+            Aprovar solicitações e gerenciar igrejas
+          </p>
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); setPastorPresident(""); } }}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (!o) {
+              setEditing(null);
+              setName("");
+              setPastorPresident("");
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-1" /> Nova Igreja</Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-1" /> Nova Igreja
+            </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Igreja</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editing ? "Editar" : "Nova"} Igreja</DialogTitle>
+            </DialogHeader>
             <div className="space-y-3">
-              <Input placeholder="Nome da igreja" value={name} onChange={(e) => setName(e.target.value)} />
-              <Input placeholder="Pastor Presidente" value={pastorPresident} onChange={(e) => setPastorPresident(e.target.value)} />
+              <Input
+                placeholder="Nome da igreja"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <Input
+                placeholder="Pastor Presidente"
+                value={pastorPresident}
+                onChange={(e) => setPastorPresident(e.target.value)}
+              />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
               <Button onClick={save}>Salvar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Pastor Presidente</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Solicitante</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
-            ) : rows.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {c.pastor_president ?? "—"}
-                </TableCell>
-                <TableCell className="space-x-1">
-                  {c.approved ? <Badge>Aprovada</Badge> : <Badge variant="destructive">Pendente</Badge>}
-                  {!c.active && <Badge variant="outline">Inativa</Badge>}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {c.requester_pastor_name ?? "—"} {c.requester_phone && `· ${c.requester_phone}`}
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  {!c.approved && (
-                    <Button size="sm" variant="outline" onClick={() => approve(c)}>
-                      <Check className="w-4 h-4 mr-1" /> Aprovar
-                    </Button>
+
+      <Tabs
+        value={tab}
+        onValueChange={(v) => {
+          setTab(v);
+          const next = new URLSearchParams(searchParams);
+          if (v === "solicitacoes") next.set("tab", "solicitacoes");
+          else next.delete("tab");
+          setSearchParams(next, { replace: true });
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value="igrejas">Igrejas</TabsTrigger>
+          <TabsTrigger value="solicitacoes" className="gap-2">
+            <Inbox className="w-4 h-4" />
+            Solicitações de edição
+            {pendingCount > 0 && (
+              <Badge className="bg-destructive text-destructive-foreground h-5 px-1.5">
+                {pendingCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="igrejas" className="mt-4">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Pastor Presidente</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Solicitante</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      Carregando…
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  rows.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {c.pastor_president ?? "—"}
+                      </TableCell>
+                      <TableCell className="space-x-1">
+                        {c.approved ? (
+                          <Badge>Aprovada</Badge>
+                        ) : (
+                          <Badge variant="destructive">Pendente</Badge>
+                        )}
+                        {!c.active && <Badge variant="outline">Inativa</Badge>}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {c.requester_pastor_name ?? "—"}{" "}
+                        {c.requester_phone && `· ${c.requester_phone}`}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        {!c.approved && (
+                          <Button size="sm" variant="outline" onClick={() => approve(c)}>
+                            <Check className="w-4 h-4 mr-1" /> Aprovar
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditing(c);
+                            setName(c.name);
+                            setPastorPresident(c.pastor_president ?? "");
+                            setOpen(true);
+                          }}
+                        >
+                          Editar
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>
+                          <Power className="w-4 h-4 mr-1" /> {c.active ? "Desativar" : "Ativar"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="solicitacoes" className="mt-4 space-y-3">
+          {loading ? (
+            <Card className="p-6 text-center text-muted-foreground">Carregando…</Card>
+          ) : requests.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              Nenhuma solicitação de edição.
+            </Card>
+          ) : (
+            requests.map((r) => {
+              const ch = churchById.get(r.church_id);
+              const requester = requesters[r.requested_by];
+              const requesterName = requester
+                ? `${requester.first_name ?? ""} ${requester.last_name ?? ""}`.trim()
+                : "—";
+              return (
+                <Card key={r.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {ch?.name ?? "Igreja removida"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Por {requesterName} ·{" "}
+                        {new Date(r.created_at).toLocaleString("pt-BR")}
+                      </div>
+                    </div>
+                    {r.status === "pending" && (
+                      <Badge variant="secondary">Pendente</Badge>
+                    )}
+                    {r.status === "approved" && (
+                      <Badge className="bg-green-600 hover:bg-green-600">Aprovada</Badge>
+                    )}
+                    {r.status === "rejected" && <Badge variant="destructive">Rejeitada</Badge>}
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                    {r.proposed_name && ch && (
+                      <DiffRow label="Nome" before={ch.name} after={r.proposed_name} />
+                    )}
+                    {r.proposed_pastor_president && ch && (
+                      <DiffRow
+                        label="Pastor Presidente"
+                        before={ch.pastor_president ?? "—"}
+                        after={r.proposed_pastor_president}
+                      />
+                    )}
+                    {r.proposed_requester_phone && ch && (
+                      <DiffRow
+                        label="Telefone"
+                        before={ch.requester_phone ?? "—"}
+                        after={r.proposed_requester_phone}
+                      />
+                    )}
+                    {r.proposed_requester_area !== null && ch && (
+                      <DiffRow
+                        label="Área"
+                        before={String(ch.requester_area ?? "—")}
+                        after={String(r.proposed_requester_area)}
+                      />
+                    )}
+                  </div>
+
+                  {r.review_note && (
+                    <div className="text-xs italic text-muted-foreground border-t pt-2">
+                      Observação: {r.review_note}
+                    </div>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setName(c.name); setPastorPresident(c.pastor_president ?? ""); setOpen(true); }}>
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>
-                    <Power className="w-4 h-4 mr-1" /> {c.active ? "Desativar" : "Ativar"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+
+                  {r.status === "pending" && (
+                    <div className="flex justify-end gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openReview(r, "reject")}
+                      >
+                        <X className="w-4 h-4 mr-1" /> Rejeitar
+                      </Button>
+                      <Button size="sm" onClick={() => openReview(r, "approve")}>
+                        <Check className="w-4 h-4 mr-1" /> Aprovar
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={!!reviewing} onOpenChange={(o) => !o && setReviewing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {reviewAction === "approve" ? "Aprovar solicitação" : "Rejeitar solicitação"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {reviewAction === "approve"
+                ? "Os campos serão aplicados imediatamente à igreja."
+                : "A solicitação será marcada como rejeitada."}
+            </p>
+            <Textarea
+              placeholder="Observação (opcional)…"
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewing(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmReview}
+              variant={reviewAction === "approve" ? "default" : "destructive"}
+            >
+              {reviewAction === "approve" ? "Aprovar" : "Rejeitar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function DiffRow({ label, before, after }: { label: string; before: string; after: string }) {
+  return (
+    <div className="rounded-md border p-2 space-y-1">
+      <div className="text-xs text-muted-foreground font-medium">{label}</div>
+      <div className="text-xs">
+        <span className="line-through text-muted-foreground">{before}</span>
+        <span className="mx-2 text-muted-foreground">→</span>
+        <span className="font-semibold text-foreground">{after}</span>
+      </div>
     </div>
   );
 }

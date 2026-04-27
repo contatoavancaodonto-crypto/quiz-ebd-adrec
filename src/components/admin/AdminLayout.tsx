@@ -8,6 +8,7 @@ import { Crown, Shield } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PendingRequestsBell } from "./PendingRequestsBell";
 
 function RoleBadge() {
   const { isSuperadmin, isChurchAdmin, churchId, loading } = useRoles();
@@ -68,7 +69,8 @@ export function AdminLayout() {
                   Painel Administrativo
                 </h1>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <PendingRequestsBell />
                 <RoleBadge />
                 <ThemeToggle />
               </div>
