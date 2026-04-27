@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -13,6 +13,12 @@ import {
   BookMarked,
   Archive,
   GraduationCap,
+  Bell,
+  BookOpen,
+  Music2,
+  FileText,
+  History,
+  ArrowRight,
 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +43,37 @@ import { toast } from "sonner";
 const pad = (n: number) => String(n).padStart(2, "0");
 const PROVAO_WINDOW_DAYS = 14;
 
+const TOOL_TILES = [
+  {
+    label: "Bíblia",
+    desc: "Leia online",
+    icon: BookOpen,
+    path: "/membro/biblia",
+    bg: "from-indigo-500 to-blue-600",
+  },
+  {
+    label: "Harpa",
+    desc: "Hinos cristãos",
+    icon: Music2,
+    path: "/membro/harpa",
+    bg: "from-rose-500 to-red-600",
+  },
+  {
+    label: "Revista",
+    desc: "Lições do tri.",
+    icon: FileText,
+    path: "/membro/revista",
+    bg: "from-amber-500 to-orange-600",
+  },
+  {
+    label: "Histórico",
+    desc: "Suas tentativas",
+    icon: History,
+    path: "/membro/historico",
+    bg: "from-emerald-500 to-green-600",
+  },
+];
+
 const Index = () => {
   const navigate = useNavigate();
   const { setParticipant, setChurch } = useQuizStore();
@@ -58,7 +95,6 @@ const Index = () => {
   const weekClose = useCountdown(weeklyQuiz?.closes_at);
   const nextOpen = useCountdown(nextQuiz?.opens_at);
 
-  // Provão aparece só se faltam <= 14 dias para o fim da temporada
   const showProvao = useMemo(() => {
     if (!provao || !season?.end_date) return false;
     const ms = new Date(season.end_date).getTime() - Date.now();
@@ -78,7 +114,6 @@ const Index = () => {
     },
   });
 
-  // Já respondeu o quiz da semana?
   const { data: alreadyAnsweredWeekly } = useQuery({
     queryKey: ["weekly-attempt", weeklyQuiz?.id, fullName],
     enabled: !!weeklyQuiz?.id && !!fullName,
@@ -104,9 +139,17 @@ const Index = () => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
   }, [user, authLoading, navigate]);
 
-  useRealtimeInvalidate("quizzes", [["weekly-quiz"], ["next-quiz"], ["trimestral-provao"]], "index-quizzes");
+  useRealtimeInvalidate(
+    "quizzes",
+    [["weekly-quiz"], ["next-quiz"], ["trimestral-provao"]],
+    "index-quizzes"
+  );
 
-  const startQuiz = (quizClassId: string, quizClassName: string, trimester: number) => {
+  const startQuiz = (
+    quizClassId: string,
+    quizClassName: string,
+    trimester: number
+  ) => {
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     setParticipant(fullNameLocal, quizClassId, quizClassName, trimester);
@@ -119,6 +162,10 @@ const Index = () => {
   const handleStartWeekly = () => {
     if (!weeklyQuiz) return toast.error("Quiz da semana não está disponível.");
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
+    if (alreadyAnsweredWeekly) {
+      return toast.info("Você já respondeu o quiz desta semana 🎉");
+    }
+    if (weekClose.expired) return toast.error("Janela do quiz encerrada.");
     startQuiz(userClass.id, userClass.name, 2);
   };
 
@@ -152,296 +199,377 @@ const Index = () => {
       ? `Lição ${weeklyQuiz.lesson_number}`
       : weeklyQuiz?.week_number
       ? `Semana #${weeklyQuiz.week_number}`
-      : "Quiz da Semana";
+      : "Quiz da semana";
 
   const heroTitle = weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
+  const firstName = profile?.first_name ?? "amigo";
+
+  // Saudação dinâmica
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   return (
-    <MemberLayout title="Início">
-      <div className="flex flex-col items-center p-4 relative overflow-hidden">
+    <MemberLayout
+      title="Início"
+      hideMobileHeader
+      bottomNav={{
+        showFab: !!weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired,
+        onFabClick: handleStartWeekly,
+        fabLabel: "Quiz",
+      }}
+    >
+      <div className="relative">
+        {/* Background blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-secondary/5 blur-3xl" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute top-40 -right-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md relative z-10 space-y-5"
+        {/* ===== HEADER APP-LIKE (mobile) ===== */}
+        <header
+          className="md:hidden sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
         >
-          {/* Header */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.05, duration: 0.4 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-background mb-2">
-              <img
-                src={churchLogo}
-                alt="Logo ADREC"
-                className="w-14 h-14 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]"
-              />
+          <div className="flex items-center justify-between px-4 h-14">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-background border border-border flex items-center justify-center">
+                <img src={churchLogo} alt="ADREC" className="w-7 h-7 object-contain" />
+              </div>
+              <div className="leading-tight">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                  EBD Online
+                </div>
+                <div className="text-xs font-semibold text-foreground">
+                  CIMADSETA · ADREC
+                </div>
+              </div>
             </div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold gradient-text glow-text leading-tight">
-              EBD Online
-            </h1>
-            <p className="text-muted-foreground text-xs font-semibold tracking-wide">
-              CIMADSETA · 1º TRI. 2026 · ADREC
-            </p>
-            {profile && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Olá,{" "}
-                <span className="text-foreground font-semibold">
-                  {profile.first_name}
-                </span>
-                {userClass?.name && (
-                  <span className="text-[10px] text-muted-foreground/70 block mt-0.5">
-                    Turma {userClass.name}
-                  </span>
-                )}
+            <div className="flex items-center gap-1">
+              <button
+                aria-label="Notificações"
+                onClick={() => navigate("/membro/historico")}
+                className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+              >
+                <Bell className="w-5 h-5" />
+              </button>
+              <button
+                aria-label="Perfil"
+                onClick={() => navigate("/membro/perfil")}
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md"
+              >
+                {firstName.charAt(0).toUpperCase()}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="px-4 pt-4 pb-6 space-y-5 relative z-10">
+          {/* ===== HERO SAUDAÇÃO ===== */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-secondary via-secondary/90 to-primary p-6 shadow-xl shadow-secondary/20"
+          >
+            <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+            <div className="absolute top-4 right-4 opacity-20">
+              <BookMarked className="w-24 h-24 text-white" strokeWidth={1.2} />
+            </div>
+
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold mb-1">
+                {greeting}
+              </div>
+              <h1 className="text-3xl font-display font-extrabold text-white leading-tight">
+                Oi, {firstName} <span className="inline-block">👋</span>
+              </h1>
+              <p className="text-sm text-white/85 mt-2 max-w-[80%]">
+                {alreadyAnsweredWeekly
+                  ? "Você já respondeu o quiz desta semana. Continue firme!"
+                  : weeklyQuiz
+                  ? "O quiz da semana está aberto. Bora estudar?"
+                  : "Continue sua jornada de fé com a EBD."}
               </p>
-            )}
+
+              {streak > 0 && (
+                <div className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur border border-white/20">
+                  <Flame className="w-4 h-4 text-orange-300" />
+                  <span className="text-xs font-bold text-white">
+                    {streak} {streak === 1 ? "semana" : "semanas"} seguidas
+                  </span>
+                </div>
+              )}
+            </div>
           </motion.div>
 
-          {/* ============ HERO: QUIZ DA SEMANA ============ */}
+          {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
           {weeklyQuiz && !seasonExpired ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-background to-secondary/10 p-6 shadow-2xl shadow-primary/10"
-            >
-              <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-secondary/15 blur-3xl pointer-events-none" />
+            <section className="space-y-2">
+              <SectionLabel color="primary" label="Quiz da semana" />
 
-              <div className="relative space-y-4">
-                {/* Top: badge lição + streak */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30">
-                    <BookMarked className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                      {lessonLabel} · Quiz semanal
-                    </span>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 }}
+                className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
+                    <Sparkles className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  {streak > 0 && (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/30">
-                      <Flame className="w-3.5 h-3.5 text-orange-500" />
-                      <span className="text-xs font-bold text-orange-500">
-                        {streak} {streak === 1 ? "semana" : "semanas"}
-                      </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-primary font-bold">
+                      {lessonLabel}
                     </div>
-                  )}
+                    <h3 className="text-base font-bold text-foreground leading-tight">
+                      {heroTitle || "Quiz semanal"}
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {weeklyQuiz.total_questions ?? 5} perguntas · até{" "}
+                      <strong>dom 23h59</strong>
+                    </p>
+                  </div>
                 </div>
 
-                {/* Título da lição */}
-                <div>
-                  <h2 className="text-xl font-bold text-foreground leading-tight mb-1">
-                    {heroTitle}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {weeklyQuiz.total_questions ?? 5} perguntas · responda até{" "}
-                    <strong>domingo às 23h59</strong>. Cada semana consecutiva
-                    soma <strong>+1 pt</strong> de bônus (até +5).
-                  </p>
-                </div>
-
-                {/* Versículo-chave da lição */}
                 {weeklyQuiz.lesson_key_verse_ref && (
-                  <div className="rounded-2xl bg-background/60 backdrop-blur border border-border/60 p-3">
+                  <div className="rounded-2xl bg-muted/50 border border-border/50 p-3 mb-3">
                     <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1 flex items-center gap-1">
                       <BookMarked className="w-3 h-3" /> Versículo-chave
                     </div>
                     {weeklyQuiz.lesson_key_verse_text && (
-                      <blockquote className="text-sm italic text-foreground leading-snug mb-1">
+                      <blockquote className="text-xs italic text-foreground leading-snug mb-1">
                         "{weeklyQuiz.lesson_key_verse_text}"
                       </blockquote>
                     )}
-                    <div className="text-xs font-semibold text-primary">
+                    <div className="text-[11px] font-semibold text-primary">
                       {weeklyQuiz.lesson_key_verse_ref}
                     </div>
                   </div>
                 )}
 
-                {/* Countdown */}
-                <div className="rounded-2xl bg-background/60 backdrop-blur border border-border/60 p-3 flex items-center gap-3">
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                    <Hourglass className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-                      {weekClose.expired ? "Janela encerrada" : "Encerra em"}
+                {/* Linha countdown + CTA */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 rounded-xl bg-muted/40 border border-border/40 px-3 py-2">
+                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <Hourglass className="w-3 h-3" />
+                      {weekClose.expired ? "Encerrado" : "Encerra em"}
                     </div>
-                    <div className="font-mono text-lg font-bold text-foreground tabular-nums">
+                    <div className="font-mono text-sm font-bold text-foreground tabular-nums">
                       {weekCloseLabel}
                     </div>
                   </div>
-                </div>
 
-                {/* CTA */}
-                {alreadyAnsweredWeekly ? (
-                  <div className="w-full py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center gap-2 text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-semibold text-sm">
-                      Você já respondeu esta semana
-                    </span>
-                  </div>
-                ) : (
-                  <motion.button
-                    whileHover={{ scale: weekClose.expired ? 1 : 1.02 }}
-                    whileTap={{ scale: weekClose.expired ? 1 : 0.98 }}
-                    onClick={handleStartWeekly}
-                    disabled={weekClose.expired}
-                    className="w-full py-4 rounded-2xl gradient-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Responder Quiz da Semana
-                    <ChevronRight className="w-5 h-5" />
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
+                  {alreadyAnsweredWeekly ? (
+                    <div className="shrink-0 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="text-xs font-semibold">Respondido</span>
+                    </div>
+                  ) : (
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={handleStartWeekly}
+                      disabled={weekClose.expired}
+                      className="shrink-0 px-4 py-2.5 rounded-xl gradient-primary text-primary-foreground font-bold text-sm flex items-center gap-1.5 shadow-lg shadow-primary/30 disabled:opacity-50"
+                    >
+                      Responder
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            </section>
           ) : nextQuiz && !seasonExpired ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-muted/40 via-background to-background p-6 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-3">
-                <CalendarClock className="w-7 h-7 text-primary" />
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Próxima lição
-                {nextQuiz.lesson_number != null
-                  ? ` · #${nextQuiz.lesson_number}`
-                  : nextQuiz.week_number
-                  ? ` · semana #${nextQuiz.week_number}`
-                  : ""}
-              </div>
-              <h2 className="text-lg font-bold text-foreground mb-3">
-                {nextQuiz.lesson_title ?? nextQuiz.title}
-              </h2>
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 font-mono text-sm text-primary">
-                <Hourglass className="w-4 h-4" />
-                Abre em{" "}
-                {nextOpen.days > 0
-                  ? `${nextOpen.days}d ${nextOpen.hours}h`
-                  : `${pad(nextOpen.hours)}:${pad(nextOpen.minutes)}`}
-              </div>
-              {streak > 0 && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  Sua sequência atual:{" "}
-                  <span className="inline-flex items-center gap-1 text-orange-500 font-bold">
-                    <Flame className="w-3.5 h-3.5" /> {streak}
-                  </span>
-                </p>
-              )}
-            </motion.div>
+            <section className="space-y-2">
+              <SectionLabel color="primary" label="Próxima lição" />
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl border border-border bg-card p-5 text-center"
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mb-2">
+                  <CalendarClock className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  Próxima lição
+                  {nextQuiz.lesson_number != null
+                    ? ` · #${nextQuiz.lesson_number}`
+                    : nextQuiz.week_number
+                    ? ` · semana #${nextQuiz.week_number}`
+                    : ""}
+                </div>
+                <h2 className="text-base font-bold text-foreground mb-3">
+                  {nextQuiz.lesson_title ?? nextQuiz.title}
+                </h2>
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 font-mono text-sm text-primary">
+                  <Hourglass className="w-4 h-4" />
+                  Abre em{" "}
+                  {nextOpen.days > 0
+                    ? `${nextOpen.days}d ${nextOpen.hours}h`
+                    : `${pad(nextOpen.hours)}:${pad(nextOpen.minutes)}`}
+                </div>
+              </motion.div>
+            </section>
           ) : !seasonExpired ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-muted/20 p-6 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-muted mb-3">
-                <Calendar className="w-7 h-7 text-muted-foreground" />
+            <section className="space-y-2">
+              <SectionLabel color="muted" label="Quiz da semana" />
+              <div className="rounded-3xl border border-border bg-muted/20 p-5 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
+                  <Calendar className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <h2 className="text-sm font-bold text-foreground mb-1">
+                  Aguarde o próximo quiz
+                </h2>
+                <p className="text-[11px] text-muted-foreground">
+                  Toda <strong>segunda às 00h00</strong> abrimos a próxima lição.
+                </p>
               </div>
-              <h2 className="text-base font-bold text-foreground mb-1">
-                Aguarde o próximo quiz
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Toda <strong>segunda às 00h00</strong> abrimos a próxima lição.
-                Confira o ranking enquanto isso!
-              </p>
-            </motion.div>
+            </section>
           ) : null}
 
-          {/* ============ PROVÃO TRIMESTRAL (condicional) ============ */}
+          {/* ===== PROVÃO TRIMESTRAL ===== */}
           {showProvao && provao && !seasonExpired && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18 }}
-              className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-background to-background p-5"
+              className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-background to-background p-4"
             >
-              <div className="flex items-start gap-3">
-                <div className="shrink-0 w-11 h-11 rounded-xl bg-amber-500/15 flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="shrink-0 w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
                   <GraduationCap className="w-6 h-6 text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-0.5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                     Provão trimestral · {provao.total_questions ?? 13} perguntas
                   </div>
-                  <h3 className="text-base font-bold text-foreground leading-tight mb-2">
+                  <h3 className="text-sm font-bold text-foreground leading-tight truncate">
                     {provao.title}
                   </h3>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleStartProvao}
-                    className="w-full py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-sm flex items-center justify-center gap-2"
-                  >
-                    Acessar provão
-                    <ChevronRight className="w-4 h-4" />
-                  </motion.button>
                 </div>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleStartProvao}
+                  className="shrink-0 px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold text-xs flex items-center gap-1"
+                >
+                  Acessar
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* ============ VERSÍCULO DO DIA ============ */}
-          <DailyVerseCard />
+          {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
+          <section className="space-y-2">
+            <SectionLabel color="primary" label="Versículo do dia" />
+            <DailyVerseCard />
+          </section>
 
-          {/* ============ STATUS DA MINHA TURMA ============ */}
+          {/* ===== FERRAMENTAS PRINCIPAIS — grid 2x2 ===== */}
+          <section className="space-y-2">
+            <SectionLabel color="warning" label="Ferramentas principais" />
+            <div className="grid grid-cols-2 gap-3">
+              {TOOL_TILES.map((t, i) => {
+                const Icon = t.icon;
+                return (
+                  <motion.button
+                    key={t.path}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 * i }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(t.path)}
+                    className={`relative overflow-hidden rounded-2xl p-4 text-left bg-gradient-to-br ${t.bg} text-white shadow-lg min-h-[120px] flex flex-col justify-between`}
+                  >
+                    <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-white/10 blur-xl" />
+                    <Icon className="w-7 h-7 text-white drop-shadow" strokeWidth={1.8} />
+                    <div className="relative">
+                      <div className="text-base font-bold leading-tight">{t.label}</div>
+                      <div className="text-[11px] text-white/80">{t.desc}</div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ===== STATUS DA MINHA TURMA ===== */}
           {userClass && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-2"
-            >
+            <section className="space-y-2">
               <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Minha turma
-                </h3>
+                <SectionLabel color="success" label="Minha turma" inline />
                 <span className="text-[10px] text-muted-foreground">
                   Encerra dom · 23h59
                 </span>
               </div>
-              <ClassWeeklyStatusCard classId={userClass.id} className={userClass.name} />
-            </motion.section>
+              <ClassWeeklyStatusCard
+                classId={userClass.id}
+                className={userClass.name}
+              />
+            </section>
           )}
 
-          {/* ============ ATALHO RANKING ============ */}
+          {/* ===== ATALHO RANKING ===== */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/ranking")}
-            className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 text-foreground hover:border-yellow-500/50"
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-yellow-500/15 to-amber-500/15 border border-yellow-500/30 flex items-center gap-3 hover:border-yellow-500/50 transition-colors"
           >
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            Ver Ranking
-            <ChevronRight className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-bold text-foreground">Ver Ranking</div>
+              <div className="text-[11px] text-muted-foreground">
+                Sua posição na turma e geral
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </motion.button>
 
-          {/* ============ LINK ARQUIVO ============ */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+          {/* ===== ARQUIVO TRIMESTRAL ===== */}
+          <button
             onClick={() => navigate("/arquivo")}
             className="w-full py-3 rounded-xl text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 flex items-center justify-center gap-2 transition-colors"
           >
             <Archive className="w-3.5 h-3.5" />
             Arquivo trimestral (provões anteriores)
             <ChevronRight className="w-3.5 h-3.5" />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </div>
     </MemberLayout>
   );
 };
+
+/* ---------- Section label helper ---------- */
+function SectionLabel({
+  label,
+  color = "primary",
+  inline = false,
+}: {
+  label: string;
+  color?: "primary" | "secondary" | "warning" | "success" | "muted";
+  inline?: boolean;
+}) {
+  const barColor =
+    color === "primary"
+      ? "bg-primary"
+      : color === "secondary"
+      ? "bg-secondary"
+      : color === "warning"
+      ? "bg-amber-500"
+      : color === "success"
+      ? "bg-emerald-500"
+      : "bg-muted-foreground";
+
+  return (
+    <div className={`flex items-center gap-2 ${inline ? "" : "px-1"}`}>
+      <span className={`block w-1 h-3.5 rounded-full ${barColor}`} />
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export default Index;
