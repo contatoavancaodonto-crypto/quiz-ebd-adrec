@@ -215,7 +215,7 @@ const RankingPage = () => {
             <h1 className="text-2xl font-display font-extrabold text-foreground leading-tight">Ranking</h1>
             <p className="text-xs text-muted-foreground truncate">
               {mode === "weekly" && "Semana atual"}
-              {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
+              {mode === "monthly" && "Mês atual"}
               {mode === "classic" && `${trimester}º Trimestre`}
             </p>
           </div>
@@ -238,11 +238,11 @@ const RankingPage = () => {
           </div>
         </motion.div>
 
-        {/* Mode tabs: Semana / Temporada / Trimestral */}
+        {/* Mode tabs: Semana / Mensal / Trimestral */}
         <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="weekly">Semana</TabsTrigger>
-            <TabsTrigger value="season">Temporada</TabsTrigger>
+            <TabsTrigger value="monthly">Mensal</TabsTrigger>
             <TabsTrigger value="classic">Trimestral</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -372,11 +372,15 @@ const RankingPage = () => {
               <AnimatePresence initial={false}>
                 {ranking.map((entry: any, i) => {
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
-                  const isSeason = mode === "season";
+                  const isMonthly = mode === "monthly";
                   const isWeekly = mode === "weekly";
-                  const mainScore = isSeason ? entry.total_score : (isWeekly ? entry.final_score : entry.score);
-                  const baseScore = isWeekly ? entry.score : null;
-                  const bonus = isWeekly ? entry.streak_bonus : null;
+                  const isClassic = mode === "classic";
+                  // Para weekly e classic agora usamos final_score (acertos + bônus de streak)
+                  const mainScore = isMonthly
+                    ? entry.total_score
+                    : (entry.final_score ?? entry.score);
+                  const baseScore = isWeekly || isClassic ? entry.score : null;
+                  const bonus = isWeekly || isClassic ? (entry.streak_bonus ?? 0) : 0;
                   return (
                     <motion.div
                       key={stableKey}
@@ -403,7 +407,7 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
-                          {isSeason && entry.current_streak > 0 && (
+                          {isMonthly && entry.current_streak > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
                               <Flame className="w-3 h-3" />{entry.current_streak}
                             </span>
@@ -420,7 +424,7 @@ const RankingPage = () => {
                         {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
                         )}
-                        {isSeason && (
+                        {isMonthly && (
                           <div className="text-[10px] text-muted-foreground/80">
                             {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
                           </div>
@@ -428,14 +432,14 @@ const RankingPage = () => {
                       </div>
 
                       <div className="text-right shrink-0">
-                        {isSeason ? (
+                        {isMonthly ? (
                           <div className="font-display font-bold text-primary">{mainScore} pts</div>
                         ) : (
                           <>
                             <div className="font-display font-bold text-primary">
                               {mainScore}{isWeekly ? "" : `/13`}
                             </div>
-                            {isWeekly && bonus > 0 && (
+                            {bonus > 0 && (
                               <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
                             )}
                             <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
