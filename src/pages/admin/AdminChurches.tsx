@@ -118,10 +118,13 @@ export default function AdminChurches() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
             ) : rows.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {c.pastor_president ?? "—"}
+                </TableCell>
                 <TableCell className="space-x-1">
                   {c.approved ? <Badge>Aprovada</Badge> : <Badge variant="destructive">Pendente</Badge>}
                   {!c.active && <Badge variant="outline">Inativa</Badge>}
@@ -135,7 +138,7 @@ export default function AdminChurches() {
                       <Check className="w-4 h-4 mr-1" /> Aprovar
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setName(c.name); setOpen(true); }}>
+                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setName(c.name); setPastorPresident(c.pastor_president ?? ""); setOpen(true); }}>
                     Editar
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>
