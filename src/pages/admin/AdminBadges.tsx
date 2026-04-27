@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Power } from "lucide-react";
+import { Plus, Power, Award } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Bd { id: string; code: string; name: string; description: string; emoji: string; type: string; active: boolean; }
 
@@ -48,16 +49,24 @@ export default function AdminBadges() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Badges</h2>
-          <p className="text-sm text-muted-foreground">Conquistas atribuíveis aos participantes</p>
-        </div>
-        <Button onClick={() => { setEditing(null); setForm({ code: "", name: "", description: "", emoji: "", type: "achievement" }); setOpen(true); }}>
+    <AdminPage
+      title="Badges"
+      description="Conquistas atribuíveis aos participantes."
+      Icon={Award}
+      variant="rose"
+      actions={
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setForm({ code: "", name: "", description: "", emoji: "", type: "achievement" });
+            setOpen(true);
+          }}
+          className="bg-white text-foreground hover:bg-white/90 shadow"
+        >
           <Plus className="w-4 h-4 mr-1" /> Nova Badge
         </Button>
-      </div>
+      }
+    >
       <Card>
         <Table>
           <TableHeader>
@@ -107,6 +116,6 @@ export default function AdminBadges() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }
