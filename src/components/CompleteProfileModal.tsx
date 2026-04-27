@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
@@ -34,6 +35,7 @@ interface Props {
 
 export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
   const { churches: CHURCHES } = useChurches();
+  const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
   const [area, setArea] = useState("");
   const [church, setChurch] = useState("");
@@ -117,6 +119,8 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
         .eq("id", userId);
       if (upErr) throw upErr;
 
+      // Invalida o cache do perfil para todos os hooks que dependem dele
+      await queryClient.invalidateQueries({ queryKey: ["full-profile", userId] });
       toast.success("Cadastro concluído!");
       onCompleted();
     } catch (err: any) {
