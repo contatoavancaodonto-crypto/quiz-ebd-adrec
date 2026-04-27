@@ -55,7 +55,7 @@ export default function Configuracoes() {
       title="Configurações"
       mobileHeader={{ variant: "back", title: "Configurações", backTo: "/membro/perfil" }}
     >
-      <div className="space-y-4 pb-4">
+      <PageShell contentClassName="space-y-4 pb-4">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
