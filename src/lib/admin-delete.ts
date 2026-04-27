@@ -44,7 +44,7 @@ export async function smartDelete(
   // 2) Se foi violação de FK → soft delete
   const code = (error as any)?.code as string | undefined;
   if (code && FK_BLOCKING_CODES.has(code)) {
-    const { error: softErr } = await supabase
+    const { error: softErr } = await (supabase as any)
       .from(table)
       .update({ [softColumn]: softValue })
       .eq("id", id);
