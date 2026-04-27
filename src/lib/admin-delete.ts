@@ -24,9 +24,11 @@ export interface SmartDeleteOptions {
   softValue?: any;
 }
 
-export type SmartDeleteResult =
-  | { ok: true; mode: "hard" | "soft" }
-  | { ok: false; error: string };
+export interface SmartDeleteResult {
+  ok: boolean;
+  mode?: "hard" | "soft";
+  error?: string;
+}
 
 /**
  * Tenta DELETE permanente. Se houver vínculos (FK), faz soft delete.
