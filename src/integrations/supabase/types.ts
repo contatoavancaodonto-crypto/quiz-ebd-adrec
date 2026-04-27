@@ -110,6 +110,54 @@ export type Database = {
         }
         Relationships: []
       }
+      church_edit_requests: {
+        Row: {
+          church_id: string
+          created_at: string
+          id: string
+          proposed_name: string | null
+          proposed_pastor_president: string | null
+          proposed_requester_area: number | null
+          proposed_requester_phone: string | null
+          requested_by: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          id?: string
+          proposed_name?: string | null
+          proposed_pastor_president?: string | null
+          proposed_requester_area?: number | null
+          proposed_requester_phone?: string | null
+          requested_by: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          id?: string
+          proposed_name?: string | null
+          proposed_pastor_president?: string | null
+          proposed_requester_area?: number | null
+          proposed_requester_phone?: string | null
+          requested_by?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       churches: {
         Row: {
           active: boolean
@@ -1276,6 +1324,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_church_edit_request: {
+        Args: { p_note?: string; p_request_id: string }
+        Returns: undefined
+      }
       award_season_end_badges: {
         Args: { p_season_id: string }
         Returns: undefined
@@ -1305,6 +1357,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reject_church_edit_request: {
+        Args: { p_note?: string; p_request_id: string }
+        Returns: undefined
       }
       tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
     }
