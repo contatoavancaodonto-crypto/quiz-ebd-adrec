@@ -281,12 +281,26 @@ const RankingPage = () => {
           </div>
         )}
 
-        {/* 2. Scope: Geral ou Igreja */}
+        {/* 2. Scope: Minha Igreja (1º) ou Geral */}
         <div className="mb-3">
           <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
             Escopo
           </label>
           <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => {
+                setScope("church");
+                if (profile?.church_id) setSelectedChurchId(profile.church_id);
+              }}
+              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                scope === "church"
+                  ? "gradient-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Church className="w-4 h-4" />
+              Minha Igreja
+            </button>
             <button
               onClick={() => { setScope("general"); setSelectedChurchId(""); }}
               className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
@@ -298,36 +312,13 @@ const RankingPage = () => {
               <Globe className="w-4 h-4" />
               Geral
             </button>
-            <button
-              onClick={() => setScope("church")}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                scope === "church"
-                  ? "gradient-primary text-primary-foreground shadow-md"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Church className="w-4 h-4" />
-              Por Igreja
-            </button>
           </div>
         </div>
 
-        {/* 2b. Church select (only when scope=church) */}
-        {scope === "church" && (
-          <div className="mb-3">
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-              Igreja
-            </label>
-            <select
-              value={selectedChurchId}
-              onChange={(e) => setSelectedChurchId(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-muted text-sm text-foreground border border-border focus:border-primary outline-none cursor-pointer"
-            >
-              <option value="">— Selecione a igreja —</option>
-              {churches?.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+        {/* 2b. Aviso quando o usuário escolhe Minha Igreja mas o perfil não tem igreja */}
+        {scope === "church" && !profile?.church_id && (
+          <div className="mb-3 px-3 py-2.5 rounded-xl bg-muted/60 border border-border text-xs text-muted-foreground">
+            Você ainda não tem uma igreja vinculada ao seu perfil. Acesse <span className="font-semibold text-foreground">Meu Perfil</span> para configurar.
           </div>
         )}
 
