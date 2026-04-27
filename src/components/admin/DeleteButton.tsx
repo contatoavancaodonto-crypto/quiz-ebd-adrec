@@ -34,6 +34,7 @@ export function DeleteButton({
   itemLabel = "este item",
   title = "Confirmar exclusão",
   description,
+  consequences,
   successMessage = "Removido",
   size = "sm",
   variant = "ghost",
