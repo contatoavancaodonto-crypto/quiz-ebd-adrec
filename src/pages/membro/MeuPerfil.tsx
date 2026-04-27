@@ -210,7 +210,22 @@ export default function MeuPerfil() {
               <Label className="text-xs flex items-center gap-1">
                 <Phone className="w-3 h-3" /> Telefone
               </Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="(99) 99999-9999" />
+              <div className="mt-1 flex items-stretch rounded-md border border-input bg-background overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+                <span className="flex items-center px-3 text-sm bg-muted text-muted-foreground border-r border-input select-none">
+                  +55
+                </span>
+                <Input
+                  value={formatLocalPhone(phoneLocal)}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="(DD) 9XXXX-XXXX"
+                  maxLength={16}
+                  className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Formato Brasil: +55 (DDD) 9XXXX-XXXX
+              </p>
             </div>
             <Button onClick={handleSave} disabled={saving} className="w-full gradient-primary">
               {saving && <Loader2 className="animate-spin w-4 h-4 mr-2" />}
