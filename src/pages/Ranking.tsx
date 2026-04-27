@@ -449,7 +449,7 @@ const RankingPage = () => {
           </LayoutGroup>
         )}
       </div>
-    </div>
+    </MemberLayout>
   );
 };
 
