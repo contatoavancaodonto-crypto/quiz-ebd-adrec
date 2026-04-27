@@ -223,12 +223,22 @@ const RankingPage = () => {
             {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
             {mode === "classic" && `${trimester}º Trimestre`}
           </p>
-          <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30">
+          <div className={`inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full border ${
+            rtConnected ? "bg-primary/10 border-primary/30" : "bg-muted border-border"
+          }`}>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              {rtConnected && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              )}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                rtConnected ? "bg-primary" : rtReconnecting ? "bg-yellow-500 animate-pulse" : "bg-destructive"
+              }`}></span>
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Ao vivo</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${
+              rtConnected ? "text-primary" : rtReconnecting ? "text-yellow-500" : "text-destructive"
+            }`}>
+              {rtConnected ? "Ao vivo" : rtReconnecting ? "Reconectando..." : "Offline"}
+            </span>
           </div>
         </motion.div>
 
