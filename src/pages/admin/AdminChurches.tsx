@@ -15,6 +15,7 @@ interface Church {
   approved: boolean;
   requested: boolean;
   active: boolean;
+  pastor_president: string | null;
   requester_pastor_name: string | null;
   requester_phone: string | null;
   requester_area: number | null;
@@ -26,6 +27,7 @@ export default function AdminChurches() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Church | null>(null);
   const [name, setName] = useState("");
+  const [pastorPresident, setPastorPresident] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -43,20 +45,25 @@ export default function AdminChurches() {
 
   const save = async () => {
     if (!name.trim()) return toast.error("Nome obrigatório");
+    const payload = {
+      name: name.trim(),
+      pastor_president: pastorPresident.trim() || null,
+    };
     if (editing) {
-      const { error } = await supabase.from("churches").update({ name }).eq("id", editing.id);
+      const { error } = await supabase.from("churches").update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message);
       toast.success("Igreja atualizada");
     } else {
       const { error } = await supabase
         .from("churches")
-        .insert({ name, approved: true, requested: false });
+        .insert({ ...payload, approved: true, requested: false });
       if (error) return toast.error(error.message);
       toast.success("Igreja criada");
     }
     setOpen(false);
     setEditing(null);
     setName("");
+    setPastorPresident("");
     load();
   };
 
@@ -81,13 +88,16 @@ export default function AdminChurches() {
           <h2 className="text-2xl font-bold text-foreground">Igrejas</h2>
           <p className="text-sm text-muted-foreground">Aprovar solicitações e gerenciar igrejas</p>
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); setPastorPresident(""); } }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-1" /> Nova Igreja</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Igreja</DialogTitle></DialogHeader>
-            <Input placeholder="Nome da igreja" value={name} onChange={(e) => setName(e.target.value)} />
+            <div className="space-y-3">
+              <Input placeholder="Nome da igreja" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input placeholder="Pastor Presidente" value={pastorPresident} onChange={(e) => setPastorPresident(e.target.value)} />
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
               <Button onClick={save}>Salvar</Button>
@@ -100,6 +110,7 @@ export default function AdminChurches() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
+              <TableHead>Pastor Presidente</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Solicitante</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -107,10 +118,13 @@ export default function AdminChurches() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
             ) : rows.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {c.pastor_president ?? "—"}
+                </TableCell>
                 <TableCell className="space-x-1">
                   {c.approved ? <Badge>Aprovada</Badge> : <Badge variant="destructive">Pendente</Badge>}
                   {!c.active && <Badge variant="outline">Inativa</Badge>}
@@ -124,7 +138,7 @@ export default function AdminChurches() {
                       <Check className="w-4 h-4 mr-1" /> Aprovar
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setName(c.name); setOpen(true); }}>
+                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setName(c.name); setPastorPresident(c.pastor_president ?? ""); setOpen(true); }}>
                     Editar
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>

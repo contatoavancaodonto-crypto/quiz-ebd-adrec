@@ -117,6 +117,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          pastor_president: string | null
           requested: boolean
           requester_area: number | null
           requester_pastor_name: string | null
@@ -128,6 +129,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          pastor_president?: string | null
           requested?: boolean
           requester_area?: number | null
           requester_pastor_name?: string | null
@@ -139,6 +141,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          pastor_president?: string | null
           requested?: boolean
           requester_area?: number | null
           requester_pastor_name?: string | null
@@ -960,6 +963,7 @@ export type Database = {
           church_id: string | null
           church_name: string | null
           participants_count: number | null
+          pastor_president: string | null
           position: number | null
           trimester: number | null
         }
@@ -993,6 +997,7 @@ export type Database = {
           church_id: string | null
           church_name: string | null
           participants_count: number | null
+          pastor_president: string | null
           position: number | null
         }
         Relationships: [
@@ -1025,6 +1030,7 @@ export type Database = {
           church_id: string | null
           church_name: string | null
           participants_count: number | null
+          pastor_president: string | null
           position: number | null
         }
         Relationships: [
