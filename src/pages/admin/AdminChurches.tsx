@@ -88,13 +88,16 @@ export default function AdminChurches() {
           <h2 className="text-2xl font-bold text-foreground">Igrejas</h2>
           <p className="text-sm text-muted-foreground">Aprovar solicitações e gerenciar igrejas</p>
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); setPastorPresident(""); } }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-1" /> Nova Igreja</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Igreja</DialogTitle></DialogHeader>
-            <Input placeholder="Nome da igreja" value={name} onChange={(e) => setName(e.target.value)} />
+            <div className="space-y-3">
+              <Input placeholder="Nome da igreja" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input placeholder="Pastor Presidente" value={pastorPresident} onChange={(e) => setPastorPresident(e.target.value)} />
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
               <Button onClick={save}>Salvar</Button>
@@ -107,6 +110,7 @@ export default function AdminChurches() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
+              <TableHead>Pastor Presidente</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Solicitante</TableHead>
               <TableHead className="text-right">Ações</TableHead>
