@@ -268,6 +268,10 @@ export default function AdminMemberAnswers() {
             <SelectItem value="week">Esta semana</SelectItem>
             <SelectItem value="month">Este mês</SelectItem>
             <SelectItem value="trimester">Este trimestre</SelectItem>
+            <SelectItem value="t1">1º Trimestre (Jan–Mar)</SelectItem>
+            <SelectItem value="t2">2º Trimestre (Abr–Jun)</SelectItem>
+            <SelectItem value="t3">3º Trimestre (Jul–Set)</SelectItem>
+            <SelectItem value="t4">4º Trimestre (Out–Dez)</SelectItem>
           </SelectContent>
         </Select>
       </div>
