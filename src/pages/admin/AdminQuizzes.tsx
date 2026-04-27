@@ -423,9 +423,22 @@ export default function AdminQuizzes() {
 
       <Dialog open={quizDialog} onOpenChange={setQuizDialog}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz Semanal</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Semana 3 — Êxodo" /></div>
+          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz</DialogTitle></DialogHeader>
+          <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+            <div>
+              <Label>Tipo do quiz</Label>
+              <Select value={qForm.quiz_kind} onValueChange={(v) => setQForm({ ...qForm, quiz_kind: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Semanal (5 perguntas — lição da revista)</SelectItem>
+                  <SelectItem value="trimestral">Provão Trimestral (13 perguntas)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Apenas quizzes <strong>semanais</strong> entram na fila do agendador automático.
+              </p>
+            </div>
+            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Lição 3 — A fé de Abraão" /></div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Turma</Label>
