@@ -82,12 +82,11 @@ export default function AdminSeasons() {
                   )}
                   <DeleteButton
                     itemLabel={`a temporada "${s.name}"`}
-                    description={
-                      <>
-                        Apagar esta temporada removerá também o vínculo dela em quizzes e tentativas se possível.
-                        Se houver dados dependentes, ela será apenas marcada como encerrada.
-                      </>
-                    }
+                    consequences={[
+                      "Quizzes e tentativas vinculadas perderão a referência da temporada",
+                      "Badges de fim de temporada já concedidos serão preservados",
+                      "Streaks dos participantes desta temporada poderão zerar",
+                    ]}
                     onConfirm={async () => {
                       const r = await smartDelete({
                         table: "seasons",

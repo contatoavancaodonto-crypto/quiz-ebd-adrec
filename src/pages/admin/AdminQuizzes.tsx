@@ -423,11 +423,11 @@ export default function AdminQuizzes() {
                     <DeleteButton
                       iconOnly
                       itemLabel={`o quiz "${q.title}"`}
-                      description={
-                        <>
-                          Apagar este quiz removerá também suas perguntas. Se houver tentativas de alunos vinculadas, ele será apenas desativado para preservar o histórico do ranking.
-                        </>
-                      }
+                      consequences={[
+                        "Todas as perguntas deste quiz serão removidas",
+                        "Tentativas e respostas dos alunos serão preservadas (quiz será apenas desativado se vinculado)",
+                        "O ranking semanal pode ser recalculado",
+                      ]}
                       onConfirm={async () => {
                         const r = await smartDelete({ table: "quizzes", id: q.id });
                         if (!r.ok) return r.error || "Falha ao apagar";

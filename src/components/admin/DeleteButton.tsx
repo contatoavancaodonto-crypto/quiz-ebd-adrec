@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface DeleteButtonProps {
@@ -20,6 +20,8 @@ interface DeleteButtonProps {
   itemLabel?: string;
   title?: string;
   description?: ReactNode;
+  /** Lista de consequências específicas (ex: ["As perguntas serão excluídas", "O ranking pode ser afetado"]) */
+  consequences?: string[];
   successMessage?: string;
   size?: "sm" | "default";
   variant?: "ghost" | "outline" | "destructive";
@@ -32,6 +34,7 @@ export function DeleteButton({
   itemLabel = "este item",
   title = "Confirmar exclusão",
   description,
+  consequences,
   successMessage = "Removido",
   size = "sm",
   variant = "ghost",
@@ -73,15 +76,40 @@ export function DeleteButton({
       <AlertDialog open={open} onOpenChange={(o) => !loading && setOpen(o)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {description ?? (
-                <>
-                  Tem certeza que deseja apagar <strong>{itemLabel}</strong>? Se houver
-                  dados vinculados (tentativas, conquistas etc.), o item será desativado
-                  para preservar o histórico.
-                </>
-              )}
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              {title}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  {description ?? (
+                    <>
+                      Você está prestes a apagar <strong className="text-foreground">{itemLabel}</strong>.
+                      Esta ação não pode ser desfeita.
+                    </>
+                  )}
+                </p>
+
+                {consequences && consequences.length > 0 && (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-destructive mb-2">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Consequências
+                    </div>
+                    <ul className="text-sm text-foreground space-y-1 list-disc list-inside">
+                      {consequences.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  💡 Se houver dados vinculados (tentativas, conquistas etc.), o item será apenas desativado
+                  para preservar o histórico — você será notificado.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -94,7 +122,7 @@ export function DeleteButton({
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? "Apagando…" : "Apagar"}
+              {loading ? "Apagando…" : "Sim, apagar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
