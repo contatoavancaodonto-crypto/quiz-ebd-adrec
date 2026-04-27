@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Globe } from "lucide-react";
+import { Users, Globe, Loader2, WifiOff, Wifi } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTimeMs } from "@/hooks/useTimer";
+import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
 
 interface Props {
   quizId: string;
@@ -35,24 +36,21 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
   const [myClassPos, setMyClassPos] = useState<number | null>(null);
   const [myGeneralPos, setMyGeneralPos] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
-  useEffect(() => {
+  const fetchRankings = useCallback(async () => {
     if (!quizId) return;
-    const run = async () => {
-      // 1) Pega lesson_number e season do quiz atual
+    setLoading(true);
+    try {
       const { data: quiz } = await supabase
         .from("quizzes")
         .select("lesson_number, season_id, quiz_kind")
         .eq("id", quizId)
         .maybeSingle();
 
-      if (!quiz?.lesson_number) {
-        setLoading(false);
-        return;
-      }
+      if (!quiz?.lesson_number) return;
       setLessonNumber(quiz.lesson_number);
 
-      // 2) Pega todos quizzes weekly da mesma lesson_number (todas turmas)
       const { data: lessonQuizzes } = await supabase
         .from("quizzes")
         .select("id, class_id")
@@ -64,24 +62,16 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
       const quizClassMap = new Map<string, string>(
         (lessonQuizzes || []).map((q) => [q.id, q.class_id])
       );
-      if (quizIds.length === 0) {
-        setLoading(false);
-        return;
-      }
+      if (quizIds.length === 0) return;
 
-      // 3) Busca attempts finalizadas desses quizzes
       const { data: attempts } = await supabase
         .from("quiz_attempts")
         .select("id, participant_id, quiz_id, score, final_score, total_time_ms, total_time_seconds, finished_at")
         .in("quiz_id", quizIds)
         .not("finished_at", "is", null);
 
-      if (!attempts || attempts.length === 0) {
-        setLoading(false);
-        return;
-      }
+      if (!attempts || attempts.length === 0) return;
 
-      // 4) Busca participantes para nomes
       const participantIds = [...new Set(attempts.map((a) => a.participant_id))];
       const { data: participants } = await supabase
         .from("participants")
@@ -92,7 +82,6 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
         (participants || []).map((p) => [p.id, { name: p.name, class_id: p.class_id }])
       );
 
-      // 5) Busca classes para nomes
       const classIds = [...new Set((participants || []).map((p) => p.class_id).filter(Boolean))];
       const { data: classes } = await supabase
         .from("classes")
@@ -100,7 +89,6 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
         .in("id", classIds);
       const classMap = new Map((classes || []).map((c) => [c.id, c.name]));
 
-      // 6) Mantém só a melhor tentativa por participante (maior final_score, menor tempo)
       const bestByParticipant = new Map<string, any>();
       for (const a of attempts) {
         const cur = bestByParticipant.get(a.participant_id);
@@ -115,31 +103,30 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
         }
       }
 
-      const rows: RankRow[] = Array.from(bestByParticipant.values())
-        .map((a) => {
-          const p = partMap.get(a.participant_id);
-          const cId = quizClassMap.get(a.quiz_id) || p?.class_id || "";
-          return {
-            attempt_id: a.id,
-            participant_id: a.participant_id,
-            participant_name: p?.name || "—",
-            class_id: cId,
-            class_name: classMap.get(cId),
-            score: a.score,
-            final_score: a.final_score ?? a.score,
-            total_time_ms: a.total_time_ms ?? 0,
-            total_time_seconds: a.total_time_seconds ?? 0,
-            position: 0,
-          };
-        });
+      const rows: RankRow[] = Array.from(bestByParticipant.values()).map((a) => {
+        const p = partMap.get(a.participant_id);
+        const cId = quizClassMap.get(a.quiz_id) || p?.class_id || "";
+        return {
+          attempt_id: a.id,
+          participant_id: a.participant_id,
+          participant_name: p?.name || "—",
+          class_id: cId,
+          class_name: classMap.get(cId),
+          score: a.score,
+          final_score: a.final_score ?? a.score,
+          total_time_ms: a.total_time_ms ?? 0,
+          total_time_seconds: a.total_time_seconds ?? 0,
+          position: 0,
+        };
+      });
 
-      // 7) Ranking GERAL: todos
-      const general = [...rows].sort((x, y) => {
-        if (y.final_score !== x.final_score) return y.final_score - x.final_score;
-        return (x.total_time_ms || Number.MAX_SAFE_INTEGER) - (y.total_time_ms || Number.MAX_SAFE_INTEGER);
-      }).map((r, i) => ({ ...r, position: i + 1 }));
+      const general = [...rows]
+        .sort((x, y) => {
+          if (y.final_score !== x.final_score) return y.final_score - x.final_score;
+          return (x.total_time_ms || Number.MAX_SAFE_INTEGER) - (y.total_time_ms || Number.MAX_SAFE_INTEGER);
+        })
+        .map((r, i) => ({ ...r, position: i + 1 }));
 
-      // 8) Ranking TURMA: filtra por classId
       const turma = general
         .filter((r) => r.class_id === classId)
         .map((r, i) => ({ ...r, position: i + 1 }));
@@ -151,14 +138,68 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
       const meC = turma.find((r) => r.attempt_id === attemptId);
       setMyGeneralPos(meG?.position ?? null);
       setMyClassPos(meC?.position ?? null);
+    } finally {
       setLoading(false);
-    };
-    run();
+      setHasFetchedOnce(true);
+    }
   }, [quizId, attemptId, classId]);
 
-  if (loading || (classRank.length === 0 && generalRank.length === 0)) {
+  useEffect(() => {
+    fetchRankings();
+  }, [fetchRankings]);
+
+  // Realtime + reconnect com backoff. Refetch on event.
+  const { status } = useRealtimeRanking(fetchRankings);
+
+  const isReconnecting = status === "connecting" || status === "reconnecting";
+  const isConnected = status === "connected";
+
+  // Loading inicial: skeleton
+  if (loading && !hasFetchedOnce) {
+    return (
+      <div className="glass-card p-4 mb-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+        Carregando ranking da semana...
+      </div>
+    );
+  }
+
+  // Sem dados E sem conexão: avisa
+  if (classRank.length === 0 && generalRank.length === 0) {
+    if (isReconnecting) {
+      return (
+        <div className="glass-card p-4 mb-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <WifiOff className="w-4 h-4 text-yellow-500 animate-pulse" />
+          Reconectando ao ranking ao vivo...
+        </div>
+      );
+    }
     return null;
   }
+
+  const StatusBadge = () => (
+    <span
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+        isConnected
+          ? "bg-primary/10 text-primary"
+          : isReconnecting
+          ? "bg-yellow-500/10 text-yellow-500"
+          : "bg-destructive/10 text-destructive"
+      }`}
+      title={
+        isConnected ? "Conectado em tempo real" : isReconnecting ? "Reconectando..." : "Offline"
+      }
+    >
+      {isConnected ? (
+        <Wifi className="w-2.5 h-2.5" />
+      ) : isReconnecting ? (
+        <Loader2 className="w-2.5 h-2.5 animate-spin" />
+      ) : (
+        <WifiOff className="w-2.5 h-2.5" />
+      )}
+      {isConnected ? "ao vivo" : isReconnecting ? "reconectando" : "offline"}
+    </span>
+  );
 
   const renderRow = (e: RankRow) => {
     const isMe = e.attempt_id === attemptId;
@@ -202,15 +243,14 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
               <h3 className="text-sm font-semibold text-foreground">
                 Ranking da Turma {className && `· ${className}`}
               </h3>
+              <StatusBadge />
             </div>
             {myClassPos && <span className="text-xs text-primary font-bold">Você: #{myClassPos}</span>}
           </div>
           <p className="text-[10px] text-muted-foreground mb-2">
             Quiz da semana {lessonNumber ? `· Lição ${lessonNumber}` : ""} · desempate por tempo
           </p>
-          <div className="space-y-1.5">
-            {classRank.slice(0, 5).map(renderRow)}
-          </div>
+          <div className="space-y-1.5">{classRank.slice(0, 5).map(renderRow)}</div>
         </motion.div>
       )}
 
@@ -225,15 +265,14 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Ranking Geral da Semana</h3>
+              <StatusBadge />
             </div>
             {myGeneralPos && <span className="text-xs text-primary font-bold">Você: #{myGeneralPos}</span>}
           </div>
           <p className="text-[10px] text-muted-foreground mb-2">
             Todas as turmas {lessonNumber ? `· Lição ${lessonNumber}` : ""} · desempate por tempo
           </p>
-          <div className="space-y-1.5">
-            {generalRank.slice(0, 5).map(renderRow)}
-          </div>
+          <div className="space-y-1.5">{generalRank.slice(0, 5).map(renderRow)}</div>
         </motion.div>
       )}
     </>
