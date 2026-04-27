@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import churchLogo from "@/assets/church-logo.webp";
 
 export function SeasonClosedScreen() {
   return (
