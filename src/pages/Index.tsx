@@ -20,6 +20,7 @@ import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { DailyVerseCard } from "@/components/DailyVerseCard";
+import { ClassWeeklyStatusCard } from "@/components/ClassWeeklyStatusCard";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
@@ -394,6 +395,34 @@ const Index = () => {
               </p>
             </motion.div>
           ) : null}
+
+          {/* ============ STATUS POR TURMA ============ */}
+          {classes && classes.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="space-y-2"
+            >
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Status por turma
+                </h3>
+                <span className="text-[10px] text-muted-foreground">
+                  Encerra dom · 23h59
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {classes.map((c) => (
+                  <ClassWeeklyStatusCard
+                    key={c.id}
+                    classId={c.id}
+                    className={c.name}
+                  />
+                ))}
+              </div>
+            </motion.section>
+          )}
 
           {/* ============ VERSÍCULO DO DIA ============ */}
           <DailyVerseCard />
