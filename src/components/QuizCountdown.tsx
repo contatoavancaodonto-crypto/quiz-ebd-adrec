@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Check, Timer } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import churchLogo from "@/assets/church-logo.webp";
 
 interface QuizCountdownProps {
   onComplete: () => void;

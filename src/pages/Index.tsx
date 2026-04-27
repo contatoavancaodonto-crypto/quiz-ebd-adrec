@@ -20,7 +20,7 @@ import {
   History,
   ArrowRight,
 } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";

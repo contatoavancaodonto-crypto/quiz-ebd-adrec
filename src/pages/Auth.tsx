@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
 import { toast } from "sonner";
-import churchLogo from "@/assets/church-logo.png";
+import churchLogo from "@/assets/church-logo.webp";
 
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import churchLogo from "@/assets/church-logo.png";
+import churchLogo from "@/assets/church-logo.webp";
 import { useQuizStore } from "@/stores/quizStore";
 import { useTimer } from "@/hooks/useTimer";
 import { ThemeToggle } from "@/components/ThemeToggle";
