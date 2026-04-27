@@ -307,21 +307,41 @@ const QuizPage = () => {
   if (!currentQ) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4 flex flex-col relative">
-      <ThemeToggle />
-
-      <div className="max-w-xl mx-auto w-full pt-2">
-        <div className="flex items-center justify-between mb-3 gap-2">
-          <img src={churchLogo} className="w-10 h-10" />
-          <SeasonCountdown variant="compact" />
-          <span className="text-sm">
-            {store.currentQuestionIndex + 1}/{questions.length}
-          </span>
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Header app-like minimal */}
+      <header
+        className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/50"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-xl mx-auto w-full px-4 h-14 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <img src={churchLogo} className="w-8 h-8" alt="ADREC" />
+            <div className="leading-tight">
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                Quiz · {store.className}
+              </div>
+              <div className="text-xs font-bold text-foreground">
+                Pergunta {store.currentQuestionIndex + 1} de {questions.length}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <SeasonCountdown variant="compact" />
+            <ThemeToggle />
+          </div>
         </div>
-
-        <div className="w-full h-2 bg-muted rounded-full mb-6">
-          <motion.div style={{ width: `${progress}%` }} />
+        {/* Barra de progresso */}
+        <div className="w-full h-1 bg-muted">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="h-full gradient-primary"
+          />
         </div>
+      </header>
+
+      <div className="max-w-xl mx-auto w-full px-4 pt-4">
       </div>
 
       <div className="flex-1 flex items-center justify-center">
