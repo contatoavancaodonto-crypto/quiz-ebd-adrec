@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Plus, Power, Award } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Bd { id: string; code: string; name: string; description: string; emoji: string; type: string; active: boolean; }
 
@@ -91,6 +93,17 @@ export default function AdminBadges() {
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(b)}>
                     <Power className="w-4 h-4" />
                   </Button>
+                  <DeleteButton
+                    iconOnly
+                    itemLabel={`a badge "${b.name}"`}
+                    onConfirm={async () => {
+                      const r = await smartDelete({ table: "badges", id: b.id });
+                      if (!r.ok) return r.error || "Falha ao apagar";
+                      load();
+                      return true;
+                    }}
+                    successMessage="Badge removida"
+                  />
                 </TableCell>
               </TableRow>
             ))}
