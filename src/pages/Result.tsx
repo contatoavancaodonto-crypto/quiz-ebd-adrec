@@ -409,7 +409,7 @@ const ResultPage = () => {
             Voltar ao Início
           </motion.button>
         </div>
-      </motion.div>
+      </PageShell>
     </div>
   );
 };
