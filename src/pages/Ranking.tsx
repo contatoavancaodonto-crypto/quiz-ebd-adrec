@@ -1,14 +1,13 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe, Flame } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import { Clock, Medal, Calendar, Church, Users, Globe, Flame, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatTimeMs } from "@/hooks/useTimer";
 import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
+import { MemberLayout } from "@/components/membro/MemberLayout";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
