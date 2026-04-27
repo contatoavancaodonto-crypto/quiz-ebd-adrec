@@ -310,19 +310,30 @@ export default function AdminMemberAnswers() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="border-t bg-muted/20 p-4 space-y-3">
-                      {!det || det.loading ? (
-                        <div className="text-sm text-muted-foreground">Carregando respostas…</div>
-                      ) : det.questions.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">
-                          Sem perguntas registradas para este quiz.
-                        </div>
-                      ) : (
-                        det.questions.map((qst, idx) => {
-                          const ans = det.answers.find((x) => x.question_id === qst.id);
+                      {(() => {
+                        if (!det || det.loading) {
+                          return (
+                            <div className="text-sm text-muted-foreground">
+                              Carregando respostas…
+                            </div>
+                          );
+                        }
+                        // Apenas perguntas que o aluno realmente respondeu
+                        const answeredQuestions = det.questions.filter((qst) =>
+                          det.answers.some((x) => x.question_id === qst.id)
+                        );
+                        if (answeredQuestions.length === 0) {
+                          return (
+                            <div className="text-sm text-muted-foreground">
+                              Este aluno não respondeu nenhuma pergunta deste quiz.
+                            </div>
+                          );
+                        }
+                        return answeredQuestions.map((qst, idx) => {
+                          const ans = det.answers.find((x) => x.question_id === qst.id)!;
                           const correctLetter = (qst.correct_option ?? "").toLowerCase();
-                          const selectedLetter = (ans?.selected_option ?? "").toLowerCase();
-                          const isCorrect = ans?.is_correct ?? false;
-                          const notAnswered = !ans;
+                          const selectedLetter = (ans.selected_option ?? "").toLowerCase();
+                          const isCorrect = ans.is_correct;
                           return (
                             <div
                               key={qst.id}
@@ -335,11 +346,7 @@ export default function AdminMemberAnswers() {
                                 <div className="flex-1 text-sm font-medium text-foreground">
                                   {qst.question_text}
                                 </div>
-                                {notAnswered ? (
-                                  <Badge variant="secondary" className="shrink-0">
-                                    Não respondida
-                                  </Badge>
-                                ) : isCorrect ? (
+                                {isCorrect ? (
                                   <Badge className="shrink-0 bg-green-600 hover:bg-green-600 gap-1">
                                     <CheckCircle2 className="w-3 h-3" /> Acertou
                                   </Badge>
@@ -386,8 +393,8 @@ export default function AdminMemberAnswers() {
                               )}
                             </div>
                           );
-                        })
-                      )}
+                        });
+                      })()}
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
