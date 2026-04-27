@@ -146,6 +146,14 @@ export default function AdminUsers() {
     load();
   };
 
+  const toggleHidden = async (row: ProfileRow) => {
+    const fn = row.hidden_at ? restoreUserProfile : hideUserProfile;
+    const r = await fn(row.id);
+    if (!r.ok) return toast.error(r.error);
+    toast.success(row.hidden_at ? "Usuário restaurado" : "Usuário ocultado do app");
+    load();
+  };
+
   const churchName = (id: string | null) =>
     id ? churches.find((c) => c.id === id)?.name ?? "—" : "—";
 
@@ -240,6 +248,11 @@ export default function AdminUsers() {
                     {r.role === "admin" ? churchName(r.role_church_id) : "—"}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
+                    {r.hidden_at && (
+                      <Badge variant="outline" className="text-muted-foreground mr-1">
+                        Oculto
+                      </Badge>
+                    )}
                     {r.role ? (
                       <Button size="sm" variant="outline" onClick={() => removeRole(r)}>
                         <ShieldOff className="w-4 h-4 mr-1" /> Remover
@@ -248,6 +261,27 @@ export default function AdminUsers() {
                     <Button size="sm" onClick={() => openPromote(r)}>
                       <Shield className="w-4 h-4 mr-1" />
                       {r.role ? "Alterar" : "Promover"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={r.hidden_at ? "outline" : "ghost"}
+                      onClick={() => toggleHidden(r)}
+                      className={
+                        r.hidden_at
+                          ? undefined
+                          : "text-destructive hover:text-destructive hover:bg-destructive/10"
+                      }
+                      title={r.hidden_at ? "Restaurar" : "Ocultar do app"}
+                    >
+                      {r.hidden_at ? (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" /> Restaurar
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-1" /> Apagar
+                        </>
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>
