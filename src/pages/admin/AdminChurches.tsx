@@ -15,6 +15,7 @@ interface Church {
   approved: boolean;
   requested: boolean;
   active: boolean;
+  pastor_president: string | null;
   requester_pastor_name: string | null;
   requester_phone: string | null;
   requester_area: number | null;
