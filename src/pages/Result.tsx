@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -10,6 +9,8 @@ import { ThankYouScreen } from "@/components/ThankYouScreen";
 import { BadgesShowcase } from "@/components/BadgesShowcase";
 import { WeeklyRankings } from "@/components/WeeklyRankings";
 import { formatTimeMs } from "@/hooks/useTimer";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero, HeroChip } from "@/components/ui/page-hero";
 
 function getPerformanceMessage(pct: number) {
   if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };
@@ -150,46 +151,46 @@ const ResultPage = () => {
 
   return (
     <div
-      className="min-h-screen bg-background flex flex-col items-center justify-start px-4 pt-4 pb-8 relative"
+      className="min-h-screen bg-background"
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
     >
       <ThemeToggle />
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/3 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 rounded-full bg-secondary/5 blur-3xl" />
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
-        {/* Header */}
-        <div className="text-center mb-6">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-background mb-3"
+      <PageShell contentClassName="max-w-md mx-auto w-full px-4 pt-4 pb-8 space-y-5">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.45 }}
+        >
+          <PageHero
+            eyebrow="Resultado · 1º TRI. 2026 - ADREC"
+            title={store.participantName}
+            description={
+              <span className={`font-semibold ${perf.color === "text-green-500" ? "text-emerald-100" : perf.color === "text-primary" ? "text-white" : perf.color === "text-yellow-500" ? "text-amber-100" : "text-rose-100"}`}>
+                {perf.text}
+              </span>
+            }
+            Icon={Trophy}
+            variant="primary"
           >
-            <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
-          </motion.div>
-          <h1 className="text-2xl font-display font-bold text-foreground mb-1">{store.participantName}</h1>
-          {store.churchName && <p className="text-xs text-muted-foreground/70 mb-1">{store.churchName}</p>}
-          <p className={`text-lg font-semibold ${perf.color}`}>{perf.text}</p>
-        </div>
+            <div className="flex flex-wrap gap-2">
+              <HeroChip Icon={Sparkles}>{score}/{TOTAL_QUESTIONS} acertos · {pct}%</HeroChip>
+              {store.churchName && <HeroChip Icon={Church}>{store.churchName}</HeroChip>}
+              {classRank && <HeroChip Icon={Trophy}>Turma #{classRank}</HeroChip>}
+              {generalRank && <HeroChip Icon={Medal}>Geral #{generalRank}</HeroChip>}
+            </div>
+          </PageHero>
+        </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-3">
           {stats.map((s, i) => (
             <motion.div
               key={s.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.1 }}
-              className="glass-card glow-border p-4 text-center"
+              className="glass-card glow-border p-4 text-center rounded-3xl"
             >
               <s.icon className="w-5 h-5 text-primary mx-auto mb-2" />
               <div className="text-xl font-display font-bold text-foreground">{s.value}</div>
@@ -408,7 +409,7 @@ const ResultPage = () => {
             Voltar ao Início
           </motion.button>
         </div>
-      </motion.div>
+      </PageShell>
     </div>
   );
 };
