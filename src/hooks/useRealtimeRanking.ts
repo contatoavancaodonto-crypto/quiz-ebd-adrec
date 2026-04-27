@@ -5,18 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 export type RealtimeStatus = "connecting" | "connected" | "reconnecting" | "error";
 
 /**
- * Escuta mudanças em quiz_attempts e invalida a query do ranking.
- * - Debounce para evitar refetch em rajada
- * - Reconexão automática com retry exponencial + jitter
- * - Expõe status para a UI mostrar loading quando desconectado
+ * Escuta mudanças em quiz_attempts e:
+ *  - Se receber uma queryKey: invalida a query (react-query)
+ *  - Se receber uma callback: chama a callback (debounced)
+ *
+ * Recursos:
+ *  - Debounce para evitar refetch em rajada
+ *  - Reconexão automática com retry exponencial + jitter
+ *  - Expõe status para a UI mostrar loading quando desconectado
  */
-export function useRealtimeRanking(queryKey: unknown[]): { status: RealtimeStatus } {
+export function useRealtimeRanking(
+  keyOrCallback: unknown[] | (() => void)
+): { status: RealtimeStatus } {
   const qc = useQueryClient();
+  const isCallback = typeof keyOrCallback === "function";
+  const queryKey = isCallback ? [] : (keyOrCallback as unknown[]);
+
+  const callbackRef = useRef<(() => void) | null>(null);
+  callbackRef.current = isCallback ? (keyOrCallback as () => void) : null;
+
   const debounceRef = useRef<number | null>(null);
   const retryRef = useRef<number | null>(null);
   const attemptRef = useRef(0);
   const cancelledRef = useRef(false);
   const [status, setStatus] = useState<RealtimeStatus>("connecting");
+
+  const depKey = isCallback ? "__cb__" : JSON.stringify(queryKey);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -27,6 +41,14 @@ export function useRealtimeRanking(queryKey: unknown[]): { status: RealtimeStatu
       const base = Math.min(30000, 1000 * Math.pow(2, attemptRef.current));
       const jitter = Math.floor(Math.random() * 500);
       return base + jitter;
+    };
+
+    const triggerRefresh = () => {
+      if (callbackRef.current) {
+        callbackRef.current();
+      } else {
+        qc.invalidateQueries({ queryKey });
+      }
     };
 
     const connect = () => {
@@ -41,9 +63,7 @@ export function useRealtimeRanking(queryKey: unknown[]): { status: RealtimeStatu
           { event: "*", schema: "public", table: "quiz_attempts" },
           () => {
             if (debounceRef.current) window.clearTimeout(debounceRef.current);
-            debounceRef.current = window.setTimeout(() => {
-              qc.invalidateQueries({ queryKey });
-            }, 600);
+            debounceRef.current = window.setTimeout(triggerRefresh, 600);
           }
         )
         .subscribe((sbStatus) => {
@@ -51,8 +71,8 @@ export function useRealtimeRanking(queryKey: unknown[]): { status: RealtimeStatu
           if (sbStatus === "SUBSCRIBED") {
             attemptRef.current = 0;
             setStatus("connected");
-            // Refresca dados após reconectar (pode ter perdido eventos)
-            qc.invalidateQueries({ queryKey });
+            // Refresca dados após (re)conectar — pode ter perdido eventos
+            triggerRefresh();
           } else if (
             sbStatus === "CHANNEL_ERROR" ||
             sbStatus === "TIMED_OUT" ||
@@ -91,7 +111,8 @@ export function useRealtimeRanking(queryKey: unknown[]): { status: RealtimeStatu
       if (retryRef.current) window.clearTimeout(retryRef.current);
       if (currentChannel) supabase.removeChannel(currentChannel);
     };
-  }, [qc, JSON.stringify(queryKey)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qc, depKey]);
 
   return { status };
 }
