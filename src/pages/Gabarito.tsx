@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
