@@ -168,9 +168,12 @@ const RankingPage = () => {
   const isLoading = classicLoading || weeklyLoading || seasonLoading;
 
   // 🔴 Realtime
-  useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
-  useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
-  useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
+  const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
+  const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
+  const rt3 = useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
+  const activeRt = mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3;
+  const rtConnected = activeRt.status === "connected";
+  const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
 
   const ranking = useMemo(() => {
     const raw =
