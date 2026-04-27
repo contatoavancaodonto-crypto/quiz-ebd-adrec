@@ -245,7 +245,7 @@ const Index = () => {
                 {greeting}
               </div>
               <h1 className="text-3xl font-display font-extrabold text-white leading-tight">
-                Oi, {firstName} <span className="inline-block">👋</span>
+                A paz do Senhor, {firstName} <span className="inline-block">🙏</span>
               </h1>
               <p className="text-sm text-white/85 mt-2 max-w-[80%]">
                 {alreadyAnsweredWeekly
