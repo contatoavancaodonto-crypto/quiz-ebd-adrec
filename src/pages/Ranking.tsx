@@ -404,6 +404,53 @@ const RankingPage = () => {
             <motion.div layout className="space-y-2">
               <AnimatePresence initial={false}>
                 {ranking.map((entry: any, i) => {
+                  // === Modo Entre Igrejas: card de igreja com nota média ===
+                  if (isInter) {
+                    const interKey = `church-${entry.church_id}`;
+                    const avg = Number(entry.avg_score ?? 0);
+                    return (
+                      <motion.div
+                        key={interKey}
+                        layout
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{
+                          layout: { type: "spring", stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        }}
+                        className={`glass-card p-4 flex items-center gap-3 ${i < 3 ? "glow-border" : ""}`}
+                      >
+                        {i < 3 ? (
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0`}>
+                            <Medal className="w-5 h-5 text-foreground" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                            <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-foreground truncate flex items-center gap-2">
+                            <Church className="w-4 h-4 text-primary shrink-0" />
+                            {entry.church_name}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground/80 mt-0.5">
+                            {entry.participants_count} {entry.participants_count === 1 ? "participante" : "participantes"}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-display font-bold text-primary text-lg">
+                            {avg.toFixed(1).replace(".", ",")}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            nota média
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
                   const isMonthly = mode === "monthly";
                   const isWeekly = mode === "weekly";
@@ -483,6 +530,7 @@ const RankingPage = () => {
                         )}
                       </div>
                     </motion.div>
+                  );
                   );
                 })}
               </AnimatePresence>
