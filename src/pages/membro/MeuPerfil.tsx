@@ -223,6 +223,21 @@ export default function MeuPerfil() {
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1">
+                <UserIcon className="w-3 h-3" /> Nome de usuário (aparece no ranking)
+              </Label>
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                maxLength={50}
+                placeholder="Ex: João Silva"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Use o nome que você quer que apareça no ranking e nas tentativas. Mínimo 2 caracteres.
+              </p>
+            </div>
+            <div>
+              <Label className="text-xs flex items-center gap-1">
                 <Phone className="w-3 h-3" /> Telefone
               </Label>
               <div className="mt-1 flex items-stretch rounded-md border border-input bg-background overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
