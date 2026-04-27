@@ -39,7 +39,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church";
-type Mode = "weekly" | "season" | "classic";
+type Mode = "weekly" | "monthly" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -51,8 +51,13 @@ const RankingPage = () => {
   const [trimester, setTrimester] = useState<number>(
     [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
   );
-  const modeParam = (searchParams.get("mode") as Mode) || "weekly";
-  const [mode, setMode] = useState<Mode>(["weekly", "season", "classic"].includes(modeParam) ? modeParam : "weekly");
+  const rawModeParam = searchParams.get("mode");
+  // Backwards-compat: links antigos com ?mode=season caem em monthly
+  const normalizedModeParam: Mode =
+    rawModeParam === "season" ? "monthly" :
+    (["weekly", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
+    "weekly";
+  const [mode, setMode] = useState<Mode>(normalizedModeParam);
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
