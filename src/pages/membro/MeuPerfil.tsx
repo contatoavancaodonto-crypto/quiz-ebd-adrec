@@ -22,6 +22,7 @@ export default function MeuPerfil() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   // Armazena apenas os 11 dígitos após o 55 (DDD + número)
   const [phoneLocal, setPhoneLocal] = useState("");
   const [showAvatar, setShowAvatar] = useState(true);
@@ -32,6 +33,10 @@ export default function MeuPerfil() {
     if (profile) {
       setFirstName(profile.first_name ?? "");
       setLastName(profile.last_name ?? "");
+      setDisplayName(
+        profile.display_name ??
+          `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
+      );
       // Remove tudo que não é dígito e tira o "55" inicial se existir
       const digits = (profile.phone ?? "").replace(/\D/g, "");
       const local = digits.startsWith("55") ? digits.slice(2) : digits;
@@ -84,6 +89,15 @@ export default function MeuPerfil() {
       toast.error("Telefone inválido. Use o formato (DD) 9XXXX-XXXX");
       return;
     }
+    const trimmedDisplay = displayName.trim();
+    if (trimmedDisplay.length < 2) {
+      toast.error("Nome de usuário muito curto (mínimo 2 caracteres)");
+      return;
+    }
+    if (trimmedDisplay.length > 50) {
+      toast.error("Nome de usuário muito longo (máximo 50 caracteres)");
+      return;
+    }
     setSaving(true);
     const fullPhone = phoneLocal.length === 11 ? `55${phoneLocal}` : "";
     const { error } = await supabase
@@ -91,6 +105,7 @@ export default function MeuPerfil() {
       .update({
         first_name: firstName,
         last_name: lastName,
+        display_name: trimmedDisplay,
         phone: fullPhone,
         show_avatar_in_ranking: showAvatar,
       })
@@ -170,7 +185,7 @@ export default function MeuPerfil() {
             <div className="flex-1 min-w-0">
               <div className="text-[10px] uppercase tracking-widest opacity-80 font-bold">Bem-vindo</div>
               <h1 className="text-xl font-display font-extrabold leading-tight truncate">
-                {firstName || "—"} {lastName}
+                {displayName || `${firstName} ${lastName}`.trim() || "—"}
               </h1>
               <p className="text-xs opacity-85 truncate flex items-center gap-1 mt-0.5">
                 <Mail className="w-3 h-3" /> {profile?.email}
@@ -205,6 +220,21 @@ export default function MeuPerfil() {
                 <Label className="text-xs">Sobrenome</Label>
                 <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="mt-1" />
               </div>
+            </div>
+            <div>
+              <Label className="text-xs flex items-center gap-1">
+                <UserIcon className="w-3 h-3" /> Nome de usuário (aparece no ranking)
+              </Label>
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                maxLength={50}
+                placeholder="Ex: João Silva"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Use o nome que você quer que apareça no ranking e nas tentativas. Mínimo 2 caracteres.
+              </p>
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1">

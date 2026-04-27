@@ -399,6 +399,7 @@ export type Database = {
           church_id: string | null
           class_id: string | null
           created_at: string
+          display_name: string | null
           email: string | null
           first_name: string | null
           id: string
@@ -413,6 +414,7 @@ export type Database = {
           church_id?: string | null
           class_id?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           first_name?: string | null
           id: string
@@ -427,6 +429,7 @@ export type Database = {
           church_id?: string | null
           class_id?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           first_name?: string | null
           id?: string
