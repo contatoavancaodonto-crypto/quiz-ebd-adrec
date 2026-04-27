@@ -307,7 +307,13 @@ const QuizPage = () => {
   if (!currentQ) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Background blobs (padrão Home) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute top-40 -right-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
+      </div>
+
       {/* Header app-like minimal */}
       <header
         className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/50"
@@ -341,7 +347,7 @@ const QuizPage = () => {
         </div>
       </header>
 
-      <div className="flex-1 flex items-start sm:items-center justify-center px-4 pt-6 pb-8">
+      <div className="relative z-10 flex-1 flex items-start sm:items-center justify-center px-4 pt-6 pb-8">
         <div className="max-w-xl w-full">
           <h2 className="text-xl font-bold mb-6 text-foreground leading-tight">
             {currentQ.question_text}
