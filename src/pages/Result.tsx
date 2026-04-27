@@ -244,6 +244,14 @@ const ResultPage = () => {
         {/* Badges conquistados */}
         <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
 
+        {/* Rankings da SEMANA (por lesson_number, tempo como desempate) */}
+        <WeeklyRankings
+          quizId={store.quizId}
+          attemptId={store.attemptId}
+          classId={store.classId}
+          className={store.className}
+        />
+
         {/* Ranking da Igreja */}
         {churchTop.length > 0 && (
           <motion.div
