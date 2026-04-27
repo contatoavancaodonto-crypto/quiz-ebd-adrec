@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, MapPin, Mail, Phone, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,9 +14,10 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function MeuPerfil() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useFullProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [firstName, setFirstName] = useState("");
@@ -88,23 +89,45 @@ export default function MeuPerfil() {
     else toast.success("Email de redefinição enviado!");
   };
 
-  if (isLoading) return <MemberLayout title="Meu Perfil"><div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div></MemberLayout>;
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  if (isLoading)
+    return (
+      <MemberLayout title="Perfil" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
+        <div className="flex justify-center p-8">
+          <Loader2 className="animate-spin text-primary" />
+        </div>
+      </MemberLayout>
+    );
 
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
 
   return (
-    <MemberLayout title="Meu Perfil">
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Foto de perfil</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row items-center gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.avatar_url ?? undefined} />
-              <AvatarFallback className="text-2xl">{initials || "?"}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-3 w-full sm:w-auto">
+    <MemberLayout
+      title="Perfil"
+      mobileHeader={{ variant: "full" }}
+      contentPaddingMobile={false}
+    >
+      <div className="px-4 py-4 space-y-4 pb-4">
+        {/* Hero perfil */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-secondary p-6 text-white"
+        >
+          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-center gap-4">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full bg-white/15 backdrop-blur border-2 border-white/40 flex items-center justify-center text-2xl font-display font-extrabold overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt={firstName} className="w-full h-full object-cover" />
+                ) : (
+                  initials || <UserIcon className="w-8 h-8" />
+                )}
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -112,71 +135,141 @@ export default function MeuPerfil() {
                 className="hidden"
                 onChange={handleAvatarUpload}
               />
-              <Button
-                variant="outline"
+              <button
+                aria-label="Alterar foto"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white text-primary flex items-center justify-center shadow-lg active:scale-95 transition-transform"
               >
-                {uploading ? <Loader2 className="animate-spin" /> : <Camera />}
-                Alterar foto
-              </Button>
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="show-avatar"
-                  checked={showAvatar}
-                  onCheckedChange={setShowAvatar}
-                />
-                <Label htmlFor="show-avatar">Exibir foto no ranking</Label>
-              </div>
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+              </button>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] uppercase tracking-widest opacity-80 font-bold">Bem-vindo</div>
+              <h1 className="text-xl font-display font-extrabold leading-tight truncate">
+                {firstName || "—"} {lastName}
+              </h1>
+              <p className="text-xs opacity-85 truncate flex items-center gap-1 mt-0.5">
+                <Mail className="w-3 h-3" /> {profile?.email}
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Dados pessoais</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Info imutável */}
+        <section className="space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
+            Sua igreja
+          </div>
+          <div className="rounded-2xl bg-card border border-border divide-y divide-border overflow-hidden">
+            <InfoRow icon={Building2} label="Igreja" value={profile?.church_name ?? "—"} />
+            <InfoRow icon={MapPin} label="Área" value={profile?.area ? `Área ${profile.area}` : "—"} />
+          </div>
+        </section>
+
+        {/* Editáveis */}
+        <section className="space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
+            Dados pessoais
+          </div>
+          <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Nome</Label>
-                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                <Label className="text-xs">Nome</Label>
+                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-1" />
               </div>
               <div>
-                <Label>Sobrenome</Label>
-                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                <Label className="text-xs">Sobrenome</Label>
+                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="mt-1" />
               </div>
             </div>
             <div>
-              <Label>Email</Label>
-              <Input value={profile?.email ?? ""} disabled />
+              <Label className="text-xs flex items-center gap-1">
+                <Phone className="w-3 h-3" /> Telefone
+              </Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="(99) 99999-9999" />
             </div>
-            <div>
-              <Label>Telefone</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Button onClick={handleSave} disabled={saving} className="w-full gradient-primary">
+              {saving && <Loader2 className="animate-spin w-4 h-4 mr-2" />}
+              Salvar alterações
+            </Button>
+          </div>
+        </section>
+
+        {/* Privacidade */}
+        <section className="space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
+            Privacidade
+          </div>
+          <div className="rounded-2xl bg-card border border-border p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Eye className="w-5 h-5" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Igreja</Label>
-                <Input value={profile?.church_name ?? "—"} disabled />
-              </div>
-              <div>
-                <Label>Área</Label>
-                <Input value={profile?.area ? `Área ${profile.area}` : "—"} disabled />
-              </div>
+            <div className="flex-1 min-w-0">
+              <Label className="font-semibold text-sm">Mostrar foto no ranking</Label>
+              <p className="text-[11px] text-muted-foreground">Sua foto aparece ao lado do seu nome.</p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="animate-spin" />}
-                Salvar alterações
-              </Button>
-              <Button variant="outline" onClick={handleChangePassword}>
-                Alterar senha
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            <Switch checked={showAvatar} onCheckedChange={setShowAvatar} />
+          </div>
+        </section>
+
+        {/* Conta */}
+        <section className="space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
+            Conta
+          </div>
+          <div className="rounded-2xl bg-card border border-border divide-y divide-border overflow-hidden">
+            <ActionRow icon={KeyRound} label="Alterar senha" onClick={handleChangePassword} />
+            <ActionRow icon={LogOut} label="Sair" onClick={handleLogout} destructive />
+          </div>
+        </section>
       </div>
     </MemberLayout>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className="w-9 h-9 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{label}</div>
+        <div className="text-sm font-semibold text-foreground truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function ActionRow({
+  icon: Icon,
+  label,
+  onClick,
+  destructive,
+}: {
+  icon: any;
+  label: string;
+  onClick: () => void;
+  destructive?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-muted/60 transition-colors text-left"
+    >
+      <div
+        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+          destructive
+            ? "bg-destructive/10 text-destructive"
+            : "bg-primary/10 text-primary"
+        }`}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
+      <span className={`flex-1 text-sm font-semibold ${destructive ? "text-destructive" : "text-foreground"}`}>
+        {label}
+      </span>
+    </button>
   );
 }
