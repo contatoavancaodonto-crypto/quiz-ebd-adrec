@@ -21,10 +21,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search, Crown } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown, EyeOff, Eye } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { hideUserProfile, restoreUserProfile } from "@/lib/admin-delete";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 interface ProfileRow {
   id: string;
@@ -35,6 +37,7 @@ interface ProfileRow {
   profile_church_id: string | null;
   role: "superadmin" | "admin" | null;
   role_church_id: string | null;
+  hidden_at: string | null;
 }
 
 interface ChurchOpt {
@@ -60,7 +63,7 @@ export default function AdminUsers() {
     const [profilesRes, rolesRes, churchesRes] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, church_id")
+        .select("id, first_name, last_name, email, phone, church_id, hidden_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, church_id"),
       supabase.from("churches").select("id, name").eq("active", true).order("name"),
@@ -85,6 +88,7 @@ export default function AdminUsers() {
           profile_church_id: p.church_id,
           role: r?.role ?? null,
           role_church_id: r?.church_id ?? null,
+          hidden_at: (p as any).hidden_at ?? null,
         };
       })
     );
