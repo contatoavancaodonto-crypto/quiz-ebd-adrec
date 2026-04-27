@@ -149,7 +149,10 @@ const ResultPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-start p-4 pt-8 relative">
+    <div
+      className="min-h-screen bg-background flex flex-col items-center justify-start px-4 pt-4 pb-8 relative"
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
+    >
       <ThemeToggle />
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
