@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, BookOpenCheck } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero, HeroChip } from "@/components/ui/page-hero";
 
 interface GabaritoItem {
   order_index: number;
@@ -89,6 +91,7 @@ const GabaritoPage = () => {
   }, [store.attemptId, navigate]);
 
   const correctCount = items.filter((i) => i.is_correct).length;
+  const incorrectCount = items.length - correctCount;
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
@@ -115,7 +118,19 @@ const GabaritoPage = () => {
         </div>
       </header>
 
-      <div className="w-full max-w-md mx-auto relative z-10 px-4 pt-4">
+      <PageShell contentClassName="w-full max-w-md mx-auto px-4 pt-4 pb-8 space-y-5">
+        <PageHero
+          eyebrow="Revisão · 1º TRI. 2026 - ADREC"
+          title="Meu Gabarito"
+          description="Confira o que você acertou e errou nesta tentativa."
+          Icon={BookOpenCheck}
+          variant="primary"
+        >
+          <div className="flex flex-wrap gap-2">
+            <HeroChip Icon={CheckCircle2}>{correctCount} acertos</HeroChip>
+            <HeroChip Icon={XCircle}>{incorrectCount} erros</HeroChip>
+          </div>
+        </PageHero>
 
         {loading ? (
           <div className="text-center text-muted-foreground py-10">Carregando...</div>
@@ -129,7 +144,7 @@ const GabaritoPage = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className={`rounded-xl border p-4 ${
+                className={`rounded-3xl border p-4 backdrop-blur ${
                   item.is_correct
                     ? "border-green-500/30 bg-green-500/5"
                     : "border-destructive/30 bg-destructive/5"
@@ -166,7 +181,7 @@ const GabaritoPage = () => {
             ))}
           </div>
         )}
-      </div>
+      </PageShell>
     </div>
   );
 };
