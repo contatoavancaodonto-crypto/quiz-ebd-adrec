@@ -12,20 +12,29 @@ export interface FullProfile {
   area: number | null;
   church_id: string | null;
   church_name: string | null;
+  class_id: string | null;
   avatar_url: string | null;
   show_avatar_in_ranking: boolean;
 }
 
+/**
+ * Hook único e canônico para o perfil do usuário logado.
+ * Cache compartilhado via React Query (chave estável `["full-profile", userId]`).
+ * Todos os outros consumidores (`useProfile`, `ProfileGate`) reusam essa mesma query.
+ */
 export function useFullProfile() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["full-profile", user?.id],
     enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 min — perfil muda raramente
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<FullProfile | null> => {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "id, first_name, last_name, display_name, email, phone, area, church_id, avatar_url, show_avatar_in_ranking, churches(name)"
+          "id, first_name, last_name, display_name, email, phone, area, church_id, class_id, avatar_url, show_avatar_in_ranking, churches(name)"
         )
         .eq("id", user!.id)
         .maybeSingle();
@@ -39,6 +48,7 @@ export function useFullProfile() {
         phone: data.phone,
         area: data.area,
         church_id: data.church_id,
+        class_id: (data as any).class_id ?? null,
         avatar_url: (data as any).avatar_url ?? null,
         show_avatar_in_ranking: (data as any).show_avatar_in_ranking ?? true,
         church_name: (data as any).churches?.name ?? null,
