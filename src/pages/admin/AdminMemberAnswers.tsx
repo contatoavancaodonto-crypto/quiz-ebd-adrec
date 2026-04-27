@@ -1,0 +1,315 @@
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Search, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, Trophy } from "lucide-react";
+import { useRoles } from "@/hooks/useRoles";
+
+interface AttemptRow {
+  id: string;
+  score: number;
+  total_questions: number;
+  total_time_seconds: number;
+  finished_at: string | null;
+  quiz_id: string;
+  participant_id: string;
+  participants: { name: string; class_id: string | null } | null;
+  quizzes: { title: string; lesson_number: number | null; week_number: number | null } | null;
+}
+
+interface QuestionRow {
+  id: string;
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_option: string;
+  order_index: number;
+  explanation: string | null;
+}
+
+interface AnswerRow {
+  question_id: string;
+  selected_option: string;
+  is_correct: boolean;
+  answered_at: string;
+}
+
+const norm = (s: string | null | undefined) =>
+  (s ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+
+const optionLetters: Array<"a" | "b" | "c" | "d"> = ["a", "b", "c", "d"];
+
+function formatTime(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m ${s.toString().padStart(2, "0")}s`;
+}
+
+export default function AdminMemberAnswers() {
+  const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
+  const [rows, setRows] = useState<AttemptRow[]>([]);
+  const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [details, setDetails] = useState<
+    Record<string, { questions: QuestionRow[]; answers: AnswerRow[]; loading: boolean }>
+  >({});
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("quiz_attempts")
+      .select(
+        "id, score, total_questions, total_time_seconds, finished_at, quiz_id, participant_id, participants(name, class_id), quizzes(title, lesson_number, week_number)"
+      )
+      .not("finished_at", "is", null)
+      .order("finished_at", { ascending: false })
+      .limit(500);
+    setRows((data as any) ?? []);
+
+    if (!isSuperadmin && churchId) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("church_id", churchId);
+      const set = new Set(
+        (profs ?? []).map((p: any) => norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`))
+      );
+      setAllowedNames(set);
+    } else {
+      setAllowedNames(null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (rolesLoading) return;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolesLoading, isSuperadmin, churchId]);
+
+  const filtered = useMemo(() => {
+    let list = rows;
+    if (allowedNames) {
+      list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
+    }
+    if (q) {
+      const ql = q.toLowerCase();
+      list = list.filter(
+        (r) =>
+          (r.participants?.name ?? "").toLowerCase().includes(ql) ||
+          (r.quizzes?.title ?? "").toLowerCase().includes(ql)
+      );
+    }
+    return list;
+  }, [rows, allowedNames, q]);
+
+  const toggleExpand = async (attempt: AttemptRow) => {
+    if (expanded === attempt.id) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(attempt.id);
+
+    if (!details[attempt.id]) {
+      setDetails((d) => ({
+        ...d,
+        [attempt.id]: { questions: [], answers: [], loading: true },
+      }));
+
+      const [{ data: questions }, { data: answers }] = await Promise.all([
+        supabase
+          .from("questions")
+          .select(
+            "id, question_text, option_a, option_b, option_c, option_d, correct_option, order_index, explanation"
+          )
+          .eq("quiz_id", attempt.quiz_id)
+          .order("order_index", { ascending: true }),
+        supabase
+          .from("answers")
+          .select("question_id, selected_option, is_correct, answered_at")
+          .eq("attempt_id", attempt.id),
+      ]);
+
+      setDetails((d) => ({
+        ...d,
+        [attempt.id]: {
+          questions: (questions as QuestionRow[]) ?? [],
+          answers: (answers as AnswerRow[]) ?? [],
+          loading: false,
+        },
+      }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Respostas Membros</h2>
+        <p className="text-sm text-muted-foreground">
+          {isSuperadmin
+            ? "Veja, por aluno, cada resposta dada e o gabarito para corrigir e medir o conhecimento individual."
+            : "Veja as respostas dos membros da sua igreja, com gabarito, para acompanhamento individual."}
+        </p>
+      </div>
+
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Buscar por aluno ou quiz…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
+      {loading ? (
+        <Card className="p-6 text-center text-muted-foreground">Carregando…</Card>
+      ) : filtered.length === 0 ? (
+        <Card className="p-6 text-center text-muted-foreground">Nenhuma resposta encontrada.</Card>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((a) => {
+            const isOpen = expanded === a.id;
+            const det = details[a.id];
+            const acc = a.total_questions > 0 ? Math.round((a.score / a.total_questions) * 100) : 0;
+            return (
+              <Card key={a.id} className="overflow-hidden">
+                <Collapsible open={isOpen} onOpenChange={() => toggleExpand(a)}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors">
+                      {isOpen ? (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-foreground truncate">
+                          {a.participants?.name ?? "—"}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate mt-0.5">
+                          {a.quizzes?.title ?? "Quiz"}
+                          {a.quizzes?.lesson_number ? ` · Lição ${a.quizzes.lesson_number}` : ""}
+                          {a.finished_at
+                            ? ` · ${new Date(a.finished_at).toLocaleString("pt-BR")}`
+                            : ""}
+                        </div>
+                      </div>
+                      <div className="hidden sm:flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatTime(a.total_time_seconds)}
+                        </div>
+                        <Badge variant={acc >= 70 ? "default" : "secondary"} className="gap-1">
+                          <Trophy className="w-3 h-3" />
+                          {a.score}/{a.total_questions} · {acc}%
+                        </Badge>
+                      </div>
+                      <div className="sm:hidden">
+                        <Badge variant={acc >= 70 ? "default" : "secondary"}>
+                          {a.score}/{a.total_questions}
+                        </Badge>
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border-t bg-muted/20 p-4 space-y-3">
+                      {!det || det.loading ? (
+                        <div className="text-sm text-muted-foreground">Carregando respostas…</div>
+                      ) : det.questions.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">
+                          Sem perguntas registradas para este quiz.
+                        </div>
+                      ) : (
+                        det.questions.map((qst, idx) => {
+                          const ans = det.answers.find((x) => x.question_id === qst.id);
+                          const correctLetter = (qst.correct_option ?? "").toLowerCase();
+                          const selectedLetter = (ans?.selected_option ?? "").toLowerCase();
+                          const isCorrect = ans?.is_correct ?? false;
+                          const notAnswered = !ans;
+                          return (
+                            <div
+                              key={qst.id}
+                              className="rounded-md border bg-background p-3 space-y-2"
+                            >
+                              <div className="flex items-start gap-2">
+                                <Badge variant="outline" className="shrink-0">
+                                  {idx + 1}
+                                </Badge>
+                                <div className="flex-1 text-sm font-medium text-foreground">
+                                  {qst.question_text}
+                                </div>
+                                {notAnswered ? (
+                                  <Badge variant="secondary" className="shrink-0">
+                                    Não respondida
+                                  </Badge>
+                                ) : isCorrect ? (
+                                  <Badge className="shrink-0 bg-green-600 hover:bg-green-600 gap-1">
+                                    <CheckCircle2 className="w-3 h-3" /> Acertou
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="shrink-0 gap-1">
+                                    <XCircle className="w-3 h-3" /> Errou
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="grid sm:grid-cols-2 gap-1.5 text-sm">
+                                {optionLetters.map((letter) => {
+                                  const text = (qst as any)[`option_${letter}`] as string;
+                                  const isCorrectOpt = letter === correctLetter;
+                                  const isSelected = letter === selectedLetter;
+                                  return (
+                                    <div
+                                      key={letter}
+                                      className={`flex items-start gap-2 rounded px-2 py-1.5 border ${
+                                        isCorrectOpt
+                                          ? "border-green-600/50 bg-green-600/10"
+                                          : isSelected && !isCorrectOpt
+                                          ? "border-destructive/50 bg-destructive/10"
+                                          : "border-transparent"
+                                      }`}
+                                    >
+                                      <span className="font-bold uppercase text-xs mt-0.5 w-4">
+                                        {letter}
+                                      </span>
+                                      <span className="flex-1">{text}</span>
+                                      {isCorrectOpt && (
+                                        <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                                      )}
+                                      {isSelected && !isCorrectOpt && (
+                                        <XCircle className="w-4 h-4 text-destructive shrink-0" />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {qst.explanation && (
+                                <div className="text-xs text-muted-foreground italic border-t pt-2 mt-1">
+                                  💡 {qst.explanation}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
