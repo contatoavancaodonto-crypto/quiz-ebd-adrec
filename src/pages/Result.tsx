@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -10,6 +9,8 @@ import { ThankYouScreen } from "@/components/ThankYouScreen";
 import { BadgesShowcase } from "@/components/BadgesShowcase";
 import { WeeklyRankings } from "@/components/WeeklyRankings";
 import { formatTimeMs } from "@/hooks/useTimer";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero, HeroChip } from "@/components/ui/page-hero";
 
 function getPerformanceMessage(pct: number) {
   if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };
