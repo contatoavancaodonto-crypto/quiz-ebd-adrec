@@ -341,10 +341,7 @@ const QuizPage = () => {
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto w-full px-4 pt-4">
-      </div>
-
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-start sm:items-center justify-center px-4 pt-6 pb-8">
         <div className="max-w-xl w-full">
           <h2 className="text-xl font-bold mb-6 text-foreground leading-tight">
             {currentQ.question_text}
