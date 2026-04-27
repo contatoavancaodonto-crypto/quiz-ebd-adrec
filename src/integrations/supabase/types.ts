@@ -962,16 +962,91 @@ export type Database = {
           church_name: string | null
           class_id: string | null
           class_name: string | null
+          final_score: number | null
           finished_at: string | null
           is_retry: boolean | null
           participant_name: string | null
           position: number | null
           score: number | null
+          streak_bonus: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
         }
         Relationships: []
+      }
+      ranking_monthly: {
+        Row: {
+          church_id: string | null
+          church_name: string | null
+          class_id: string | null
+          class_name: string | null
+          current_streak: number | null
+          participant_name: string | null
+          position: number | null
+          season_id: string | null
+          total_score: number | null
+          total_time_ms: number | null
+          weeks_completed: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ranking_season_accumulated: {
         Row: {
