@@ -72,6 +72,9 @@ const App = () => (
           <Route path="/preview-telas" element={<PreviewTelas />} />
           <Route path="/painel-ebd-2025" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
+            <Route path="minha-igreja" element={<AdminMyChurch />} />
+            <Route path="membros" element={<AdminChurchMembers />} />
+            <Route path="admins-locais" element={<AdminLocalAdmins />} />
             <Route path="usuarios" element={<AdminUsers />} />
             <Route path="igrejas" element={<AdminChurches />} />
             <Route path="turmas" element={<AdminClasses />} />
