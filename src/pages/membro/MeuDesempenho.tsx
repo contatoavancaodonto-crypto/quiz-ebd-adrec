@@ -2,6 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Trophy, Target, Clock, Building2, Loader2, Sparkles, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell, SectionLabel } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
+import { StatCard } from "@/components/ui/stat-card";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
@@ -62,10 +65,10 @@ export default function MeuDesempenho() {
 
   const g = stats?.general;
   const cards = [
-    { icon: Trophy, label: "Posição geral", value: g?.position ? `#${g.position}` : "—", color: "from-amber-500 to-orange-600" },
-    { icon: Building2, label: "Na igreja", value: stats?.churchPosition ? `#${stats.churchPosition}` : "—", color: "from-violet-500 to-purple-600" },
-    { icon: Target, label: "Pontuação", value: g?.score ?? "—", color: "from-primary to-secondary" },
-    { icon: Clock, label: "Tempo total", value: g?.total_time_seconds ? `${g.total_time_seconds}s` : "—", color: "from-emerald-500 to-green-600" },
+    { Icon: Trophy, label: "Posição geral", value: g?.position ? `#${g.position}` : "—", tone: "amber" as const },
+    { Icon: Building2, label: "Na igreja", value: stats?.churchPosition ? `#${stats.churchPosition}` : "—", tone: "secondary" as const },
+    { Icon: Target, label: "Pontuação", value: g?.score ?? "—", tone: "primary" as const },
+    { Icon: Clock, label: "Tempo total", value: g?.total_time_seconds ? `${g.total_time_seconds}s` : "—", tone: "emerald" as const },
   ];
 
   return (
@@ -73,37 +76,38 @@ export default function MeuDesempenho() {
       title="Meu Desempenho"
       mobileHeader={{ variant: "back", title: "Meu Desempenho", subtitle: "Estatísticas da temporada", backTo: "/" }}
     >
-      <div className="space-y-4 pb-4">
+      <PageShell contentClassName="pb-4">
+        <PageHero
+          eyebrow="Temporada atual"
+          title="Meu desempenho"
+          description="Sua posição, pontuação e conquistas em tempo real."
+          Icon={Trophy}
+          variant="primary"
+        />
+
         {season && !seasonCountdown.expired && <SeasonCountdown />}
 
-        <div className="grid grid-cols-2 gap-3">
-          {cards.map((c, i) => (
-            <motion.div
-              key={c.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-2xl bg-card border border-border p-4 relative overflow-hidden"
-            >
-              <div className={`inline-flex w-10 h-10 rounded-xl bg-gradient-to-br ${c.color} text-white items-center justify-center mb-2 shadow-md`}>
-                <c.icon className="w-5 h-5" />
-              </div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                {c.label}
-              </p>
-              <p className="text-2xl font-display font-extrabold text-foreground">{c.value}</p>
-            </motion.div>
-          ))}
-        </div>
+        <section className="space-y-2">
+          <SectionLabel label="Indicadores" color="primary" />
+          <div className="grid grid-cols-2 gap-3">
+            {cards.map((c, i) => (
+              <StatCard
+                key={c.label}
+                Icon={c.Icon}
+                label={c.label}
+                value={c.value}
+                tone={c.tone}
+                index={i}
+              />
+            ))}
+          </div>
+        </section>
 
         <section className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
-            <Award className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-bold text-foreground">Conquistas da temporada</h2>
-          </div>
+          <SectionLabel label="Conquistas da temporada" color="warning" />
 
           {stats?.badges.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center">
+            <div className="rounded-3xl border border-dashed border-border bg-muted/20 p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
                 <Sparkles className="w-6 h-6 text-muted-foreground" />
               </div>
@@ -132,7 +136,7 @@ export default function MeuDesempenho() {
             </div>
           )}
         </section>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

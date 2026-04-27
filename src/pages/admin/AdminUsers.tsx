@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Shield, ShieldOff, Search, Crown } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface ProfileRow {
   id: string;
@@ -160,13 +161,12 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Usuários & Roles</h2>
-        <p className="text-sm text-muted-foreground">
-          Promover Admins de Igreja ou Superadmins. Apenas o Superadmin acessa esta tela.
-        </p>
-      </div>
+    <AdminPage
+      title="Usuários & Roles"
+      description="Promover Admins de Igreja ou Superadmins. Apenas o Superadmin acessa esta tela."
+      Icon={Crown}
+      variant="primary"
+    >
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -300,6 +300,6 @@ export default function AdminUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Power } from "lucide-react";
+import { Plus, Power, GraduationCap } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Cls {
   id: string;
@@ -51,12 +52,13 @@ export default function AdminClasses() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Turmas</h2>
-          <p className="text-sm text-muted-foreground">Gerenciar turmas da EBD</p>
-        </div>
+    <AdminPage
+      title="Turmas"
+      description="Gerenciar turmas da EBD."
+      Icon={GraduationCap}
+      variant="emerald"
+    >
+      <div className="flex items-end justify-end">
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); } }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-1" /> Nova Turma</Button></DialogTrigger>
           <DialogContent>
@@ -92,6 +94,6 @@ export default function AdminClasses() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

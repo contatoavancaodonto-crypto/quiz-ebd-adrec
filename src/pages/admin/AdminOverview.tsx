@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import {
   Users,
   Church,
@@ -11,8 +10,14 @@ import {
   Target,
   UsersRound,
   ShieldCheck,
+  Crown,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
+import { PageHero, HeroChip } from "@/components/ui/page-hero";
+import { SectionLabel } from "@/components/ui/page-shell";
+import { StatCard } from "@/components/ui/stat-card";
 
 interface SuperadminCounts {
   users: number;
@@ -36,22 +41,16 @@ interface ChurchAdminCounts {
   activeSeason: string | null;
 }
 
-function StatCard({
-  label,
-  value,
-  Icon,
-}: {
-  label: string;
-  value: number | string;
-  Icon: any;
-}) {
+function SkeletonGrid() {
   return (
-    <Card className="p-4 space-y-1">
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <Icon className="w-4 h-4" /> {label}
-      </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
-    </Card>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-24 rounded-3xl border border-border bg-card animate-pulse"
+        />
+      ))}
+    </div>
   );
 }
 
@@ -95,26 +94,35 @@ function SuperadminOverview() {
   }, [load]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Visão Geral</h2>
-        <p className="text-sm text-muted-foreground">
-          Resumo geral do sistema {c?.activeSeason && `· Temporada ativa: ${c.activeSeason}`}
-        </p>
-      </div>
-      {!c ? (
-        <p className="text-muted-foreground">Carregando…</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Usuários" value={c.users} Icon={Users} />
-          <StatCard label="Admins" value={c.admins} Icon={Users} />
-          <StatCard label="Igrejas" value={c.churches} Icon={Church} />
-          <StatCard label="Turmas" value={c.classes} Icon={GraduationCap} />
-          <StatCard label="Tentativas" value={c.attempts} Icon={ListChecks} />
-          <StatCard label="Badges" value={c.badges} Icon={Award} />
-          <StatCard label="Versículos" value={c.verses} Icon={BookText} />
-        </div>
-      )}
+    <div className="space-y-5">
+      <PageHero
+        eyebrow="Painel Superadmin"
+        title="Visão geral do sistema"
+        description="Resumo em tempo real de toda a plataforma EBD."
+        Icon={Crown}
+        variant="primary"
+      >
+        {c?.activeSeason && (
+          <HeroChip Icon={Sparkles}>Temporada ativa · {c.activeSeason}</HeroChip>
+        )}
+      </PageHero>
+
+      <section className="space-y-2">
+        <SectionLabel label="Indicadores gerais" color="primary" />
+        {!c ? (
+          <SkeletonGrid />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard label="Usuários" value={c.users} Icon={Users} tone="primary" index={0} />
+            <StatCard label="Admins" value={c.admins} Icon={ShieldCheck} tone="secondary" index={1} />
+            <StatCard label="Igrejas" value={c.churches} Icon={Church} tone="indigo" index={2} />
+            <StatCard label="Turmas" value={c.classes} Icon={GraduationCap} tone="emerald" index={3} />
+            <StatCard label="Tentativas" value={c.attempts} Icon={ListChecks} tone="amber" index={4} />
+            <StatCard label="Badges" value={c.badges} Icon={Award} tone="rose" index={5} />
+            <StatCard label="Versículos" value={c.verses} Icon={BookText} tone="primary" index={6} />
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -134,8 +142,6 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
         .select("id", { count: "exact", head: true })
         .eq("role", "admin")
         .eq("church_id", churchId),
-      // Tentativas dos perfis dessa igreja: precisamos cruzar com participants pelo nome.
-      // Como a chave é "name" entre profiles e participants, fazemos por etapas.
       supabase
         .from("profiles")
         .select("first_name, last_name")
@@ -152,7 +158,6 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
     const members = profiles.length;
     const classesUsed = new Set(profiles.map((p: any) => p.class_id).filter(Boolean)).size;
 
-    // Mapeia nomes para buscar tentativas
     const norm = (s: string) => s.toLowerCase().trim().replace(/\s+/g, " ");
     const allowedNames = new Set(
       (attemptsRes.data ?? []).map((p: any) =>
@@ -220,31 +225,53 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
   }, [churchId, load]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">
-          {c?.churchName ?? "Minha Igreja"}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Visão geral da sua igreja {c?.activeSeason && `· Temporada ativa: ${c.activeSeason}`}
-        </p>
-      </div>
-      {!c ? (
-        <p className="text-muted-foreground">Carregando…</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Membros" value={c.members} Icon={UsersRound} />
-          <StatCard label="Admins locais" value={c.localAdmins} Icon={ShieldCheck} />
-          <StatCard label="Turmas usadas" value={c.classesUsed} Icon={GraduationCap} />
-          <StatCard label="Tentativas concluídas" value={c.attempts} Icon={ListChecks} />
-          <StatCard
-            label="Média de acertos"
-            value={c.avgAccuracy !== null ? `${c.avgAccuracy.toFixed(1)}%` : "—"}
-            Icon={Target}
-          />
-          <StatCard label="Solicitações pendentes" value={c.pendingRequests} Icon={Church} />
+    <div className="space-y-5">
+      <PageHero
+        eyebrow="Admin local"
+        title={c?.churchName ?? "Minha Igreja"}
+        description="Acompanhe o desempenho dos membros da sua igreja em tempo real."
+        Icon={Shield}
+        variant="secondary"
+      >
+        <div className="flex flex-wrap gap-2">
+          {c?.activeSeason && (
+            <HeroChip Icon={Sparkles}>Temporada · {c.activeSeason}</HeroChip>
+          )}
+          {c && c.pendingRequests > 0 && (
+            <HeroChip Icon={ShieldCheck}>
+              {c.pendingRequests} solicitação{c.pendingRequests > 1 ? "ões" : ""} pendente
+            </HeroChip>
+          )}
         </div>
-      )}
+      </PageHero>
+
+      <section className="space-y-2">
+        <SectionLabel label="Indicadores da igreja" color="primary" />
+        {!c ? (
+          <SkeletonGrid />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <StatCard label="Membros" value={c.members} Icon={UsersRound} tone="primary" index={0} />
+            <StatCard label="Admins locais" value={c.localAdmins} Icon={ShieldCheck} tone="secondary" index={1} />
+            <StatCard label="Turmas usadas" value={c.classesUsed} Icon={GraduationCap} tone="emerald" index={2} />
+            <StatCard label="Tentativas concluídas" value={c.attempts} Icon={ListChecks} tone="amber" index={3} />
+            <StatCard
+              label="Média de acertos"
+              value={c.avgAccuracy !== null ? `${c.avgAccuracy.toFixed(1)}%` : "—"}
+              Icon={Target}
+              tone="indigo"
+              index={4}
+            />
+            <StatCard
+              label="Solicitações pendentes"
+              value={c.pendingRequests}
+              Icon={Church}
+              tone="rose"
+              index={5}
+            />
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -252,7 +279,13 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
 export default function AdminOverview() {
   const { isSuperadmin, isChurchAdmin, churchId, loading } = useRoles();
 
-  if (loading) return <p className="text-muted-foreground">Carregando…</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
   if (isSuperadmin) return <SuperadminOverview />;
   if (isChurchAdmin && churchId) return <ChurchAdminOverview churchId={churchId} />;
   return <SuperadminOverview />;

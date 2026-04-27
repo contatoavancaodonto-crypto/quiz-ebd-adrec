@@ -9,7 +9,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Search, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, Trophy } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, Trophy, MessageSquare } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import {
   Select,
   SelectContent,
@@ -224,15 +225,16 @@ export default function AdminMemberAnswers() {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Respostas Membros</h2>
-        <p className="text-sm text-muted-foreground">
-          {isSuperadmin
-            ? "Veja, por aluno, cada resposta dada e o gabarito para corrigir e medir o conhecimento individual."
-            : "Veja as respostas dos membros da sua igreja, com gabarito, para acompanhamento individual."}
-        </p>
-      </div>
+    <AdminPage
+      title="Respostas dos Membros"
+      description={
+        isSuperadmin
+          ? "Veja, por aluno, cada resposta dada e o gabarito para corrigir e medir o conhecimento individual."
+          : "Veja as respostas dos membros da sua igreja, com gabarito, para acompanhamento individual."
+      }
+      Icon={MessageSquare}
+      variant="primary"
+    >
 
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1 sm:max-w-xs">
@@ -430,6 +432,6 @@ export default function AdminMemberAnswers() {
           })}
         </div>
       )}
-    </div>
+    </AdminPage>
   );
 }

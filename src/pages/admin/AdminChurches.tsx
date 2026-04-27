@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminPage } from "@/components/admin/AdminPage";
+import { Church } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,14 +194,13 @@ export default function AdminChurches() {
   const pendingCount = requests.filter((r) => r.status === "pending").length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Igrejas</h2>
-          <p className="text-sm text-muted-foreground">
-            Aprovar solicitações e gerenciar igrejas
-          </p>
-        </div>
+    <AdminPage
+      title="Igrejas"
+      description="Aprovar solicitações e gerenciar igrejas."
+      Icon={Church}
+      variant="secondary"
+    >
+      <div className="flex items-end justify-end">
         <Dialog
           open={open}
           onOpenChange={(o) => {
@@ -455,7 +456,7 @@ export default function AdminChurches() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }
 

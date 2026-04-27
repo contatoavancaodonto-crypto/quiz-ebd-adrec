@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, KeyRound, Eye, Settings as SettingsIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
+import { SectionLabel } from "@/components/ui/page-shell";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -90,9 +93,7 @@ export default function Configuracoes() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
-            Conta
-          </div>
+          <SectionLabel label="Conta" color="primary" />
           <div className="rounded-2xl bg-card border border-border divide-y divide-border overflow-hidden">
             <button
               onClick={handleResetPassword}
@@ -114,7 +115,7 @@ export default function Configuracoes() {
             </button>
           </div>
         </section>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

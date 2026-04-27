@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Power, Search } from "lucide-react";
+import { Plus, Power, Search, BookText } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Verse { id: string; book: string; chapter: number; verse: number; text: string; theme: string; active: boolean; }
 
@@ -50,16 +51,20 @@ export default function AdminVerses() {
   const filtered = rows.filter((r) => `${r.book} ${r.text} ${r.theme}`.toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Versículos</h2>
-          <p className="text-sm text-muted-foreground">Pool do versículo do dia (até 500 mostrados)</p>
-        </div>
-        <Button onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé" }); setOpen(true); }}>
+    <AdminPage
+      title="Versículos"
+      description="Pool do versículo do dia (até 500 mostrados)."
+      Icon={BookText}
+      variant="secondary"
+      actions={
+        <Button
+          onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé" }); setOpen(true); }}
+          className="bg-white text-foreground hover:bg-white/90 shadow"
+        >
           <Plus className="w-4 h-4 mr-1" /> Novo Versículo
         </Button>
-      </div>
+      }
+    >
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -110,6 +115,6 @@ export default function AdminVerses() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

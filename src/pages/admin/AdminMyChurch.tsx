@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Send, Clock, CheckCircle2, XCircle, Info } from "lucide-react";
+import { Loader2, Send, Clock, CheckCircle2, XCircle, Info, Church } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { Navigate } from "react-router-dom";
 
 interface ChurchData {
@@ -151,13 +152,12 @@ export default function AdminMyChurch() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Minha Igreja</h2>
-        <p className="text-sm text-muted-foreground">
-          Edite os dados da sua igreja. Toda alteração precisa ser aprovada pelo superadmin.
-        </p>
-      </div>
+    <AdminPage
+      title="Minha Igreja"
+      description="Edite os dados da sua igreja. Toda alteração precisa ser aprovada pelo superadmin."
+      Icon={Church}
+      variant="secondary"
+    >
 
       {loading || !church ? (
         <Card className="p-6 flex items-center gap-2 text-muted-foreground">
@@ -290,6 +290,6 @@ export default function AdminMyChurch() {
           </Card>
         </>
       )}
-    </div>
+    </AdminPage>
   );
 }

@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { BookOpen, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -122,22 +124,14 @@ export default function Biblia() {
       title="Bíblia"
       mobileHeader={{ variant: "back", title: "Bíblia Online", subtitle: "Almeida Corrigida Fiel", backTo: "/" }}
     >
-      <div className="space-y-4 pb-4">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white relative overflow-hidden"
-        >
-          <div className="absolute -top-6 -right-6 opacity-25">
-            <BookOpen className="w-28 h-28" strokeWidth={1.2} />
-          </div>
-          <div className="relative">
-            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Almeida Corrigida Fiel</div>
-            <h2 className="text-xl font-bold mt-1">Bíblia Sagrada</h2>
-            <p className="text-xs opacity-90 mt-1">66 livros · Antigo e Novo Testamento</p>
-          </div>
-        </motion.div>
+      <PageShell contentClassName="pb-4">
+        <PageHero
+          eyebrow="Almeida Corrigida Fiel"
+          title="Bíblia Sagrada"
+          description="66 livros · Antigo e Novo Testamento."
+          Icon={BookOpen}
+          variant="primary"
+        />
 
         {/* Busca */}
         <div className="relative">
@@ -162,7 +156,7 @@ export default function Biblia() {
             {renderBooks(filteredNT)}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
+import { AdminPage } from "@/components/admin/AdminPage";
+import { UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -128,14 +130,12 @@ export default function AdminChurchMembers() {
   }, [rows, q]);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Membros da Igreja</h2>
-        <p className="text-sm text-muted-foreground">
-          {rows.length} {rows.length === 1 ? "membro cadastrado" : "membros cadastrados"} ·
-          promova auxiliares a admin local
-        </p>
-      </div>
+    <AdminPage
+      title="Membros da Igreja"
+      description={`${rows.length} ${rows.length === 1 ? "membro cadastrado" : "membros cadastrados"} · promova auxiliares a admin local.`}
+      Icon={UsersRound}
+      variant="primary"
+    >
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -214,6 +214,6 @@ export default function AdminChurchMembers() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

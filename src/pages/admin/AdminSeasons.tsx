@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Lock } from "lucide-react";
+import { Plus, Lock, Calendar } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Season { id: string; name: string; start_date: string; end_date: string; status: string; }
 
@@ -46,14 +47,17 @@ export default function AdminSeasons() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Temporadas</h2>
-          <p className="text-sm text-muted-foreground">Gerenciar ciclos competitivos</p>
-        </div>
-        <Button onClick={() => setOpen(true)}><Plus className="w-4 h-4 mr-1" /> Nova Temporada</Button>
-      </div>
+    <AdminPage
+      title="Temporadas"
+      description="Gerenciar ciclos competitivos."
+      Icon={Calendar}
+      variant="emerald"
+      actions={
+        <Button onClick={() => setOpen(true)} className="bg-white text-foreground hover:bg-white/90 shadow">
+          <Plus className="w-4 h-4 mr-1" /> Nova Temporada
+        </Button>
+      }
+    >
       <Card>
         <Table>
           <TableHeader>
@@ -95,6 +99,6 @@ export default function AdminSeasons() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

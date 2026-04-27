@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, ListChecks, Trash2, FileUp, Eraser } from "lucide-react";
+import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 
 interface Quiz {
@@ -348,16 +349,20 @@ export default function AdminQuizzes() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Quizzes</h2>
-          <p className="text-sm text-muted-foreground">Crie quizzes semanais com janela de abertura/fechamento</p>
-        </div>
-        <Button onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}>
+    <AdminPage
+      title="Quizzes"
+      description="Crie quizzes semanais com janela de abertura/fechamento."
+      Icon={Sparkles}
+      variant="primary"
+      actions={
+        <Button
+          onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}
+          className="bg-white text-foreground hover:bg-white/90 shadow"
+        >
           <Plus className="w-4 h-4 mr-1" /> Novo Quiz
         </Button>
-      </div>
+      }
+    >
       <Card>
         <Table>
           <TableHeader>
@@ -533,6 +538,6 @@ export default function AdminQuizzes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, ShieldOff, Loader2 } from "lucide-react";
+import { Shield, ShieldOff, Loader2, ShieldCheck } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 
@@ -99,20 +100,19 @@ export default function AdminLocalAdmins() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Admins Locais</h2>
-          <p className="text-sm text-muted-foreground">
-            Pessoas com acesso ao painel da sua igreja
-          </p>
-        </div>
-        <Button asChild variant="outline">
+    <AdminPage
+      title="Admins Locais"
+      description="Pessoas com acesso ao painel da sua igreja."
+      Icon={ShieldCheck}
+      variant="secondary"
+      actions={
+        <Button asChild className="bg-white text-foreground hover:bg-white/90 shadow">
           <Link to="/painel-ebd-2025/membros">
             <Shield className="w-4 h-4 mr-1" /> Promover um membro
           </Link>
         </Button>
-      </div>
+      }
+    >
 
       <Card>
         <Table>
@@ -167,6 +167,6 @@ export default function AdminLocalAdmins() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

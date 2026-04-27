@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, ListChecks } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Attempt {
   id: string;
@@ -79,15 +80,16 @@ export default function AdminAttempts() {
   }, [rows, allowedNames, q]);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Tentativas</h2>
-        <p className="text-sm text-muted-foreground">
-          {isSuperadmin
-            ? "Últimas 500 tentativas · exclusão permanente"
-            : "Tentativas dos membros da sua igreja · exclusão permanente"}
-        </p>
-      </div>
+    <AdminPage
+      title="Tentativas"
+      description={
+        isSuperadmin
+          ? "Últimas 500 tentativas · exclusão permanente."
+          : "Tentativas dos membros da sua igreja · exclusão permanente."
+      }
+      Icon={ListChecks}
+      variant="amber"
+    >
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Buscar por nome…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -121,6 +123,6 @@ export default function AdminAttempts() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }
