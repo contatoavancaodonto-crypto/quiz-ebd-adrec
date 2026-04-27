@@ -329,6 +329,11 @@ export default function AdminChurches() {
                         </Button>
                         <DeleteButton
                           itemLabel={`a igreja "${c.name}"`}
+                          consequences={[
+                            "Membros vinculados a esta igreja perderão a referência",
+                            "Admins locais desta igreja perderão o acesso administrativo",
+                            "Solicitações de edição pendentes serão removidas",
+                          ]}
                           onConfirm={async () => {
                             const r = await smartDelete({ table: "churches", id: c.id });
                             if (!r.ok) return r.error || "Falha ao apagar";
