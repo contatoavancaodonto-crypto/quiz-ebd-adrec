@@ -22,7 +22,8 @@ export default function MeuPerfil() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
+  // Armazena apenas os 11 dígitos após o 55 (DDD + número)
+  const [phoneLocal, setPhoneLocal] = useState("");
   const [showAvatar, setShowAvatar] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -31,10 +32,27 @@ export default function MeuPerfil() {
     if (profile) {
       setFirstName(profile.first_name ?? "");
       setLastName(profile.last_name ?? "");
-      setPhone(profile.phone ?? "");
+      // Remove tudo que não é dígito e tira o "55" inicial se existir
+      const digits = (profile.phone ?? "").replace(/\D/g, "");
+      const local = digits.startsWith("55") ? digits.slice(2) : digits;
+      setPhoneLocal(local.slice(0, 11));
       setShowAvatar(profile.show_avatar_in_ranking);
     }
   }, [profile]);
+
+  // Formata os 11 dígitos locais como "(DD) 9XXXX-XXXX"
+  const formatLocalPhone = (digits: string) => {
+    const d = digits.replace(/\D/g, "").slice(0, 11);
+    if (d.length === 0) return "";
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    setPhoneLocal(digits);
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
