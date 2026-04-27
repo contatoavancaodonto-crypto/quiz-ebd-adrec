@@ -30,6 +30,7 @@ import AdminClasses from "./pages/admin/AdminClasses";
 import AdminQuizzes from "./pages/admin/AdminQuizzes";
 import AdminSeasons from "./pages/admin/AdminSeasons";
 import AdminAttempts from "./pages/admin/AdminAttempts";
+import AdminMemberAnswers from "./pages/admin/AdminMemberAnswers";
 import AdminBadges from "./pages/admin/AdminBadges";
 import AdminVerses from "./pages/admin/AdminVerses";
 import AdminMaterials from "./pages/admin/AdminMaterials";
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="quizzes" element={<AdminQuizzes />} />
             <Route path="temporadas" element={<AdminSeasons />} />
             <Route path="tentativas" element={<AdminAttempts />} />
+            <Route path="respostas-membros" element={<AdminMemberAnswers />} />
             <Route path="badges" element={<AdminBadges />} />
             <Route path="versiculos" element={<AdminVerses />} />
             <Route path="materiais" element={<AdminMaterials />} />
