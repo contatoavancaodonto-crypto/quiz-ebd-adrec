@@ -137,7 +137,7 @@ export default function Harpa() {
             </p>
           )}
         </div>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

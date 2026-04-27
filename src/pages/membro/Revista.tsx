@@ -128,7 +128,7 @@ export default function Revista() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

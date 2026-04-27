@@ -93,9 +93,7 @@ export default function Configuracoes() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
-            Conta
-          </div>
+          <SectionLabel label="Conta" color="primary" />
           <div className="rounded-2xl bg-card border border-border divide-y divide-border overflow-hidden">
             <button
               onClick={handleResetPassword}
