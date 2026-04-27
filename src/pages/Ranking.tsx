@@ -106,17 +106,6 @@ const RankingPage = () => {
     },
   });
 
-  const { data: churches } = useQuery({
-    queryKey: ["churches-list"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("churches")
-        .select("id, name")
-        .eq("approved", true)
-        .order("name");
-      return data || [];
-    },
-  });
 
   // Modo CLASSIC (legado, ranking_general por trimestre)
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
