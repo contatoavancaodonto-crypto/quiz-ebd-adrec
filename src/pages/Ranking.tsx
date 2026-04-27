@@ -531,7 +531,6 @@ const RankingPage = () => {
                       </div>
                     </motion.div>
                   );
-                  );
                 })}
               </AnimatePresence>
             </motion.div>
