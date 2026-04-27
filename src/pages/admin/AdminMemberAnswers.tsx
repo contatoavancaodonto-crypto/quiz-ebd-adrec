@@ -323,9 +323,15 @@ export default function AdminMemberAnswers() {
                           det.answers.some((x) => x.question_id === qst.id)
                         );
                         if (answeredQuestions.length === 0) {
+                          // A tentativa tem score salvo (ex.: 13/13) mas as respostas
+                          // individuais não foram persistidas em `answers`. Isso ocorre
+                          // com tentativas antigas, anteriores ao salvamento detalhado.
                           return (
-                            <div className="text-sm text-muted-foreground">
-                              Este aluno não respondeu nenhuma pergunta deste quiz.
+                            <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                              ⚠️ Esta tentativa registrou apenas a pontuação final
+                              ({a.score}/{a.total_questions}). As respostas individuais
+                              não estão disponíveis para detalhamento (provavelmente
+                              feita antes da implementação do gabarito por aluno).
                             </div>
                           );
                         }
