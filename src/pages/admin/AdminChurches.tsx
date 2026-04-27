@@ -27,6 +27,7 @@ export default function AdminChurches() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Church | null>(null);
   const [name, setName] = useState("");
+  const [pastorPresident, setPastorPresident] = useState("");
 
   const load = async () => {
     setLoading(true);
