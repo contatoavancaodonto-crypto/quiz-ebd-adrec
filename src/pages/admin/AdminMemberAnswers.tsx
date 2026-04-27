@@ -432,6 +432,6 @@ export default function AdminMemberAnswers() {
           })}
         </div>
       )}
-    </div>
+    </AdminPage>
   );
 }
