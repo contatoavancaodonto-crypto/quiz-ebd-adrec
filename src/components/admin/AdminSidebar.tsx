@@ -64,7 +64,7 @@ const allItems: Item[] = [
 ];
 
 export function AdminSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
   const { isSuperadmin, isChurchAdmin } = useRoles();
@@ -76,7 +76,13 @@ export function AdminSidebar() {
     return true;
   });
 
+  // Fecha o drawer no mobile ao navegar
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   const handleLogout = async () => {
+    closeOnMobile();
     await signOut();
     toast.success("Você saiu com sucesso");
     navigate("/auth");
@@ -95,6 +101,7 @@ export function AdminSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.end}
+                      onClick={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -112,7 +119,7 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/" className="hover:bg-muted/50">
+              <NavLink to="/" onClick={closeOnMobile} className="hover:bg-muted/50">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {!collapsed && <span>Voltar ao app</span>}
               </NavLink>
