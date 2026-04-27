@@ -9,6 +9,8 @@ import { formatTimeMs } from "@/hooks/useTimer";
 import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { useProfile } from "@/hooks/useProfile";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
@@ -544,7 +546,7 @@ const RankingPage = () => {
             </motion.div>
           </LayoutGroup>
         )}
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 };
