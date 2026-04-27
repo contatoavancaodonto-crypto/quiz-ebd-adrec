@@ -21,10 +21,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search, Crown } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown, EyeOff, Eye } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { hideUserProfile, restoreUserProfile } from "@/lib/admin-delete";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 interface ProfileRow {
   id: string;
@@ -35,6 +37,7 @@ interface ProfileRow {
   profile_church_id: string | null;
   role: "superadmin" | "admin" | null;
   role_church_id: string | null;
+  hidden_at: string | null;
 }
 
 interface ChurchOpt {
@@ -60,7 +63,7 @@ export default function AdminUsers() {
     const [profilesRes, rolesRes, churchesRes] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, church_id")
+        .select("id, first_name, last_name, email, phone, church_id, hidden_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, church_id"),
       supabase.from("churches").select("id, name").eq("active", true).order("name"),
@@ -85,6 +88,7 @@ export default function AdminUsers() {
           profile_church_id: p.church_id,
           role: r?.role ?? null,
           role_church_id: r?.church_id ?? null,
+          hidden_at: (p as any).hidden_at ?? null,
         };
       })
     );
@@ -139,6 +143,14 @@ export default function AdminUsers() {
     const { error } = await supabase.from("user_roles").delete().eq("user_id", row.id);
     if (error) return toast.error("Falha ao remover: " + error.message);
     toast.success("Papel removido");
+    load();
+  };
+
+  const toggleHidden = async (row: ProfileRow) => {
+    const fn = row.hidden_at ? restoreUserProfile : hideUserProfile;
+    const r = await fn(row.id);
+    if (!r.ok) return toast.error(r.error);
+    toast.success(row.hidden_at ? "Usuário restaurado" : "Usuário ocultado do app");
     load();
   };
 
@@ -236,6 +248,11 @@ export default function AdminUsers() {
                     {r.role === "admin" ? churchName(r.role_church_id) : "—"}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
+                    {r.hidden_at && (
+                      <Badge variant="outline" className="text-muted-foreground mr-1">
+                        Oculto
+                      </Badge>
+                    )}
                     {r.role ? (
                       <Button size="sm" variant="outline" onClick={() => removeRole(r)}>
                         <ShieldOff className="w-4 h-4 mr-1" /> Remover
@@ -244,6 +261,27 @@ export default function AdminUsers() {
                     <Button size="sm" onClick={() => openPromote(r)}>
                       <Shield className="w-4 h-4 mr-1" />
                       {r.role ? "Alterar" : "Promover"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={r.hidden_at ? "outline" : "ghost"}
+                      onClick={() => toggleHidden(r)}
+                      className={
+                        r.hidden_at
+                          ? undefined
+                          : "text-destructive hover:text-destructive hover:bg-destructive/10"
+                      }
+                      title={r.hidden_at ? "Restaurar" : "Ocultar do app"}
+                    >
+                      {r.hidden_at ? (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" /> Restaurar
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-1" /> Apagar
+                        </>
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>

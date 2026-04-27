@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Plus, Power, GraduationCap } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Cls {
   id: string;
@@ -88,6 +90,16 @@ export default function AdminClasses() {
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>
                     <Power className="w-4 h-4 mr-1" /> {c.active ? "Desativar" : "Ativar"}
                   </Button>
+                  <DeleteButton
+                    itemLabel={`a turma "${c.name}"`}
+                    onConfirm={async () => {
+                      const r = await smartDelete({ table: "classes", id: c.id });
+                      if (!r.ok) return r.error;
+                      load();
+                      return true;
+                    }}
+                    successMessage="Turma removida"
+                  />
                 </TableCell>
               </TableRow>
             ))}

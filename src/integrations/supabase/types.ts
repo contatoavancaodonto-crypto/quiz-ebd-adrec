@@ -402,6 +402,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           first_name: string | null
+          hidden_at: string | null
           id: string
           last_name: string | null
           phone: string | null
@@ -417,6 +418,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           first_name?: string | null
+          hidden_at?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
@@ -432,6 +434,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           first_name?: string | null
+          hidden_at?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null

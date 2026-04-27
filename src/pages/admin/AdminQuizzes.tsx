@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Quiz {
   id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number;
@@ -418,6 +420,22 @@ export default function AdminQuizzes() {
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
+                    <DeleteButton
+                      iconOnly
+                      itemLabel={`o quiz "${q.title}"`}
+                      description={
+                        <>
+                          Apagar este quiz removerá também suas perguntas. Se houver tentativas de alunos vinculadas, ele será apenas desativado para preservar o histórico do ranking.
+                        </>
+                      }
+                      onConfirm={async () => {
+                        const r = await smartDelete({ table: "quizzes", id: q.id });
+                        if (!r.ok) return r.error || "Falha ao apagar";
+                        load();
+                        return true;
+                      }}
+                      successMessage="Quiz removido"
+                    />
                   </TableCell>
                 </TableRow>
               );

@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Plus, Lock, Calendar } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Season { id: string; name: string; start_date: string; end_date: string; status: string; }
 
@@ -72,12 +74,33 @@ export default function AdminSeasons() {
                 <TableCell>{new Date(s.start_date).toLocaleDateString("pt-BR")}</TableCell>
                 <TableCell>{new Date(s.end_date).toLocaleDateString("pt-BR")}</TableCell>
                 <TableCell>{s.status === "active" ? <Badge>Ativa</Badge> : <Badge variant="outline">Encerrada</Badge>}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-1">
                   {s.status === "active" && (
                     <Button size="sm" variant="outline" onClick={() => close(s)}>
                       <Lock className="w-4 h-4 mr-1" /> Encerrar
                     </Button>
                   )}
+                  <DeleteButton
+                    itemLabel={`a temporada "${s.name}"`}
+                    description={
+                      <>
+                        Apagar esta temporada removerá também o vínculo dela em quizzes e tentativas se possível.
+                        Se houver dados dependentes, ela será apenas marcada como encerrada.
+                      </>
+                    }
+                    onConfirm={async () => {
+                      const r = await smartDelete({
+                        table: "seasons",
+                        id: s.id,
+                        softColumn: "status",
+                        softValue: "closed",
+                      });
+                      if (!r.ok) return r.error || "Falha ao apagar";
+                      load();
+                      return true;
+                    }}
+                    successMessage="Temporada removida"
+                  />
                 </TableCell>
               </TableRow>
             ))}

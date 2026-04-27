@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Plus, Power, Search, BookText } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Verse { id: string; book: string; chapter: number; verse: number; text: string; theme: string; active: boolean; }
 
@@ -90,6 +92,17 @@ export default function AdminVerses() {
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(v)}>
                     <Power className="w-4 h-4" />
                   </Button>
+                  <DeleteButton
+                    iconOnly
+                    itemLabel={`o versículo ${v.book} ${v.chapter}:${v.verse}`}
+                    onConfirm={async () => {
+                      const r = await smartDelete({ table: "verses", id: v.id });
+                      if (!r.ok) return r.error;
+                      load();
+                      return true;
+                    }}
+                    successMessage="Versículo removido"
+                  />
                 </TableCell>
               </TableRow>
             ))}
