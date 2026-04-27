@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Globe } from "lucide-react";
+import { Users, Globe, Loader2, WifiOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTimeMs } from "@/hooks/useTimer";
+import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
 
 interface Props {
   quizId: string;
