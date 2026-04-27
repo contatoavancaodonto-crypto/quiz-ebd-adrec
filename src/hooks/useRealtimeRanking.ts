@@ -11,8 +11,9 @@ export function useRealtimeRanking(queryKey: unknown[]) {
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const channelName = `ranking-realtime-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel("ranking-realtime")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "quiz_attempts" },
