@@ -113,7 +113,7 @@ const RankingPage = () => {
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
   const seasonId = activeSeason?.id;
   const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const seasonEnabled = mode === "season" && !!seasonId && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const monthlyEnabled = mode === "monthly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
   const classicEnabled = mode === "classic" && enabled;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
@@ -122,7 +122,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -130,7 +130,7 @@ const RankingPage = () => {
         query = query.eq("church_id", selectedChurchId);
       }
       const { data } = await query;
-      return (data as RankEntry[]) || [];
+      return (data as any[]) || [];
     },
   });
 
@@ -151,14 +151,13 @@ const RankingPage = () => {
     },
   });
 
-  const { data: seasonData, isLoading: seasonLoading } = useQuery({
-    queryKey: ["ranking-season", seasonId, scope, selectedChurchId],
-    enabled: seasonEnabled,
+  const { data: monthlyData, isLoading: monthlyLoading } = useQuery({
+    queryKey: ["ranking-monthly", scope, selectedChurchId],
+    enabled: monthlyEnabled,
     queryFn: async () => {
       let query = supabase
-        .from("ranking_season_accumulated")
+        .from("ranking_monthly")
         .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
-        .eq("season_id", seasonId!)
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -169,12 +168,12 @@ const RankingPage = () => {
     },
   });
 
-  const isLoading = classicLoading || weeklyLoading || seasonLoading;
+  const isLoading = classicLoading || weeklyLoading || monthlyLoading;
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
   const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
-  const rt3 = useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
+  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
   const activeRt = mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3;
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
@@ -183,22 +182,22 @@ const RankingPage = () => {
     const raw =
       mode === "classic" ? classicData :
       mode === "weekly" ? weeklyData :
-      seasonData;
+      monthlyData;
     if (!raw) return [];
     const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
     return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [mode, classicData, weeklyData, seasonData, selectedClassId]);
+  }, [mode, classicData, weeklyData, monthlyData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
       : mode === "weekly"
       ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
-      : mode === "season"
-      ? "Nenhum participante ainda nesta temporada."
+      : mode === "monthly"
+      ? "Nenhum participante ainda neste mês."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "season" ? seasonEnabled : classicEnabled;
+  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled;
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
