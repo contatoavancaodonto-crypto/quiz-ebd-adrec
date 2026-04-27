@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Clock, Medal, Calendar, Church, Users, Globe, Flame, Trophy } from "lucide-react";
@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatTimeMs } from "@/hooks/useTimer";
 import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { useProfile } from "@/hooks/useProfile";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
@@ -58,9 +59,17 @@ const RankingPage = () => {
     (["weekly", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
     "weekly";
   const [mode, setMode] = useState<Mode>(normalizedModeParam);
+  const { profile } = useProfile();
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
+
+  // Quando o usuário escolhe "Minha igreja", auto-preenche com a igreja do perfil
+  useEffect(() => {
+    if (scope === "church" && !selectedChurchId && profile?.church_id) {
+      setSelectedChurchId(profile.church_id);
+    }
+  }, [scope, profile?.church_id, selectedChurchId]);
 
   const handleTrimesterChange = (t: number) => {
     setTrimester(t);
