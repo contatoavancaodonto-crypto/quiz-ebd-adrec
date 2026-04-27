@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminPage } from "@/components/admin/AdminPage";
+import { Church } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -454,7 +456,7 @@ export default function AdminChurches() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }
 

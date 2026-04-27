@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
+import { AdminPage } from "@/components/admin/AdminPage";
+import { UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -212,6 +214,6 @@ export default function AdminChurchMembers() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }
