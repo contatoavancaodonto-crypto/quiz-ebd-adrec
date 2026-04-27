@@ -67,10 +67,14 @@ export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
-  const { isSuperadmin } = useRoles();
+  const { isSuperadmin, isChurchAdmin } = useRoles();
   const navigate = useNavigate();
 
-  const items = allItems.filter((i) => isSuperadmin || !i.superadminOnly);
+  const items = allItems.filter((i) => {
+    if (i.superadminOnly && !isSuperadmin) return false;
+    if (i.churchAdminOnly && (!isChurchAdmin || isSuperadmin)) return false;
+    return true;
+  });
 
   const handleLogout = async () => {
     await signOut();
