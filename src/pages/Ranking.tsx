@@ -435,7 +435,12 @@ const RankingPage = () => {
                             <Church className="w-4 h-4 text-primary shrink-0" />
                             {entry.church_name}
                           </div>
-                          <div className="text-[11px] text-muted-foreground/80 mt-0.5">
+                          {entry.pastor_president && (
+                            <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                              Pr. {entry.pastor_president}
+                            </div>
+                          )}
+                          <div className="text-[10px] text-muted-foreground/70 mt-0.5">
                             {entry.participants_count} {entry.participants_count === 1 ? "participante" : "participantes"}
                           </div>
                         </div>
