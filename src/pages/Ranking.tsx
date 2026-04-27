@@ -39,7 +39,7 @@ interface RankEntry {
   is_retry?: boolean;
 }
 
-type Scope = "general" | "church";
+type Scope = "general" | "church" | "interchurch";
 type Mode = "weekly" | "monthly" | "classic";
 
 const RankingPage = () => {
@@ -110,9 +110,11 @@ const RankingPage = () => {
   // Modo CLASSIC (legado, ranking_general por trimestre)
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
   const seasonId = activeSeason?.id;
-  const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const monthlyEnabled = mode === "monthly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const classicEnabled = mode === "classic" && enabled;
+  const isInter = scope === "interchurch";
+  const weeklyEnabled = mode === "weekly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const monthlyEnabled = mode === "monthly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const classicEnabled = mode === "classic" && !isInter && enabled;
+  const interEnabled = isInter;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
     queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
@@ -166,17 +168,44 @@ const RankingPage = () => {
     },
   });
 
-  const isLoading = classicLoading || weeklyLoading || monthlyLoading;
+  // Entre Igrejas (uma view por modo de tempo)
+  const { data: interData, isLoading: interLoading } = useQuery({
+    queryKey: ["ranking-interchurch", mode, trimester],
+    enabled: interEnabled,
+    queryFn: async () => {
+      const view =
+        mode === "weekly" ? "ranking_churches_weekly" :
+        mode === "monthly" ? "ranking_churches_monthly" :
+        "ranking_churches_classic";
+      let query = supabase
+        .from(view as any)
+        .select("position, church_id, church_name, avg_score, participants_count" + (mode === "classic" ? ", trimester" : ""))
+        .order("position")
+        .limit(500);
+      if (mode === "classic") {
+        query = (query as any).eq("trimester", trimester);
+      }
+      const { data } = await query;
+      return (data as any[]) || [];
+    },
+  });
+
+  const isLoading = classicLoading || weeklyLoading || monthlyLoading || interLoading;
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
   const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
   const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
-  const activeRt = mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3;
+  const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
+  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3);
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
 
   const ranking = useMemo(() => {
+    if (isInter) {
+      const raw = interData ?? [];
+      return raw.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+    }
     const raw =
       mode === "classic" ? classicData :
       mode === "weekly" ? weeklyData :
@@ -184,18 +213,20 @@ const RankingPage = () => {
     if (!raw) return [];
     const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
     return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [mode, classicData, weeklyData, monthlyData, selectedClassId]);
+  }, [isInter, interData, mode, classicData, weeklyData, monthlyData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
+      : isInter
+      ? "Nenhuma igreja com participantes neste período."
       : mode === "weekly"
       ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
       : mode === "monthly"
       ? "Nenhum participante ainda neste mês."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled;
+  const enabledForMode = isInter ? interEnabled : (mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled);
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
@@ -270,18 +301,18 @@ const RankingPage = () => {
           </div>
         )}
 
-        {/* 2. Scope: Minha Igreja (1º) ou Geral */}
+        {/* 2. Scope: Minha Igreja / Geral / Entre Igrejas */}
         <div className="mb-3">
           <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
             Escopo
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => {
                 setScope("church");
                 if (profile?.church_id) setSelectedChurchId(profile.church_id);
               }}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 scope === "church"
                   ? "gradient-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -292,7 +323,7 @@ const RankingPage = () => {
             </button>
             <button
               onClick={() => { setScope("general"); setSelectedChurchId(""); }}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 scope === "general"
                   ? "gradient-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -300,6 +331,17 @@ const RankingPage = () => {
             >
               <Globe className="w-4 h-4" />
               Geral
+            </button>
+            <button
+              onClick={() => { setScope("interchurch"); setSelectedChurchId(""); setSelectedClassId(""); }}
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                scope === "interchurch"
+                  ? "gradient-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              Entre Igrejas
             </button>
           </div>
         </div>
@@ -311,38 +353,40 @@ const RankingPage = () => {
           </div>
         )}
 
-        {/* 3. Turma (opcional) */}
-        <div className="mb-4">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-            <Users className="w-3 h-3 inline mr-1" />
-            Turma <span className="text-muted-foreground/60 normal-case">(opcional)</span>
-          </label>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedClassId("")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                !selectedClassId
-                  ? "gradient-primary text-primary-foreground shadow"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Todas
-            </button>
-            {classes?.map((cls) => (
+        {/* 3. Turma (opcional) — escondido em Entre Igrejas */}
+        {!isInter && (
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <Users className="w-3 h-3 inline mr-1" />
+              Turma <span className="text-muted-foreground/60 normal-case">(opcional)</span>
+            </label>
+            <div className="flex gap-2 flex-wrap">
               <button
-                key={cls.id}
-                onClick={() => setSelectedClassId(cls.id)}
+                onClick={() => setSelectedClassId("")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                  selectedClassId === cls.id
+                  !selectedClassId
                     ? "gradient-primary text-primary-foreground shadow"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {cls.name}
+                Todas
               </button>
-            ))}
+              {classes?.map((cls) => (
+                <button
+                  key={cls.id}
+                  onClick={() => setSelectedClassId(cls.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    selectedClassId === cls.id
+                      ? "gradient-primary text-primary-foreground shadow"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cls.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* List */}
         {!enabledForMode ? (
@@ -360,6 +404,53 @@ const RankingPage = () => {
             <motion.div layout className="space-y-2">
               <AnimatePresence initial={false}>
                 {ranking.map((entry: any, i) => {
+                  // === Modo Entre Igrejas: card de igreja com nota média ===
+                  if (isInter) {
+                    const interKey = `church-${entry.church_id}`;
+                    const avg = Number(entry.avg_score ?? 0);
+                    return (
+                      <motion.div
+                        key={interKey}
+                        layout
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{
+                          layout: { type: "spring", stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        }}
+                        className={`glass-card p-4 flex items-center gap-3 ${i < 3 ? "glow-border" : ""}`}
+                      >
+                        {i < 3 ? (
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0`}>
+                            <Medal className="w-5 h-5 text-foreground" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                            <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-foreground truncate flex items-center gap-2">
+                            <Church className="w-4 h-4 text-primary shrink-0" />
+                            {entry.church_name}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground/80 mt-0.5">
+                            {entry.participants_count} {entry.participants_count === 1 ? "participante" : "participantes"}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-display font-bold text-primary text-lg">
+                            {avg.toFixed(1).replace(".", ",")}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            nota média
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
                   const isMonthly = mode === "monthly";
                   const isWeekly = mode === "weekly";
