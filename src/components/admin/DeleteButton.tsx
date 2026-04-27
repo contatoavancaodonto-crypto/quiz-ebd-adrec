@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface DeleteButtonProps {
@@ -20,6 +20,8 @@ interface DeleteButtonProps {
   itemLabel?: string;
   title?: string;
   description?: ReactNode;
+  /** Lista de consequências específicas (ex: ["As perguntas serão excluídas", "O ranking pode ser afetado"]) */
+  consequences?: string[];
   successMessage?: string;
   size?: "sm" | "default";
   variant?: "ghost" | "outline" | "destructive";
