@@ -301,18 +301,18 @@ const RankingPage = () => {
           </div>
         )}
 
-        {/* 2. Scope: Minha Igreja (1º) ou Geral */}
+        {/* 2. Scope: Minha Igreja / Geral / Entre Igrejas */}
         <div className="mb-3">
           <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
             Escopo
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => {
                 setScope("church");
                 if (profile?.church_id) setSelectedChurchId(profile.church_id);
               }}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 scope === "church"
                   ? "gradient-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -323,7 +323,7 @@ const RankingPage = () => {
             </button>
             <button
               onClick={() => { setScope("general"); setSelectedChurchId(""); }}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 scope === "general"
                   ? "gradient-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -331,6 +331,17 @@ const RankingPage = () => {
             >
               <Globe className="w-4 h-4" />
               Geral
+            </button>
+            <button
+              onClick={() => { setScope("interchurch"); setSelectedChurchId(""); setSelectedClassId(""); }}
+              className={`py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                scope === "interchurch"
+                  ? "gradient-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              Entre Igrejas
             </button>
           </div>
         </div>
@@ -342,38 +353,40 @@ const RankingPage = () => {
           </div>
         )}
 
-        {/* 3. Turma (opcional) */}
-        <div className="mb-4">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-            <Users className="w-3 h-3 inline mr-1" />
-            Turma <span className="text-muted-foreground/60 normal-case">(opcional)</span>
-          </label>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedClassId("")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                !selectedClassId
-                  ? "gradient-primary text-primary-foreground shadow"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Todas
-            </button>
-            {classes?.map((cls) => (
+        {/* 3. Turma (opcional) — escondido em Entre Igrejas */}
+        {!isInter && (
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <Users className="w-3 h-3 inline mr-1" />
+              Turma <span className="text-muted-foreground/60 normal-case">(opcional)</span>
+            </label>
+            <div className="flex gap-2 flex-wrap">
               <button
-                key={cls.id}
-                onClick={() => setSelectedClassId(cls.id)}
+                onClick={() => setSelectedClassId("")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                  selectedClassId === cls.id
+                  !selectedClassId
                     ? "gradient-primary text-primary-foreground shadow"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {cls.name}
+                Todas
               </button>
-            ))}
+              {classes?.map((cls) => (
+                <button
+                  key={cls.id}
+                  onClick={() => setSelectedClassId(cls.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    selectedClassId === cls.id
+                      ? "gradient-primary text-primary-foreground shadow"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cls.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* List */}
         {!enabledForMode ? (
