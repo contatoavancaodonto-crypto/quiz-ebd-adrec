@@ -45,20 +45,25 @@ export default function AdminChurches() {
 
   const save = async () => {
     if (!name.trim()) return toast.error("Nome obrigatório");
+    const payload = {
+      name: name.trim(),
+      pastor_president: pastorPresident.trim() || null,
+    };
     if (editing) {
-      const { error } = await supabase.from("churches").update({ name }).eq("id", editing.id);
+      const { error } = await supabase.from("churches").update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message);
       toast.success("Igreja atualizada");
     } else {
       const { error } = await supabase
         .from("churches")
-        .insert({ name, approved: true, requested: false });
+        .insert({ ...payload, approved: true, requested: false });
       if (error) return toast.error(error.message);
       toast.success("Igreja criada");
     }
     setOpen(false);
     setEditing(null);
     setName("");
+    setPastorPresident("");
     load();
   };
 
