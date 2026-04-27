@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useRoles } from "@/hooks/useRoles";
 
-type Period = "all" | "week" | "month" | "trimester";
+type Period = "all" | "week" | "month" | "trimester" | "t1" | "t2" | "t3" | "t4";
 
 interface AttemptRow {
   id: string;
@@ -109,24 +109,38 @@ export default function AdminMemberAnswers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolesLoading, isSuperadmin, churchId]);
 
-  const periodStart = useMemo(() => {
-    if (periodFilter === "all") return null;
+  const periodRange = useMemo<{ start: Date | null; end: Date | null }>(() => {
+    if (periodFilter === "all") return { start: null, end: null };
     const now = new Date();
     if (periodFilter === "week") {
-      // segunda-feira 00:00
+      // segunda-feira 00:00 → agora
       const day = now.getDay(); // 0=dom..6=sab
       const diff = day === 0 ? -6 : 1 - day;
-      const d = new Date(now);
-      d.setDate(now.getDate() + diff);
-      d.setHours(0, 0, 0, 0);
-      return d;
+      const start = new Date(now);
+      start.setDate(now.getDate() + diff);
+      start.setHours(0, 0, 0, 0);
+      return { start, end: null };
     }
     if (periodFilter === "month") {
-      return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return {
+        start: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
+        end: null,
+      };
     }
-    // trimestre calendário (Jan-Mar, Abr-Jun, Jul-Set, Out-Dez)
-    const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
-    return new Date(now.getFullYear(), qStartMonth, 1, 0, 0, 0, 0);
+    if (periodFilter === "trimester") {
+      // trimestre corrente (Jan-Mar, Abr-Jun, Jul-Set, Out-Dez)
+      const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
+      return {
+        start: new Date(now.getFullYear(), qStartMonth, 1, 0, 0, 0, 0),
+        end: null,
+      };
+    }
+    // T1..T4 do ano corrente
+    const tIdx = Number(periodFilter.slice(1)) - 1; // 0..3
+    const startMonth = tIdx * 3;
+    const start = new Date(now.getFullYear(), startMonth, 1, 0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), startMonth + 3, 1, 0, 0, 0, 0); // exclusivo
+    return { start, end };
   }, [periodFilter]);
 
   const quizOptions = useMemo(() => {
@@ -151,11 +165,14 @@ export default function AdminMemberAnswers() {
     if (quizFilter !== "all") {
       list = list.filter((r) => r.quiz_id === quizFilter);
     }
-    if (periodStart) {
-      const startMs = periodStart.getTime();
-      list = list.filter(
-        (r) => r.finished_at && new Date(r.finished_at).getTime() >= startMs
-      );
+    if (periodRange.start) {
+      const startMs = periodRange.start.getTime();
+      const endMs = periodRange.end ? periodRange.end.getTime() : Infinity;
+      list = list.filter((r) => {
+        if (!r.finished_at) return false;
+        const t = new Date(r.finished_at).getTime();
+        return t >= startMs && t < endMs;
+      });
     }
     if (q) {
       const ql = q.toLowerCase();
@@ -166,7 +183,7 @@ export default function AdminMemberAnswers() {
       );
     }
     return list;
-  }, [rows, allowedNames, q, quizFilter, periodStart]);
+  }, [rows, allowedNames, q, quizFilter, periodRange]);
 
   const toggleExpand = async (attempt: AttemptRow) => {
     if (expanded === attempt.id) {
@@ -251,6 +268,10 @@ export default function AdminMemberAnswers() {
             <SelectItem value="week">Esta semana</SelectItem>
             <SelectItem value="month">Este mês</SelectItem>
             <SelectItem value="trimester">Este trimestre</SelectItem>
+            <SelectItem value="t1">1º Trimestre (Jan–Mar)</SelectItem>
+            <SelectItem value="t2">2º Trimestre (Abr–Jun)</SelectItem>
+            <SelectItem value="t3">3º Trimestre (Jul–Set)</SelectItem>
+            <SelectItem value="t4">4º Trimestre (Out–Dez)</SelectItem>
           </SelectContent>
         </Select>
       </div>
