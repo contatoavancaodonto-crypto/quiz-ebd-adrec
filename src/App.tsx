@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import QuizPage from "./pages/Quiz";
+import Arquivo from "./pages/Arquivo";
 import ResultPage from "./pages/Result";
 import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
           <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/arquivo" element={<Arquivo />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/gabarito" element={<GabaritoPage />} />
