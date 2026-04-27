@@ -10,7 +10,16 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Search, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, Trophy } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useRoles } from "@/hooks/useRoles";
+
+type Period = "all" | "week" | "month" | "trimester";
 
 interface AttemptRow {
   id: string;
@@ -60,6 +69,8 @@ export default function AdminMemberAnswers() {
   const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [quizFilter, setQuizFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<Period>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [details, setDetails] = useState<
     Record<string, { questions: QuestionRow[]; answers: AnswerRow[]; loading: boolean }>
@@ -98,10 +109,53 @@ export default function AdminMemberAnswers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolesLoading, isSuperadmin, churchId]);
 
+  const periodStart = useMemo(() => {
+    if (periodFilter === "all") return null;
+    const now = new Date();
+    if (periodFilter === "week") {
+      // segunda-feira 00:00
+      const day = now.getDay(); // 0=dom..6=sab
+      const diff = day === 0 ? -6 : 1 - day;
+      const d = new Date(now);
+      d.setDate(now.getDate() + diff);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    if (periodFilter === "month") {
+      return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    }
+    // trimestre calendário (Jan-Mar, Abr-Jun, Jul-Set, Out-Dez)
+    const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    return new Date(now.getFullYear(), qStartMonth, 1, 0, 0, 0, 0);
+  }, [periodFilter]);
+
+  const quizOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    rows.forEach((r) => {
+      if (r.quiz_id && !map.has(r.quiz_id)) {
+        const label = r.quizzes?.title ?? "Quiz";
+        const lesson = r.quizzes?.lesson_number ? ` · Lição ${r.quizzes.lesson_number}` : "";
+        map.set(r.quiz_id, `${label}${lesson}`);
+      }
+    });
+    return Array.from(map.entries())
+      .map(([id, label]) => ({ id, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+  }, [rows]);
+
   const filtered = useMemo(() => {
     let list = rows;
     if (allowedNames) {
       list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
+    }
+    if (quizFilter !== "all") {
+      list = list.filter((r) => r.quiz_id === quizFilter);
+    }
+    if (periodStart) {
+      const startMs = periodStart.getTime();
+      list = list.filter(
+        (r) => r.finished_at && new Date(r.finished_at).getTime() >= startMs
+      );
     }
     if (q) {
       const ql = q.toLowerCase();
@@ -112,7 +166,7 @@ export default function AdminMemberAnswers() {
       );
     }
     return list;
-  }, [rows, allowedNames, q]);
+  }, [rows, allowedNames, q, quizFilter, periodStart]);
 
   const toggleExpand = async (attempt: AttemptRow) => {
     if (expanded === attempt.id) {
