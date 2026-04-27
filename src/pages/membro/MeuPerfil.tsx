@@ -22,7 +22,8 @@ export default function MeuPerfil() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
+  // Armazena apenas os 11 dígitos após o 55 (DDD + número)
+  const [phoneLocal, setPhoneLocal] = useState("");
   const [showAvatar, setShowAvatar] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -31,10 +32,27 @@ export default function MeuPerfil() {
     if (profile) {
       setFirstName(profile.first_name ?? "");
       setLastName(profile.last_name ?? "");
-      setPhone(profile.phone ?? "");
+      // Remove tudo que não é dígito e tira o "55" inicial se existir
+      const digits = (profile.phone ?? "").replace(/\D/g, "");
+      const local = digits.startsWith("55") ? digits.slice(2) : digits;
+      setPhoneLocal(local.slice(0, 11));
       setShowAvatar(profile.show_avatar_in_ranking);
     }
   }, [profile]);
+
+  // Formata os 11 dígitos locais como "(DD) 9XXXX-XXXX"
+  const formatLocalPhone = (digits: string) => {
+    const d = digits.replace(/\D/g, "").slice(0, 11);
+    if (d.length === 0) return "";
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    setPhoneLocal(digits);
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,13 +80,18 @@ export default function MeuPerfil() {
 
   const handleSave = async () => {
     if (!user) return;
+    if (phoneLocal.length > 0 && phoneLocal.length !== 11) {
+      toast.error("Telefone inválido. Use o formato (DD) 9XXXX-XXXX");
+      return;
+    }
     setSaving(true);
+    const fullPhone = phoneLocal.length === 11 ? `55${phoneLocal}` : "";
     const { error } = await supabase
       .from("profiles")
       .update({
         first_name: firstName,
         last_name: lastName,
-        phone,
+        phone: fullPhone,
         show_avatar_in_ranking: showAvatar,
       })
       .eq("id", user.id);
@@ -187,7 +210,22 @@ export default function MeuPerfil() {
               <Label className="text-xs flex items-center gap-1">
                 <Phone className="w-3 h-3" /> Telefone
               </Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="(99) 99999-9999" />
+              <div className="mt-1 flex items-stretch rounded-md border border-input bg-background overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+                <span className="flex items-center px-3 text-sm bg-muted text-muted-foreground border-r border-input select-none">
+                  +55
+                </span>
+                <Input
+                  value={formatLocalPhone(phoneLocal)}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="(DD) 9XXXX-XXXX"
+                  maxLength={16}
+                  className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Formato Brasil: +55 (DDD) 9XXXX-XXXX
+              </p>
             </div>
             <Button onClick={handleSave} disabled={saving} className="w-full gradient-primary">
               {saving && <Loader2 className="animate-spin w-4 h-4 mr-2" />}
