@@ -405,6 +405,11 @@ export default function AdminQuizzes() {
                         opens_at: fmtLocal(q.opens_at),
                         closes_at: fmtLocal(q.closes_at),
                         season_id: q.season_id ?? "",
+                        quiz_kind: q.quiz_kind ?? "weekly",
+                        lesson_number: q.lesson_number ?? "",
+                        lesson_title: q.lesson_title ?? "",
+                        lesson_key_verse_ref: q.lesson_key_verse_ref ?? "",
+                        lesson_key_verse_text: q.lesson_key_verse_text ?? "",
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
