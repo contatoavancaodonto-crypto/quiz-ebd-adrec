@@ -467,6 +467,52 @@ export default function AdminQuizzes() {
                 <Input type="number" min={1} value={qForm.week_number} onChange={(e) => setQForm({ ...qForm, week_number: e.target.value })} placeholder="1, 2, 3…" />
               </div>
             </div>
+
+            {qForm.quiz_kind === "weekly" && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Lição da revista
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>Nº da Lição</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={13}
+                      value={qForm.lesson_number}
+                      onChange={(e) => setQForm({ ...qForm, lesson_number: e.target.value })}
+                      placeholder="1..13"
+                    />
+                  </div>
+                  <div>
+                    <Label>Versículo-chave (ref.)</Label>
+                    <Input
+                      value={qForm.lesson_key_verse_ref}
+                      onChange={(e) => setQForm({ ...qForm, lesson_key_verse_ref: e.target.value })}
+                      placeholder="Ex: João 3:16"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Título da lição</Label>
+                  <Input
+                    value={qForm.lesson_title}
+                    onChange={(e) => setQForm({ ...qForm, lesson_title: e.target.value })}
+                    placeholder="Ex: A fé que move montanhas"
+                  />
+                </div>
+                <div>
+                  <Label>Texto do versículo-chave (opcional)</Label>
+                  <Textarea
+                    value={qForm.lesson_key_verse_text}
+                    onChange={(e) => setQForm({ ...qForm, lesson_key_verse_text: e.target.value })}
+                    placeholder="Cole aqui o texto bíblico"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Abre em</Label>
