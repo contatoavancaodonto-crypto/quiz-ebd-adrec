@@ -7,6 +7,7 @@ import {
   Sparkles,
   ChevronRight,
   Lock,
+  Archive,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,6 +18,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero, HeroChip } from "@/components/ui/page-hero";
 
 const classIcons: Record<string, string> = {
   Adultos: "🤵🏻‍♂️🤵🏻‍♀️",
@@ -111,8 +114,26 @@ export default function Arquivo() {
       title="Arquivo trimestral"
       mobileHeader={{ variant: "back", title: "Arquivo trimestral", subtitle: "Provões anteriores", backTo: "/" }}
     >
-      <div className="flex flex-col items-center">
+      <PageShell contentClassName="flex flex-col items-center px-4 pt-2 pb-6 space-y-5">
         <div className="w-full max-w-md space-y-5">
+          <PageHero
+            eyebrow="Provões · 1º TRI. 2026 - ADREC"
+            title="Arquivo trimestral"
+            description="Refaça os provões de 13 perguntas dos trimestres disponíveis."
+            Icon={Archive}
+            variant="primary"
+          >
+            <div className="flex flex-wrap gap-2">
+              <HeroChip Icon={Calendar}>
+                {AVAILABLE_TRIMESTERS.length} {AVAILABLE_TRIMESTERS.length === 1 ? "trimestre aberto" : "trimestres abertos"}
+              </HeroChip>
+              {CLOSED_TRIMESTERS.length > 0 && (
+                <HeroChip Icon={Lock}>
+                  {CLOSED_TRIMESTERS.length} encerrado{CLOSED_TRIMESTERS.length === 1 ? "" : "s"}
+                </HeroChip>
+              )}
+            </div>
+          </PageHero>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
