@@ -538,6 +538,6 @@ export default function AdminQuizzes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

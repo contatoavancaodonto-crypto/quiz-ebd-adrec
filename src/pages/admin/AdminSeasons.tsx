@@ -99,6 +99,6 @@ export default function AdminSeasons() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

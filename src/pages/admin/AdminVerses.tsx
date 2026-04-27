@@ -115,6 +115,6 @@ export default function AdminVerses() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

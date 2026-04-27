@@ -290,6 +290,6 @@ export default function AdminMyChurch() {
           </Card>
         </>
       )}
-    </div>
+    </AdminPage>
   );
 }

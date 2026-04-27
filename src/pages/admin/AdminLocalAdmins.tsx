@@ -167,6 +167,6 @@ export default function AdminLocalAdmins() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }
