@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Download, BookOpen, Lock } from "lucide-react";
+import { Download, BookOpen, Lock, FileText } from "lucide-react";
+import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -31,7 +31,7 @@ const PROFESSORES: RevistaItem[] = [
   { id: "adultos-prof", title: "Adultos", subtitle: "Revista do Professor", cover: revistaAdultos },
 ];
 
-function RevistaCard({ item }: { item: RevistaItem }) {
+function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
   const handleDownload = () => {
     if (!item.downloadUrl) {
       toast.info("Em breve disponível para download.");
@@ -41,7 +41,12 @@ function RevistaCard({ item }: { item: RevistaItem }) {
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06 }}
+      className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-lg transition-all"
+    >
       <div className="relative aspect-[3/4] bg-muted flex items-center justify-center overflow-hidden">
         {item.cover ? (
           <img
@@ -54,31 +59,31 @@ function RevistaCard({ item }: { item: RevistaItem }) {
           <BookOpen className="h-16 w-16 text-muted-foreground/40" />
         )}
         {item.unavailable && (
-          <Badge variant="secondary" className="absolute top-2 right-2 gap-1">
-            <Lock className="h-3 w-3" /> Indisponível
+          <Badge variant="secondary" className="absolute top-2 right-2 gap-1 text-[10px]">
+            <Lock className="h-2.5 w-2.5" /> Em breve
           </Badge>
         )}
       </div>
-      <CardContent className="p-4 space-y-3">
+      <div className="p-3 space-y-2">
         <div>
-          <h3 className="font-semibold text-base leading-tight">{item.title}</h3>
-          <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+          <h3 className="font-bold text-sm leading-tight text-foreground">{item.title}</h3>
+          <p className="text-[10px] text-muted-foreground">{item.subtitle}</p>
         </div>
         <Button
           onClick={handleDownload}
           size="sm"
-          className="w-full"
+          className={`w-full h-9 text-xs ${item.unavailable ? "" : "gradient-primary"}`}
           variant={item.unavailable ? "secondary" : "default"}
           disabled={item.unavailable}
         >
           {item.unavailable ? (
-            <><Lock /> Indisponível</>
+            <><Lock className="w-3 h-3" /> Indisponível</>
           ) : (
-            <><Download /> Baixar PDF</>
+            <><Download className="w-3 h-3" /> Baixar PDF</>
           )}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   );
 }
 
@@ -86,29 +91,50 @@ export default function Revista() {
   const [tab, setTab] = useState("alunos");
 
   return (
-    <MemberLayout title="Revista da Classe">
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="alunos">Revistas Alunos</TabsTrigger>
-          <TabsTrigger value="professores">Revistas Professores</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="alunos">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {ALUNOS.map((item) => (
-              <RevistaCard key={item.id} item={item} />
-            ))}
+    <MemberLayout
+      title="Revista"
+      mobileHeader={{ variant: "back", title: "Revista da Classe", subtitle: "Lições do trimestre", backTo: "/" }}
+    >
+      <div className="space-y-4 pb-4">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white relative overflow-hidden"
+        >
+          <div className="absolute -top-6 -right-6 opacity-25">
+            <FileText className="w-28 h-28" strokeWidth={1.2} />
           </div>
-        </TabsContent>
-
-        <TabsContent value="professores">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {PROFESSORES.map((item) => (
-              <RevistaCard key={item.id} item={item} />
-            ))}
+          <div className="relative">
+            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Trimestre atual</div>
+            <h2 className="text-xl font-bold mt-1">Revistas da EBD</h2>
+            <p className="text-xs opacity-90 mt-1">Baixe as revistas para acompanhar as lições.</p>
           </div>
-        </TabsContent>
-      </Tabs>
+        </motion.div>
+
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="alunos">Alunos</TabsTrigger>
+            <TabsTrigger value="professores">Professores</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="alunos" className="mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {ALUNOS.map((item, i) => (
+                <RevistaCard key={item.id} item={item} index={i} />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="professores" className="mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {PROFESSORES.map((item, i) => (
+                <RevistaCard key={item.id} item={item} index={i} />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </MemberLayout>
   );
 }

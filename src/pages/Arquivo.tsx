@@ -7,7 +7,6 @@ import {
   Sparkles,
   ChevronRight,
   Lock,
-  ArrowLeft,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -108,16 +107,12 @@ export default function Arquivo() {
   if (!user) return null;
 
   return (
-    <MemberLayout title="Arquivo trimestral">
-      <div className="flex flex-col items-center p-4">
+    <MemberLayout
+      title="Arquivo trimestral"
+      mobileHeader={{ variant: "back", title: "Arquivo trimestral", subtitle: "Provões anteriores", backTo: "/" }}
+    >
+      <div className="flex flex-col items-center">
         <div className="w-full max-w-md space-y-5">
-          <button
-            onClick={() => navigate("/")}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Voltar
-          </button>
-
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

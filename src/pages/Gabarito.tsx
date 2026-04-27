@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -91,26 +91,31 @@ const GabaritoPage = () => {
   const correctCount = items.filter((i) => i.is_correct).length;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-4 relative">
-      <ThemeToggle />
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6 mt-2">
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Header app-like */}
+      <header
+        className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/50"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-md mx-auto w-full px-4 h-14 flex items-center gap-3">
           <button
-            onClick={() => navigate("/result")}
-            className="p-2 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors cursor-pointer"
+            onClick={() => navigate(-1)}
+            aria-label="Voltar"
+            className="w-10 h-10 -ml-2 rounded-full hover:bg-muted flex items-center justify-center text-foreground active:scale-95 transition-transform"
           >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <img src={churchLogo} alt="Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(76,201,224,0.3)]" />
-          <div>
-            <h1 className="text-lg font-display font-bold text-foreground">Meu Gabarito</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-foreground leading-tight">Meu Gabarito</h1>
+            <p className="text-[11px] text-muted-foreground">
               {correctCount}/{items.length} acertos
             </p>
           </div>
+          <ThemeToggle />
         </div>
+      </header>
+
+      <div className="w-full max-w-md mx-auto relative z-10 px-4 pt-4">
 
         {loading ? (
           <div className="text-center text-muted-foreground py-10">Carregando...</div>

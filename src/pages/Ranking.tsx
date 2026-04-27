@@ -1,14 +1,13 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { Clock, ArrowLeft, Medal, Calendar, Church, Users, Globe, Flame } from "lucide-react";
-import churchLogo from "@/assets/church-logo.png";
+import { Clock, Medal, Calendar, Church, Users, Globe, Flame, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatTimeMs } from "@/hooks/useTimer";
 import { useRealtimeRanking } from "@/hooks/useRealtimeRanking";
+import { MemberLayout } from "@/components/membro/MemberLayout";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
@@ -197,33 +196,26 @@ const RankingPage = () => {
   const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "season" ? seasonEnabled : classicEnabled;
 
   return (
-    <div className="min-h-screen bg-background p-4 relative">
-      <ThemeToggle />
-
-      <div className="max-w-lg mx-auto pt-2">
-        {/* Back */}
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-4 cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar
-        </button>
-
+    <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
+      <div className="px-4 py-4 max-w-lg mx-auto w-full">
         {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          className="mb-5 flex items-center gap-3"
         >
-          <img src={churchLogo} alt="Logo ADREC" className="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(76,201,224,0.3)]" />
-          <h1 className="text-2xl font-display font-bold gradient-text">Ranking</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {mode === "weekly" && "Semana atual"}
-            {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
-            {mode === "classic" && `${trimester}º Trimestre`}
-          </p>
-          <div className={`inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full border ${
+          <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
+            <Trophy className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-display font-extrabold text-foreground leading-tight">Ranking</h1>
+            <p className="text-xs text-muted-foreground truncate">
+              {mode === "weekly" && "Semana atual"}
+              {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
+              {mode === "classic" && `${trimester}º Trimestre`}
+            </p>
+          </div>
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
             rtConnected ? "bg-primary/10 border-primary/30" : "bg-muted border-border"
           }`}>
             <span className="relative flex h-2 w-2">
@@ -237,7 +229,7 @@ const RankingPage = () => {
             <span className={`text-[10px] font-bold uppercase tracking-wider ${
               rtConnected ? "text-primary" : rtReconnecting ? "text-yellow-500" : "text-destructive"
             }`}>
-              {rtConnected ? "Ao vivo" : rtReconnecting ? "Reconectando..." : "Offline"}
+              {rtConnected ? "Ao vivo" : rtReconnecting ? "..." : "Off"}
             </span>
           </div>
         </motion.div>
@@ -457,7 +449,7 @@ const RankingPage = () => {
           </LayoutGroup>
         )}
       </div>
-    </div>
+    </MemberLayout>
   );
 };
 

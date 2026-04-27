@@ -212,7 +212,8 @@ const Index = () => {
   return (
     <MemberLayout
       title="Início"
-      hideMobileHeader
+      mobileHeader={{ variant: "full" }}
+      contentPaddingMobile={false}
       bottomNav={{
         showFab: !!weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired,
         onFabClick: handleStartWeekly,
@@ -225,44 +226,6 @@ const Index = () => {
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute top-40 -right-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
         </div>
-
-        {/* ===== HEADER APP-LIKE (mobile) ===== */}
-        <header
-          className="md:hidden sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-        >
-          <div className="flex items-center justify-between px-4 h-14">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-background border border-border flex items-center justify-center">
-                <img src={churchLogo} alt="ADREC" className="w-7 h-7 object-contain" />
-              </div>
-              <div className="leading-tight">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                  EBD Online
-                </div>
-                <div className="text-xs font-semibold text-foreground">
-                  CIMADSETA · ADREC
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                aria-label="Notificações"
-                onClick={() => navigate("/membro/historico")}
-                className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
-              >
-                <Bell className="w-5 h-5" />
-              </button>
-              <button
-                aria-label="Perfil"
-                onClick={() => navigate("/membro/perfil")}
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md"
-              >
-                {firstName.charAt(0).toUpperCase()}
-              </button>
-            </div>
-          </div>
-        </header>
 
         <div className="px-4 pt-4 pb-6 space-y-5 relative z-10">
           {/* ===== HERO SAUDAÇÃO ===== */}

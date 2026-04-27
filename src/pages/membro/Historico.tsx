@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Loader2, FileSearch } from "lucide-react";
+import { Loader2, FileSearch, Trophy, Calendar, Clock, ChevronRight, History as HistoryIcon } from "lucide-react";
+import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,7 +25,6 @@ export default function Historico() {
         (a: any) => (a.participant?.name ?? "").toLowerCase() === fullName
       );
 
-      // Get general position for each attempt
       const enriched = await Promise.all(
         mine.map(async (a: any) => {
           const { data: g } = await supabase
@@ -58,48 +56,89 @@ export default function Historico() {
     },
   });
 
-  if (isLoading) return <MemberLayout title="Histórico"><div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div></MemberLayout>;
-
   return (
-    <MemberLayout title="Histórico de Trimestres">
-      {!history || history.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            Você ainda não tem tentativas concluídas.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {history.map((h: any) => (
-            <Card key={h.id}>
-              <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="font-semibold">{h.seasons?.name ?? "Temporada"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(h.finished_at).toLocaleDateString("pt-BR")}
+    <MemberLayout
+      title="Histórico"
+      mobileHeader={{ variant: "back", title: "Histórico", subtitle: "Suas tentativas concluídas", backTo: "/" }}
+    >
+      <div className="space-y-4 pb-4">
+        {/* Hero pequeno */}
+        <div className="rounded-3xl bg-gradient-to-br from-emerald-500 to-green-600 p-5 text-white relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 opacity-25">
+            <HistoryIcon className="w-28 h-28" strokeWidth={1.2} />
+          </div>
+          <div className="relative">
+            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Suas tentativas</div>
+            <h2 className="text-xl font-bold mt-1">
+              {isLoading ? "—" : `${history?.length ?? 0} ${(history?.length ?? 0) === 1 ? "quiz concluído" : "quizzes concluídos"}`}
+            </h2>
+            <p className="text-xs opacity-90 mt-1">Veja seu gabarito e posição em cada tentativa.</p>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="animate-spin text-primary" />
+          </div>
+        ) : !history || history.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
+              <HistoryIcon className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Nada por aqui ainda</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Complete um quiz pra ele aparecer aqui.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {history.map((h: any, i: number) => (
+              <motion.button
+                key={h.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => navigate(`/gabarito?attempt=${h.id}`)}
+                className="w-full text-left rounded-2xl bg-card border border-border p-4 active:scale-[0.99] transition-all hover:border-primary/40 hover:shadow-md flex items-center gap-3"
+              >
+                <div className="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/15 to-secondary/15 border border-primary/20 flex flex-col items-center justify-center">
+                  <span className="text-lg font-display font-extrabold text-primary leading-none">
+                    {h.score}
+                  </span>
+                  <span className="text-[8px] uppercase tracking-wide text-muted-foreground font-bold">pts</span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">
+                    {h.seasons?.name ?? "Temporada"}
                   </p>
-                  <div className="flex flex-wrap gap-3 text-sm pt-1">
-                    <span><strong>{h.score}</strong> pts</span>
-                    <span className="text-muted-foreground">
-                      {h.generalPosition ? `Geral #${h.generalPosition}` : "—"}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {h.churchPosition ? `Igreja #${h.churchPosition}` : "—"}
-                    </span>
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(h.finished_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {h.generalPosition && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <Trophy className="w-2.5 h-2.5" /> Geral #{h.generalPosition}
+                      </span>
+                    )}
+                    {h.churchPosition && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/20">
+                        Igreja #{h.churchPosition}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/gabarito?attempt=${h.id}`)}
-                >
-                  <FileSearch /> Ver gabarito
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+
+                <div className="shrink-0 flex items-center gap-1 text-muted-foreground">
+                  <FileSearch className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </div>
     </MemberLayout>
   );
 }

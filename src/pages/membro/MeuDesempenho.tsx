@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Target, Clock, Building2, Loader2 } from "lucide-react";
+import { Trophy, Target, Clock, Building2, Loader2, Sparkles, Award } from "lucide-react";
+import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
@@ -47,66 +47,91 @@ export default function MeuDesempenho() {
 
       const myBadges = (badges ?? []).filter((b: any) => b.badge);
 
-      return {
-        general,
-        churchPosition,
-        badges: myBadges,
-      };
+      return { general, churchPosition, badges: myBadges };
     },
   });
 
-  if (isLoading) return <MemberLayout title="Meu Desempenho"><div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div></MemberLayout>;
+  if (isLoading)
+    return (
+      <MemberLayout title="Meu Desempenho">
+        <div className="flex justify-center p-8">
+          <Loader2 className="animate-spin text-primary" />
+        </div>
+      </MemberLayout>
+    );
 
   const g = stats?.general;
   const cards = [
-    { icon: Trophy, label: "Posição geral", value: g?.position ? `#${g.position}` : "—" },
-    { icon: Building2, label: "Posição na igreja", value: stats?.churchPosition ? `#${stats.churchPosition}` : "—" },
-    { icon: Target, label: "Pontuação", value: g?.score ?? "—" },
-    { icon: Clock, label: "Tempo total", value: g?.total_time_seconds ? `${g.total_time_seconds}s` : "—" },
+    { icon: Trophy, label: "Posição geral", value: g?.position ? `#${g.position}` : "—", color: "from-amber-500 to-orange-600" },
+    { icon: Building2, label: "Na igreja", value: stats?.churchPosition ? `#${stats.churchPosition}` : "—", color: "from-violet-500 to-purple-600" },
+    { icon: Target, label: "Pontuação", value: g?.score ?? "—", color: "from-primary to-secondary" },
+    { icon: Clock, label: "Tempo total", value: g?.total_time_seconds ? `${g.total_time_seconds}s` : "—", color: "from-emerald-500 to-green-600" },
   ];
 
   return (
-    <MemberLayout title="Meu Desempenho">
-      <div className="space-y-6">
+    <MemberLayout
+      title="Meu Desempenho"
+      mobileHeader={{ variant: "back", title: "Meu Desempenho", subtitle: "Estatísticas da temporada", backTo: "/" }}
+    >
+      <div className="space-y-4 pb-4">
         {season && !seasonCountdown.expired && <SeasonCountdown />}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {cards.map((c) => (
-            <Card key={c.label}>
-              <CardContent className="pt-6">
-                <c.icon className="h-5 w-5 text-primary mb-2" />
-                <p className="text-xs text-muted-foreground">{c.label}</p>
-                <p className="text-2xl font-bold text-foreground">{c.value}</p>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 gap-3">
+          {cards.map((c, i) => (
+            <motion.div
+              key={c.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="rounded-2xl bg-card border border-border p-4 relative overflow-hidden"
+            >
+              <div className={`inline-flex w-10 h-10 rounded-xl bg-gradient-to-br ${c.color} text-white items-center justify-center mb-2 shadow-md`}>
+                <c.icon className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                {c.label}
+              </p>
+              <p className="text-2xl font-display font-extrabold text-foreground">{c.value}</p>
+            </motion.div>
           ))}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Conquistas da temporada</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats?.badges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma conquista ainda. Continue jogando!</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {stats?.badges.map((b: any) => (
-                  <div
-                    key={b.id}
-                    className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3"
-                  >
-                    <div className="text-3xl">{b.badge.emoji}</div>
-                    <div>
-                      <p className="font-semibold text-sm">{b.badge.name}</p>
-                      <p className="text-xs text-muted-foreground">{b.badge.description}</p>
-                    </div>
-                  </div>
-                ))}
+        <section className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <Award className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Conquistas da temporada</h2>
+          </div>
+
+          {stats?.badges.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
+                <Sparkles className="w-6 h-6 text-muted-foreground" />
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <p className="text-sm font-semibold text-foreground">Nenhuma conquista ainda</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Continue respondendo os quizzes pra desbloquear medalhas!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {stats?.badges.map((b: any, i: number) => (
+                <motion.div
+                  key={b.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-center gap-3 bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 rounded-2xl p-3"
+                >
+                  <div className="text-3xl shrink-0">{b.badge.emoji}</div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate">{b.badge.name}</p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-2">{b.badge.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </MemberLayout>
   );
