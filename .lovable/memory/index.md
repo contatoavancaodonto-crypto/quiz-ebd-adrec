@@ -26,3 +26,4 @@
 - [Realtime Leaderboard](mem://features/realtime-leaderboard) — Ranking ao vivo via Supabase Realtime com animação de reordenação
 - [Weekly Quizzes](mem://features/weekly-quizzes) — Quiz semanal (lição da revista) + provão trimestral condicional, cron, streak, vínculo lesson_number
 - [Daily Verse Pivot](mem://features/daily-verse-pivot) — Plano futuro: trocar versículo aleatório pelo versículo-chave da lição da semana
+- [Mobile App Shell](mem://design/mobile-app-shell) — Home redesenhada estilo app nativo: header app-like, hero saudação, bottom nav com FAB central, grid 2x2 de ferramentas com gradients vibrantes
