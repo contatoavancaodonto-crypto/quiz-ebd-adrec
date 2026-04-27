@@ -21,6 +21,9 @@ import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportD
 interface Quiz {
   id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number;
   week_number: number | null; opens_at: string | null; closes_at: string | null; season_id: string | null;
+  quiz_kind?: string | null;
+  lesson_number?: number | null; lesson_title?: string | null;
+  lesson_key_verse_ref?: string | null; lesson_key_verse_text?: string | null;
 }
 interface Cls { id: string; name: string; }
 interface Season { id: string; name: string; status: string; }
@@ -40,6 +43,11 @@ export default function AdminQuizzes() {
   const [qForm, setQForm] = useState({
     title: "", class_id: "", trimester: 1,
     week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "",
+    quiz_kind: "weekly",
+    lesson_number: "" as string | number,
+    lesson_title: "",
+    lesson_key_verse_ref: "",
+    lesson_key_verse_text: "",
   });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
@@ -53,7 +61,15 @@ export default function AdminQuizzes() {
     correct_option: "A", order_index: 1, explanation: "",
   });
 
-  const emptyForm = { title: "", class_id: "", trimester: 1, week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "" };
+  const emptyForm = {
+    title: "", class_id: "", trimester: 1, week_number: "" as string | number,
+    opens_at: "", closes_at: "", season_id: "",
+    quiz_kind: "weekly",
+    lesson_number: "" as string | number,
+    lesson_title: "",
+    lesson_key_verse_ref: "",
+    lesson_key_verse_text: "",
+  };
 
   const load = async () => {
     setLoading(true);
@@ -105,6 +121,11 @@ export default function AdminQuizzes() {
       opens_at: qForm.opens_at ? new Date(qForm.opens_at).toISOString() : null,
       closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
       season_id: qForm.season_id || null,
+      quiz_kind: qForm.quiz_kind || "weekly",
+      lesson_number: qForm.lesson_number === "" ? null : Number(qForm.lesson_number),
+      lesson_title: qForm.lesson_title || null,
+      lesson_key_verse_ref: qForm.lesson_key_verse_ref || null,
+      lesson_key_verse_text: qForm.lesson_key_verse_text || null,
     };
     if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
       return toast.error("Data de abertura deve ser anterior à de fechamento");
