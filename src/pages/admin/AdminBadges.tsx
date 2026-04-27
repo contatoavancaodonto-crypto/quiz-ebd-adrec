@@ -96,6 +96,10 @@ export default function AdminBadges() {
                   <DeleteButton
                     iconOnly
                     itemLabel={`a badge "${b.name}"`}
+                    consequences={[
+                      "A badge deixa de ser concedida em novas conquistas",
+                      "Conquistas já atribuídas aos participantes serão preservadas",
+                    ]}
                     onConfirm={async () => {
                       const r = await smartDelete({ table: "badges", id: b.id });
                       if (!r.ok) return r.error || "Falha ao apagar";

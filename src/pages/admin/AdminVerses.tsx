@@ -95,6 +95,10 @@ export default function AdminVerses() {
                   <DeleteButton
                     iconOnly
                     itemLabel={`o versículo ${v.book} ${v.chapter}:${v.verse}`}
+                    consequences={[
+                      "O versículo deixa de aparecer no pool do versículo do dia",
+                      "Históricos de versículos do dia continuam preservados",
+                    ]}
                     onConfirm={async () => {
                       const r = await smartDelete({ table: "verses", id: v.id });
                       if (!r.ok) return r.error;

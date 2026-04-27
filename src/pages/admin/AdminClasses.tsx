@@ -92,9 +92,14 @@ export default function AdminClasses() {
                   </Button>
                   <DeleteButton
                     itemLabel={`a turma "${c.name}"`}
+                    consequences={[
+                      "Quizzes vinculados a esta turma podem ser bloqueados",
+                      "Membros vinculados perderão a referência de turma",
+                      "Materiais e perguntas continuam preservados",
+                    ]}
                     onConfirm={async () => {
                       const r = await smartDelete({ table: "classes", id: c.id });
-                      if (!r.ok) return r.error;
+                      if (!r.ok) return r.error || "Falha ao apagar";
                       load();
                       return true;
                     }}
