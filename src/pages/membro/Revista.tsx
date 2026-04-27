@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Download, BookOpen, Lock, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -95,22 +97,14 @@ export default function Revista() {
       title="Revista"
       mobileHeader={{ variant: "back", title: "Revista da Classe", subtitle: "Lições do trimestre", backTo: "/" }}
     >
-      <div className="space-y-4 pb-4">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white relative overflow-hidden"
-        >
-          <div className="absolute -top-6 -right-6 opacity-25">
-            <FileText className="w-28 h-28" strokeWidth={1.2} />
-          </div>
-          <div className="relative">
-            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Trimestre atual</div>
-            <h2 className="text-xl font-bold mt-1">Revistas da EBD</h2>
-            <p className="text-xs opacity-90 mt-1">Baixe as revistas para acompanhar as lições.</p>
-          </div>
-        </motion.div>
+      <PageShell contentClassName="pb-4">
+        <PageHero
+          eyebrow="Trimestre atual"
+          title="Revistas da EBD"
+          description="Baixe as revistas para acompanhar as lições."
+          Icon={FileText}
+          variant="amber"
+        />
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">

@@ -156,7 +156,7 @@ export default function Biblia() {
             {renderBooks(filteredNT)}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }

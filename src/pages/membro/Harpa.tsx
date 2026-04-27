@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Music2, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+import { PageShell } from "@/components/ui/page-shell";
+import { PageHero } from "@/components/ui/page-hero";
 import { Input } from "@/components/ui/input";
 import harpaData from "@/data/harpa-crista.json";
 
@@ -90,22 +92,14 @@ export default function Harpa() {
       title="Harpa"
       mobileHeader={{ variant: "back", title: "Harpa Cristã", subtitle: "640 hinos", backTo: "/" }}
     >
-      <div className="space-y-4 pb-4">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-gradient-to-br from-rose-500 to-red-600 p-5 text-white relative overflow-hidden"
-        >
-          <div className="absolute -top-6 -right-6 opacity-25">
-            <Music2 className="w-28 h-28" strokeWidth={1.2} />
-          </div>
-          <div className="relative">
-            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Hinário oficial</div>
-            <h2 className="text-xl font-bold mt-1">Harpa Cristã</h2>
-            <p className="text-xs opacity-90 mt-1">640 hinos para você cantar e adorar.</p>
-          </div>
-        </motion.div>
+      <PageShell contentClassName="pb-4">
+        <PageHero
+          eyebrow="Hinário oficial"
+          title="Harpa Cristã"
+          description="640 hinos para você cantar e adorar."
+          Icon={Music2}
+          variant="rose"
+        />
 
         {/* Busca */}
         <div className="relative">
