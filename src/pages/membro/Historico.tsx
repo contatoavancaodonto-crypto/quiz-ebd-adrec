@@ -61,20 +61,18 @@ export default function Historico() {
       title="Histórico"
       mobileHeader={{ variant: "back", title: "Histórico", subtitle: "Suas tentativas concluídas", backTo: "/" }}
     >
-      <div className="space-y-4 pb-4">
-        {/* Hero pequeno */}
-        <div className="rounded-3xl bg-gradient-to-br from-emerald-500 to-green-600 p-5 text-white relative overflow-hidden">
-          <div className="absolute -top-6 -right-6 opacity-25">
-            <HistoryIcon className="w-28 h-28" strokeWidth={1.2} />
-          </div>
-          <div className="relative">
-            <div className="text-[10px] uppercase tracking-widest font-bold opacity-80">Suas tentativas</div>
-            <h2 className="text-xl font-bold mt-1">
-              {isLoading ? "—" : `${history?.length ?? 0} ${(history?.length ?? 0) === 1 ? "quiz concluído" : "quizzes concluídos"}`}
-            </h2>
-            <p className="text-xs opacity-90 mt-1">Veja seu gabarito e posição em cada tentativa.</p>
-          </div>
-        </div>
+      <PageShell contentClassName="pb-4">
+        <PageHero
+          eyebrow="Suas tentativas"
+          title={
+            isLoading
+              ? "—"
+              : `${history?.length ?? 0} ${(history?.length ?? 0) === 1 ? "quiz concluído" : "quizzes concluídos"}`
+          }
+          description="Veja seu gabarito e posição em cada tentativa."
+          Icon={HistoryIcon}
+          variant="emerald"
+        />
 
         {isLoading ? (
           <div className="flex justify-center py-8">
@@ -138,7 +136,7 @@ export default function Historico() {
             ))}
           </div>
         )}
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }
