@@ -589,7 +589,12 @@ export type Database = {
           closes_at: string | null
           created_at: string
           id: string
+          lesson_key_verse_ref: string | null
+          lesson_key_verse_text: string | null
+          lesson_number: number | null
+          lesson_title: string | null
           opens_at: string | null
+          quiz_kind: string
           season_id: string | null
           title: string
           total_questions: number
@@ -602,7 +607,12 @@ export type Database = {
           closes_at?: string | null
           created_at?: string
           id?: string
+          lesson_key_verse_ref?: string | null
+          lesson_key_verse_text?: string | null
+          lesson_number?: number | null
+          lesson_title?: string | null
           opens_at?: string | null
+          quiz_kind?: string
           season_id?: string | null
           title: string
           total_questions?: number
@@ -615,7 +625,12 @@ export type Database = {
           closes_at?: string | null
           created_at?: string
           id?: string
+          lesson_key_verse_ref?: string | null
+          lesson_key_verse_text?: string | null
+          lesson_number?: number | null
+          lesson_title?: string | null
           opens_at?: string | null
+          quiz_kind?: string
           season_id?: string | null
           title?: string
           total_questions?: number

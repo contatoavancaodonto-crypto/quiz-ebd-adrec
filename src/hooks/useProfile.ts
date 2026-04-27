@@ -11,6 +11,7 @@ export interface UserProfile {
   church_id: string | null;
   church_name: string | null;
   area: number | null;
+  class_id: string | null;
 }
 
 export function useProfile() {
@@ -30,7 +31,7 @@ export function useProfile() {
       setLoading(true);
       const { data } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, church_id, area, churches(name)")
+        .select("id, first_name, last_name, email, phone, church_id, area, class_id, churches(name)")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -43,6 +44,7 @@ export function useProfile() {
           phone: data.phone,
           church_id: data.church_id,
           area: data.area,
+          class_id: (data as any).class_id ?? null,
           church_name: (data as any).churches?.name ?? null,
         });
       }

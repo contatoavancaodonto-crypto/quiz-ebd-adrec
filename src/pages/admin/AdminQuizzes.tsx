@@ -21,6 +21,9 @@ import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportD
 interface Quiz {
   id: string; title: string; class_id: string; trimester: number; active: boolean; total_questions: number;
   week_number: number | null; opens_at: string | null; closes_at: string | null; season_id: string | null;
+  quiz_kind?: string | null;
+  lesson_number?: number | null; lesson_title?: string | null;
+  lesson_key_verse_ref?: string | null; lesson_key_verse_text?: string | null;
 }
 interface Cls { id: string; name: string; }
 interface Season { id: string; name: string; status: string; }
@@ -40,6 +43,11 @@ export default function AdminQuizzes() {
   const [qForm, setQForm] = useState({
     title: "", class_id: "", trimester: 1,
     week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "",
+    quiz_kind: "weekly",
+    lesson_number: "" as string | number,
+    lesson_title: "",
+    lesson_key_verse_ref: "",
+    lesson_key_verse_text: "",
   });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
@@ -53,7 +61,15 @@ export default function AdminQuizzes() {
     correct_option: "A", order_index: 1, explanation: "",
   });
 
-  const emptyForm = { title: "", class_id: "", trimester: 1, week_number: "" as string | number, opens_at: "", closes_at: "", season_id: "" };
+  const emptyForm = {
+    title: "", class_id: "", trimester: 1, week_number: "" as string | number,
+    opens_at: "", closes_at: "", season_id: "",
+    quiz_kind: "weekly",
+    lesson_number: "" as string | number,
+    lesson_title: "",
+    lesson_key_verse_ref: "",
+    lesson_key_verse_text: "",
+  };
 
   const load = async () => {
     setLoading(true);
@@ -105,6 +121,11 @@ export default function AdminQuizzes() {
       opens_at: qForm.opens_at ? new Date(qForm.opens_at).toISOString() : null,
       closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
       season_id: qForm.season_id || null,
+      quiz_kind: qForm.quiz_kind || "weekly",
+      lesson_number: qForm.lesson_number === "" ? null : Number(qForm.lesson_number),
+      lesson_title: qForm.lesson_title || null,
+      lesson_key_verse_ref: qForm.lesson_key_verse_ref || null,
+      lesson_key_verse_text: qForm.lesson_key_verse_text || null,
     };
     if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
       return toast.error("Data de abertura deve ser anterior à de fechamento");
@@ -384,6 +405,11 @@ export default function AdminQuizzes() {
                         opens_at: fmtLocal(q.opens_at),
                         closes_at: fmtLocal(q.closes_at),
                         season_id: q.season_id ?? "",
+                        quiz_kind: q.quiz_kind ?? "weekly",
+                        lesson_number: q.lesson_number ?? "",
+                        lesson_title: q.lesson_title ?? "",
+                        lesson_key_verse_ref: q.lesson_key_verse_ref ?? "",
+                        lesson_key_verse_text: q.lesson_key_verse_text ?? "",
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
@@ -397,9 +423,22 @@ export default function AdminQuizzes() {
 
       <Dialog open={quizDialog} onOpenChange={setQuizDialog}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz Semanal</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Semana 3 — Êxodo" /></div>
+          <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz</DialogTitle></DialogHeader>
+          <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+            <div>
+              <Label>Tipo do quiz</Label>
+              <Select value={qForm.quiz_kind} onValueChange={(v) => setQForm({ ...qForm, quiz_kind: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Semanal (5 perguntas — lição da revista)</SelectItem>
+                  <SelectItem value="trimestral">Provão Trimestral (13 perguntas)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Apenas quizzes <strong>semanais</strong> entram na fila do agendador automático.
+              </p>
+            </div>
+            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Lição 3 — A fé de Abraão" /></div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Turma</Label>
@@ -428,6 +467,52 @@ export default function AdminQuizzes() {
                 <Input type="number" min={1} value={qForm.week_number} onChange={(e) => setQForm({ ...qForm, week_number: e.target.value })} placeholder="1, 2, 3…" />
               </div>
             </div>
+
+            {qForm.quiz_kind === "weekly" && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Lição da revista
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>Nº da Lição</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={13}
+                      value={qForm.lesson_number}
+                      onChange={(e) => setQForm({ ...qForm, lesson_number: e.target.value })}
+                      placeholder="1..13"
+                    />
+                  </div>
+                  <div>
+                    <Label>Versículo-chave (ref.)</Label>
+                    <Input
+                      value={qForm.lesson_key_verse_ref}
+                      onChange={(e) => setQForm({ ...qForm, lesson_key_verse_ref: e.target.value })}
+                      placeholder="Ex: João 3:16"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Título da lição</Label>
+                  <Input
+                    value={qForm.lesson_title}
+                    onChange={(e) => setQForm({ ...qForm, lesson_title: e.target.value })}
+                    placeholder="Ex: A fé que move montanhas"
+                  />
+                </div>
+                <div>
+                  <Label>Texto do versículo-chave (opcional)</Label>
+                  <Textarea
+                    value={qForm.lesson_key_verse_text}
+                    onChange={(e) => setQForm({ ...qForm, lesson_key_verse_text: e.target.value })}
+                    placeholder="Cole aqui o texto bíblico"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Abre em</Label>

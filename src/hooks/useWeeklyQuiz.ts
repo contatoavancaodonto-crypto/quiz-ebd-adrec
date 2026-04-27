@@ -9,11 +9,20 @@ export interface WeeklyQuiz {
   opens_at: string | null;
   closes_at: string | null;
   season_id: string | null;
+  lesson_number: number | null;
+  lesson_title: string | null;
+  lesson_key_verse_ref: string | null;
+  lesson_key_verse_text: string | null;
+  quiz_kind: string;
+  total_questions: number;
 }
 
+const QUIZ_FIELDS =
+  "id, title, class_id, week_number, opens_at, closes_at, season_id, lesson_number, lesson_title, lesson_key_verse_ref, lesson_key_verse_text, quiz_kind, total_questions";
+
 /**
- * Quiz com janela aberta agora para a turma do usuário (se houver).
- * Retorna null se nenhuma turma for passada ou nenhum quiz aberto.
+ * Quiz semanal aberto agora para a turma do usuário.
+ * Filtra apenas quiz_kind = 'weekly'.
  */
 export function useWeeklyQuiz(classId: string | null | undefined) {
   return useQuery({
@@ -24,9 +33,10 @@ export function useWeeklyQuiz(classId: string | null | undefined) {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("quizzes")
-        .select("id, title, class_id, week_number, opens_at, closes_at, season_id")
+        .select(QUIZ_FIELDS)
         .eq("class_id", classId!)
         .eq("active", true)
+        .eq("quiz_kind", "weekly")
         .lte("opens_at", nowIso)
         .gte("closes_at", nowIso)
         .order("week_number", { ascending: false })
@@ -36,7 +46,7 @@ export function useWeeklyQuiz(classId: string | null | undefined) {
   });
 }
 
-/** Próximo quiz agendado (ainda fechado) para a turma */
+/** Próximo quiz semanal agendado (ainda fechado) para a turma */
 export function useNextScheduledQuiz(classId: string | null | undefined) {
   return useQuery({
     queryKey: ["next-quiz", classId],
@@ -46,9 +56,10 @@ export function useNextScheduledQuiz(classId: string | null | undefined) {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("quizzes")
-        .select("id, title, class_id, week_number, opens_at, closes_at, season_id")
+        .select(QUIZ_FIELDS)
         .eq("class_id", classId!)
         .eq("active", true)
+        .eq("quiz_kind", "weekly")
         .gt("opens_at", nowIso)
         .order("opens_at", { ascending: true })
         .limit(1);
@@ -57,8 +68,37 @@ export function useNextScheduledQuiz(classId: string | null | undefined) {
   });
 }
 
+/**
+ * Provão trimestral da turma na temporada atual.
+ * Retorna o quiz com quiz_kind = 'trimestral' (independente de janela).
+ */
+export function useTrimestralProvao(
+  classId: string | null | undefined,
+  seasonId: string | null | undefined,
+) {
+  return useQuery({
+    queryKey: ["trimestral-provao", classId, seasonId],
+    enabled: !!classId && !!seasonId,
+    queryFn: async (): Promise<WeeklyQuiz | null> => {
+      const { data } = await supabase
+        .from("quizzes")
+        .select(QUIZ_FIELDS)
+        .eq("class_id", classId!)
+        .eq("season_id", seasonId!)
+        .eq("active", true)
+        .eq("quiz_kind", "trimestral")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      return (data?.[0] as WeeklyQuiz) ?? null;
+    },
+  });
+}
+
 /** Streak atual do participante na temporada */
-export function useParticipantStreak(participantName: string | null | undefined, seasonId: string | null | undefined) {
+export function useParticipantStreak(
+  participantName: string | null | undefined,
+  seasonId: string | null | undefined,
+) {
   return useQuery({
     queryKey: ["streak", participantName?.toLowerCase().trim(), seasonId],
     enabled: !!participantName && !!seasonId,
