@@ -80,13 +80,18 @@ export default function MeuPerfil() {
 
   const handleSave = async () => {
     if (!user) return;
+    if (phoneLocal.length > 0 && phoneLocal.length !== 11) {
+      toast.error("Telefone inválido. Use o formato (DD) 9XXXX-XXXX");
+      return;
+    }
     setSaving(true);
+    const fullPhone = phoneLocal.length === 11 ? `55${phoneLocal}` : "";
     const { error } = await supabase
       .from("profiles")
       .update({
         first_name: firstName,
         last_name: lastName,
-        phone,
+        phone: fullPhone,
         show_avatar_in_ranking: showAvatar,
       })
       .eq("id", user.id);
