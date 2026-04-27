@@ -94,6 +94,6 @@ export default function AdminClasses() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

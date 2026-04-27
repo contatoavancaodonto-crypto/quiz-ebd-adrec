@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Lock } from "lucide-react";
+import { Plus, Lock, Calendar } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Season { id: string; name: string; start_date: string; end_date: string; status: string; }
 

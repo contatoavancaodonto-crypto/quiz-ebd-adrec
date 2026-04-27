@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, ShieldOff, Loader2 } from "lucide-react";
+import { Shield, ShieldOff, Loader2, ShieldCheck } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 

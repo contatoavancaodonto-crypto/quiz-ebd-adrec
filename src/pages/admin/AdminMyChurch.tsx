@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Send, Clock, CheckCircle2, XCircle, Info } from "lucide-react";
+import { Loader2, Send, Clock, CheckCircle2, XCircle, Info, Church } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { Navigate } from "react-router-dom";
 
 interface ChurchData {

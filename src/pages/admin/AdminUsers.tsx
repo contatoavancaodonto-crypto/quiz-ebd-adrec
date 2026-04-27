@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Shield, ShieldOff, Search, Crown } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface ProfileRow {
   id: string;

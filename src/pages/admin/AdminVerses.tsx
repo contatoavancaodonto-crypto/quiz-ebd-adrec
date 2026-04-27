@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Power, Search } from "lucide-react";
+import { Plus, Power, Search, BookText } from "lucide-react";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Verse { id: string; book: string; chapter: number; verse: number; text: string; theme: string; active: boolean; }
 
