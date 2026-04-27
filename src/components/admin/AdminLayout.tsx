@@ -59,13 +59,19 @@ export function AdminLayout() {
   return (
     <AdminGuard>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
+        <div className="min-h-screen flex w-full bg-background relative overflow-hidden">
+          {/* Background blobs (mesmo padrão da Home) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-32 -left-32 w-[28rem] h-[28rem] rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute top-40 -right-32 w-96 h-96 rounded-full bg-secondary/10 blur-3xl" />
+          </div>
+
           <AdminSidebar />
-          <div className="flex-1 flex flex-col">
-            <header className="h-14 flex items-center justify-between border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur z-10">
+          <div className="flex-1 flex flex-col relative z-10 min-w-0">
+            <header className="h-14 flex items-center justify-between border-b border-border/60 px-4 sticky top-0 bg-background/70 backdrop-blur-xl z-20">
               <div className="flex items-center gap-3 min-w-0">
                 <SidebarTrigger />
-                <h1 className="text-lg font-semibold text-foreground truncate">
+                <h1 className="text-lg font-display font-bold text-foreground truncate">
                   Painel Administrativo
                 </h1>
               </div>
