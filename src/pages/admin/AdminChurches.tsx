@@ -27,6 +27,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Check, X, Power, Inbox } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { smartDelete } from "@/lib/admin-delete";
 
 interface Church {
   id: string;
@@ -325,6 +327,16 @@ export default function AdminChurches() {
                         <Button size="sm" variant="ghost" onClick={() => toggleActive(c)}>
                           <Power className="w-4 h-4 mr-1" /> {c.active ? "Desativar" : "Ativar"}
                         </Button>
+                        <DeleteButton
+                          itemLabel={`a igreja "${c.name}"`}
+                          onConfirm={async () => {
+                            const r = await smartDelete({ table: "churches", id: c.id });
+                            if (!r.ok) return r.error || "Falha ao apagar";
+                            load();
+                            return true;
+                          }}
+                          successMessage="Igreja removida"
+                        />
                       </TableCell>
                     </TableRow>
                   ))
