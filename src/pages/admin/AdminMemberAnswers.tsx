@@ -10,7 +10,16 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Search, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, Trophy } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useRoles } from "@/hooks/useRoles";
+
+type Period = "all" | "week" | "month" | "trimester";
 
 interface AttemptRow {
   id: string;
@@ -60,6 +69,8 @@ export default function AdminMemberAnswers() {
   const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [quizFilter, setQuizFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<Period>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [details, setDetails] = useState<
     Record<string, { questions: QuestionRow[]; answers: AnswerRow[]; loading: boolean }>
@@ -98,10 +109,53 @@ export default function AdminMemberAnswers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolesLoading, isSuperadmin, churchId]);
 
+  const periodStart = useMemo(() => {
+    if (periodFilter === "all") return null;
+    const now = new Date();
+    if (periodFilter === "week") {
+      // segunda-feira 00:00
+      const day = now.getDay(); // 0=dom..6=sab
+      const diff = day === 0 ? -6 : 1 - day;
+      const d = new Date(now);
+      d.setDate(now.getDate() + diff);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    if (periodFilter === "month") {
+      return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    }
+    // trimestre calendário (Jan-Mar, Abr-Jun, Jul-Set, Out-Dez)
+    const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    return new Date(now.getFullYear(), qStartMonth, 1, 0, 0, 0, 0);
+  }, [periodFilter]);
+
+  const quizOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    rows.forEach((r) => {
+      if (r.quiz_id && !map.has(r.quiz_id)) {
+        const label = r.quizzes?.title ?? "Quiz";
+        const lesson = r.quizzes?.lesson_number ? ` · Lição ${r.quizzes.lesson_number}` : "";
+        map.set(r.quiz_id, `${label}${lesson}`);
+      }
+    });
+    return Array.from(map.entries())
+      .map(([id, label]) => ({ id, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+  }, [rows]);
+
   const filtered = useMemo(() => {
     let list = rows;
     if (allowedNames) {
       list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
+    }
+    if (quizFilter !== "all") {
+      list = list.filter((r) => r.quiz_id === quizFilter);
+    }
+    if (periodStart) {
+      const startMs = periodStart.getTime();
+      list = list.filter(
+        (r) => r.finished_at && new Date(r.finished_at).getTime() >= startMs
+      );
     }
     if (q) {
       const ql = q.toLowerCase();
@@ -112,7 +166,7 @@ export default function AdminMemberAnswers() {
       );
     }
     return list;
-  }, [rows, allowedNames, q]);
+  }, [rows, allowedNames, q, quizFilter, periodStart]);
 
   const toggleExpand = async (attempt: AttemptRow) => {
     if (expanded === attempt.id) {
@@ -163,14 +217,46 @@ export default function AdminMemberAnswers() {
         </p>
       </div>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Buscar por aluno ou quiz…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1 sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Buscar por aluno ou quiz…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
+        <Select value={quizFilter} onValueChange={setQuizFilter}>
+          <SelectTrigger className="sm:w-64">
+            <SelectValue placeholder="Filtrar por quiz" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">Todos os quizzes</SelectItem>
+            {quizOptions.map((opt) => (
+              <SelectItem key={opt.id} value={opt.id}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as Period)}>
+          <SelectTrigger className="sm:w-44">
+            <SelectValue placeholder="Período" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todo o período</SelectItem>
+            <SelectItem value="week">Esta semana</SelectItem>
+            <SelectItem value="month">Este mês</SelectItem>
+            <SelectItem value="trimester">Este trimestre</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="text-xs text-muted-foreground">
+        {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"}
       </div>
 
       {loading ? (
