@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, ListChecks } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
+import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Attempt {
   id: string;
@@ -122,6 +123,6 @@ export default function AdminAttempts() {
           </TableBody>
         </Table>
       </Card>
-    </div>
+    </AdminPage>
   );
 }
