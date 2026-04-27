@@ -39,7 +39,7 @@ interface RankEntry {
   is_retry?: boolean;
 }
 
-type Scope = "general" | "church";
+type Scope = "general" | "church" | "interchurch";
 type Mode = "weekly" | "monthly" | "classic";
 
 const RankingPage = () => {
