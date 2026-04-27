@@ -39,7 +39,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church";
-type Mode = "weekly" | "season" | "classic";
+type Mode = "weekly" | "monthly" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -51,8 +51,13 @@ const RankingPage = () => {
   const [trimester, setTrimester] = useState<number>(
     [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
   );
-  const modeParam = (searchParams.get("mode") as Mode) || "weekly";
-  const [mode, setMode] = useState<Mode>(["weekly", "season", "classic"].includes(modeParam) ? modeParam : "weekly");
+  const rawModeParam = searchParams.get("mode");
+  // Backwards-compat: links antigos com ?mode=season caem em monthly
+  const normalizedModeParam: Mode =
+    rawModeParam === "season" ? "monthly" :
+    (["weekly", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
+    "weekly";
+  const [mode, setMode] = useState<Mode>(normalizedModeParam);
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
   const [selectedClassId, setSelectedClassId] = useState<string>(state?.classId || "");
@@ -108,7 +113,7 @@ const RankingPage = () => {
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
   const seasonId = activeSeason?.id;
   const weeklyEnabled = mode === "weekly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const seasonEnabled = mode === "season" && !!seasonId && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const monthlyEnabled = mode === "monthly" && (scope === "general" || (scope === "church" && !!selectedChurchId));
   const classicEnabled = mode === "classic" && enabled;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
@@ -117,7 +122,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -125,7 +130,7 @@ const RankingPage = () => {
         query = query.eq("church_id", selectedChurchId);
       }
       const { data } = await query;
-      return (data as RankEntry[]) || [];
+      return (data as any[]) || [];
     },
   });
 
@@ -146,14 +151,13 @@ const RankingPage = () => {
     },
   });
 
-  const { data: seasonData, isLoading: seasonLoading } = useQuery({
-    queryKey: ["ranking-season", seasonId, scope, selectedChurchId],
-    enabled: seasonEnabled,
+  const { data: monthlyData, isLoading: monthlyLoading } = useQuery({
+    queryKey: ["ranking-monthly", scope, selectedChurchId],
+    enabled: monthlyEnabled,
     queryFn: async () => {
       let query = supabase
-        .from("ranking_season_accumulated")
+        .from("ranking_monthly")
         .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
-        .eq("season_id", seasonId!)
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -164,12 +168,12 @@ const RankingPage = () => {
     },
   });
 
-  const isLoading = classicLoading || weeklyLoading || seasonLoading;
+  const isLoading = classicLoading || weeklyLoading || monthlyLoading;
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
   const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
-  const rt3 = useRealtimeRanking(["ranking-season", seasonId, scope, selectedChurchId]);
+  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
   const activeRt = mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3;
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
@@ -178,22 +182,22 @@ const RankingPage = () => {
     const raw =
       mode === "classic" ? classicData :
       mode === "weekly" ? weeklyData :
-      seasonData;
+      monthlyData;
     if (!raw) return [];
     const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
     return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [mode, classicData, weeklyData, seasonData, selectedClassId]);
+  }, [mode, classicData, weeklyData, monthlyData, selectedClassId]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
       ? "Selecione uma igreja acima"
       : mode === "weekly"
       ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
-      : mode === "season"
-      ? "Nenhum participante ainda nesta temporada."
+      : mode === "monthly"
+      ? "Nenhum participante ainda neste mês."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "season" ? seasonEnabled : classicEnabled;
+  const enabledForMode = mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled;
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
@@ -211,7 +215,7 @@ const RankingPage = () => {
             <h1 className="text-2xl font-display font-extrabold text-foreground leading-tight">Ranking</h1>
             <p className="text-xs text-muted-foreground truncate">
               {mode === "weekly" && "Semana atual"}
-              {mode === "season" && (activeSeason?.name ?? "Temporada ativa")}
+              {mode === "monthly" && "Mês atual"}
               {mode === "classic" && `${trimester}º Trimestre`}
             </p>
           </div>
@@ -234,11 +238,11 @@ const RankingPage = () => {
           </div>
         </motion.div>
 
-        {/* Mode tabs: Semana / Temporada / Trimestral */}
+        {/* Mode tabs: Semana / Mensal / Trimestral */}
         <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="weekly">Semana</TabsTrigger>
-            <TabsTrigger value="season">Temporada</TabsTrigger>
+            <TabsTrigger value="monthly">Mensal</TabsTrigger>
             <TabsTrigger value="classic">Trimestral</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -368,11 +372,15 @@ const RankingPage = () => {
               <AnimatePresence initial={false}>
                 {ranking.map((entry: any, i) => {
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
-                  const isSeason = mode === "season";
+                  const isMonthly = mode === "monthly";
                   const isWeekly = mode === "weekly";
-                  const mainScore = isSeason ? entry.total_score : (isWeekly ? entry.final_score : entry.score);
-                  const baseScore = isWeekly ? entry.score : null;
-                  const bonus = isWeekly ? entry.streak_bonus : null;
+                  const isClassic = mode === "classic";
+                  // Para weekly e classic agora usamos final_score (acertos + bônus de streak)
+                  const mainScore = isMonthly
+                    ? entry.total_score
+                    : (entry.final_score ?? entry.score);
+                  const baseScore = isWeekly || isClassic ? entry.score : null;
+                  const bonus = isWeekly || isClassic ? (entry.streak_bonus ?? 0) : 0;
                   return (
                     <motion.div
                       key={stableKey}
@@ -399,7 +407,7 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
-                          {isSeason && entry.current_streak > 0 && (
+                          {isMonthly && entry.current_streak > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
                               <Flame className="w-3 h-3" />{entry.current_streak}
                             </span>
@@ -416,7 +424,7 @@ const RankingPage = () => {
                         {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
                         )}
-                        {isSeason && (
+                        {isMonthly && (
                           <div className="text-[10px] text-muted-foreground/80">
                             {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
                           </div>
@@ -424,14 +432,14 @@ const RankingPage = () => {
                       </div>
 
                       <div className="text-right shrink-0">
-                        {isSeason ? (
+                        {isMonthly ? (
                           <div className="font-display font-bold text-primary">{mainScore} pts</div>
                         ) : (
                           <>
                             <div className="font-display font-bold text-primary">
                               {mainScore}{isWeekly ? "" : `/13`}
                             </div>
-                            {isWeekly && bonus > 0 && (
+                            {bonus > 0 && (
                               <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
                             )}
                             <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">

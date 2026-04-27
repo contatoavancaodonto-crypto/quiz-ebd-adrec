@@ -1,125 +1,141 @@
 ## Objetivo
 
-Refazer a home para refletir o novo fluxo: a rotina principal é o **quiz semanal de 5 perguntas (lição da revista, libera segunda 00h00, encerra domingo 23h59)**, e o **provão trimestral de 13 perguntas** vira um evento que só aparece em destaque na última semana de cada trimestre. Cada quiz semanal passa a representar uma **lição da revista** (nº, título, versículo-chave).
+Na página `/ranking`:
+
+1. Trocar a aba **"Temporada"** por **"Mensal"** — mostrando apenas os pontos acumulados das semanas do **mês atual** (em America/Sao_Paulo).
+2. Fazer o ranking **"Trimestral"** somar o **bônus de streak** (`final_score = score + streak_bonus`) em vez de usar só `qa.score`.
 
 ---
 
-## O que muda na home
+## O que muda
 
-```text
-┌─────────────────────────────────────┐
-│  Header (logo + saudação)           │
-├─────────────────────────────────────┤
-│  HERO — Quiz da Semana              │
-│   Lição #N · "Título da lição"      │
-│   📖 Versículo-chave: Jo 3:16       │
-│   🔥 Streak  ⏳ Encerra dom 23h59   │
-│   [ Responder Quiz da Semana ]      │
-├─────────────────────────────────────┤
-│  (Só aparece nas últimas 2 semanas  │
-│   do trimestre)                     │
-│  PROVÃO TRIMESTRAL — 13 perguntas   │
-│   [ Acessar provão ]                │
-├─────────────────────────────────────┤
-│  Versículo do Dia (mantido)         │
-├─────────────────────────────────────┤
-│  Status da MINHA turma              │
-│   (1 card só, da turma do perfil)   │
-├─────────────────────────────────────┤
-│  [ 🏆 Ver Ranking ]                 │
-├─────────────────────────────────────┤
-│  Link "Arquivo trimestral →"        │
-│  (vai para /arquivo)                │
-└─────────────────────────────────────┘
-```
+### 1. Aba "Mensal" (substitui "Temporada")
 
-Removido da home: bloco "Status por turma" com 3 cards, `<details>` Arquivo trimestral inline (vira página).
+- A view `ranking_season_accumulated` continua existindo (é usada para badges e fim de temporada), **mas a UI de Ranking deixa de usá-la**.
+- Criamos uma nova view **`ranking_monthly`** com a mesma estrutura da `ranking_season_accumulated`, porém filtrando `qa.finished_at` para o mês corrente (em horário de Brasília) e particionando o `position` por `(year, month)`.
+- Frontend:
+  - Tab label: **"Mensal"**
+  - Subtítulo: **"Mês atual"** (em vez de o nome da temporada)
+  - Estado vazio: **"Nenhum participante ainda neste mês."**
+  - O resto da UI de cada linha (pts, semanas respondidas, streak 🔥) permanece igual.
 
----
+### 2. Trimestral somando streak bonus
 
-## Trabalho a fazer
+A view atual `ranking_general`:
+- Ordena por `qa.score DESC` e mostra `qa.score / 13`.
+- Filtro `qa.score >= 5`.
 
-### 1. Banco de dados — vincular quiz semanal a uma lição
+Nova versão da `ranking_general`:
+- Adiciona a coluna `final_score = COALESCE(qa.final_score, qa.score + qa.streak_bonus)` e a coluna `streak_bonus`.
+- Ordena por `final_score DESC, tempo, finished_at`.
+- Mantém o filtro `qa.score >= 5` (aproveitamento mínimo de 5 acertos em 13).
+- Frontend exibe o `final_score` como pontuação principal e, quando houver bônus > 0, mostra abaixo `score + bonus🔥` (mesmo padrão visual já usado na aba Semana).
 
-Adicionar colunas em `quizzes` para representar a lição da revista:
-- `lesson_number` (int, nullable) — nº da lição no trimestre (1..13)
-- `lesson_title` (text, nullable) — título da lição
-- `lesson_key_verse_ref` (text, nullable) — ex.: "João 3:16"
-- `lesson_key_verse_text` (text, nullable) — texto do versículo-chave
-- `quiz_kind` (text, default `'weekly'`) — `'weekly'` ou `'trimestral'`, para distinguir os 5 perguntas semanais do provão de 13
-
-Quizzes legados ficam como `weekly` por padrão (comportamento atual preservado).
-
-### 2. Página nova `/arquivo`
-
-Mover o conteúdo do `<details> Arquivo trimestral` (seletor de trimestre + turma + botão "Iniciar Tri.") para uma rota dedicada `/arquivo`. A home só mantém um link discreto "Arquivo trimestral →".
-
-### 3. Card "Provão Trimestral" condicional
-
-Novo card que só aparece quando faltarem **≤ 14 dias** para o fim da temporada (`season.end_date`). Usa o quiz com `quiz_kind = 'trimestral'` da turma do usuário. Antes disso fica oculto.
-
-### 4. Hero do Quiz da Semana — enriquecer
-
-Atualizar `useWeeklyQuiz` para retornar também `lesson_number`, `lesson_title`, `lesson_key_verse_ref`. No hero exibir:
-- Pílula "Lição #N" no topo (substitui "Quiz da Semana #N")
-- Título: o `lesson_title` (com fallback para `quiz.title`)
-- Linha sutil com o versículo-chave da lição (📖 ref)
-
-### 5. Status da turma — só 1 card
-
-Em vez de listar todas as turmas ativas, renderizar `ClassWeeklyStatusCard` apenas para a turma do usuário (`profile.class_id`). Se o usuário não tem turma definida, esconder a seção.
-
-### 6. Painel admin — campos de lição
-
-Em `/painel-ebd-2025/quizzes`, adicionar no formulário de quiz:
-- Seletor `Tipo`: Semanal / Provão Trimestral
-- Campos `Nº da Lição`, `Título da Lição`, `Versículo-chave (ref)`, `Texto do versículo-chave`
-
-Esses campos são opcionais (legado continua funcionando).
-
-### 7. Memória do projeto
-
-- Atualizar `mem://features/weekly-quizzes` com a nova estrutura (lição + provão trimestral condicional + arquivo separado).
-- Criar nota em `mem://features/daily-verse-pivot`: **futuro** — substituir `DailyVerseCard` aleatório pelo "Versículo da Semana" baseado em `lesson_key_verse_*` do quiz semanal corrente. Não implementar agora.
-- Atualizar `mem://index.md` (Core) para refletir: quiz semanal de 5 perguntas = padrão; provão trimestral de 13 = evento de fim de trimestre.
+Outros consumidores da view continuam funcionando porque mantemos todas as colunas atuais (`score`, `total_time_ms`, `position`, etc.) e só **adicionamos** `final_score` + `streak_bonus`. Vou conferir e manter compatível: `useSmartFeed`, `MeuDesempenho`, `Historico`, `Quiz` (esses usam `score`, `position`, `participant_name`, `class_name` — nada quebra).
 
 ---
 
 ## Detalhes técnicos
 
-**Migração SQL** (adiciona colunas, nada destrutivo):
+### Migration SQL (resumo)
+
 ```sql
-ALTER TABLE public.quizzes
-  ADD COLUMN IF NOT EXISTS lesson_number INT,
-  ADD COLUMN IF NOT EXISTS lesson_title TEXT,
-  ADD COLUMN IF NOT EXISTS lesson_key_verse_ref TEXT,
-  ADD COLUMN IF NOT EXISTS lesson_key_verse_text TEXT,
-  ADD COLUMN IF NOT EXISTS quiz_kind TEXT NOT NULL DEFAULT 'weekly'
-    CHECK (quiz_kind IN ('weekly','trimestral'));
+-- 1) ranking_general com soma do streak_bonus
+DROP VIEW IF EXISTS public.ranking_general CASCADE;
+CREATE VIEW public.ranking_general
+WITH (security_invoker = on) AS
+SELECT
+  qa.id AS attempt_id,
+  qa.score,
+  qa.streak_bonus,
+  COALESCE(qa.final_score, qa.score + qa.streak_bonus) AS final_score,
+  qa.total_time_seconds,
+  qa.total_time_ms,
+  qa.accuracy_percentage,
+  qa.finished_at,
+  p.name AS participant_name,
+  c.id AS class_id,
+  c.name AS class_name,
+  ch.id AS church_id,
+  ch.name AS church_name,
+  q.trimester,
+  false AS is_retry,
+  row_number() OVER (
+    PARTITION BY q.trimester
+    ORDER BY
+      COALESCE(qa.final_score, qa.score + qa.streak_bonus) DESC,
+      COALESCE(NULLIF(qa.total_time_ms,0), qa.total_time_seconds*1000) ASC,
+      qa.finished_at ASC
+  ) AS position
+FROM quiz_attempts qa
+JOIN participants p ON p.id = qa.participant_id
+JOIN classes c ON c.id = p.class_id
+JOIN quizzes q ON q.id = qa.quiz_id
+LEFT JOIN profiles pr ON pr.id::text = p.id::text
+LEFT JOIN churches ch ON ch.id = pr.church_id
+WHERE qa.finished_at IS NOT NULL
+  AND qa.score >= 5
+  AND upper(p.name) <> 'TESTE123';
+
+-- 2) ranking_monthly (acumulado do mês corrente)
+DROP VIEW IF EXISTS public.ranking_monthly CASCADE;
+CREATE VIEW public.ranking_monthly
+WITH (security_invoker = on) AS
+WITH agg AS (
+  SELECT
+    lower(trim(part.name)) AS name_key,
+    min(part.name) AS participant_name,
+    qa.season_id,
+    sum(qa.final_score) AS total_score,
+    sum(qa.total_time_ms) AS total_time_ms,
+    count(DISTINCT qa.week_number) AS weeks_completed,
+    max(qa.finished_at) AS last_finished_at
+  FROM quiz_attempts qa
+  JOIN participants part ON part.id = qa.participant_id
+  WHERE qa.finished_at IS NOT NULL
+    AND date_trunc('month', qa.finished_at AT TIME ZONE 'America/Sao_Paulo')
+        = date_trunc('month', (now() AT TIME ZONE 'America/Sao_Paulo'))
+  GROUP BY lower(trim(part.name)), qa.season_id
+),
+joined AS (
+  SELECT a.*, pr.church_id, ch.name AS church_name,
+         pr.class_id, c.name AS class_name,
+         ps.current_streak
+  FROM agg a
+  LEFT JOIN profiles pr
+    ON lower(trim((pr.first_name||' ')||COALESCE(pr.last_name,''))) = a.name_key
+  LEFT JOIN churches ch ON ch.id = pr.church_id
+  LEFT JOIN classes c ON c.id = pr.class_id
+  LEFT JOIN participant_streaks ps
+    ON ps.participant_name = a.name_key AND ps.season_id = a.season_id
+)
+SELECT
+  row_number() OVER (
+    ORDER BY total_score DESC, total_time_ms ASC, last_finished_at ASC
+  ) AS position,
+  participant_name, season_id, class_id, class_name,
+  church_id, church_name, total_score, total_time_ms,
+  weeks_completed, COALESCE(current_streak, 0) AS current_streak
+FROM joined;
 ```
 
-**Cron `tick_weekly_quiz_schedule`**: filtrar fila de promoção por `quiz_kind = 'weekly'` para que o provão trimestral não seja consumido como quiz semanal automático.
+### Frontend (`src/pages/Ranking.tsx`)
 
-**Hero — fonte de dados**:
-- `useWeeklyQuiz(classId)` já retorna o quiz aberto da turma; estender o select para incluir os 4 novos campos.
-- `useTrimestralProvao(classId, seasonId)` (novo): retorna o quiz com `quiz_kind='trimestral'` da temporada/turma; só renderiza se `season.end_date - now <= 14 dias`.
+- Renomear o tipo `Mode = "weekly" | "season" | "classic"` → `"weekly" | "monthly" | "classic"` e atualizar o `useSearchParams` para aceitar `mode=monthly` (com fallback de `season` → `monthly` para não quebrar links antigos).
+- Trocar `from("ranking_season_accumulated")` por `from("ranking_monthly")` e remover o filtro `.eq("season_id", ...)` (a view já filtra pelo mês).
+- Trocar a label da Tab para **"Mensal"** e o subtítulo para **"Mês atual"**.
+- Mensagem de empty: **"Nenhum participante ainda neste mês."**
+- Na renderização da linha do modo Trimestral (`classic`):
+  - Usar `entry.final_score` como número grande (em vez de `entry.score`).
+  - Manter `/13` ao lado.
+  - Quando `entry.streak_bonus > 0`, mostrar abaixo `score + bonus🔥` (mesmo visual da aba Semana).
 
-**Rota `/arquivo`**: adicionar em `src/App.tsx` e mover o JSX do `<motion.details>` atual para `src/pages/Arquivo.tsx` (mesmas regras de `AVAILABLE_TRIMESTERS` / `CLOSED_TRIMESTERS`).
+### Arquivos editados
 
-**Arquivos afetados**:
-- `supabase/migrations/*` — nova migração
-- `src/hooks/useWeeklyQuiz.ts` — campos extras + novo hook `useTrimestralProvao`
-- `src/pages/Index.tsx` — hero enriquecido, card provão condicional, status só da turma do usuário, remoção do `<details>`
-- `src/pages/Arquivo.tsx` — novo
-- `src/App.tsx` — nova rota
-- `src/pages/admin/AdminQuizzes.tsx` — novos campos no form
-- `src/integrations/supabase/types.ts` — regenerado automaticamente
-- `.lovable/memory/features/weekly-quizzes.md`, `.lovable/memory/index.md`, `.lovable/memory/features/daily-verse-pivot.md`
+- **Migration nova** (criar via tool): atualiza `ranking_general` e cria `ranking_monthly`.
+- **`src/pages/Ranking.tsx`**: tabs, queries, labels e renderização do modo classic.
 
----
+### Não muda
 
-## Fora de escopo (fica para depois, mas registrado em memória)
-
-- Substituir `DailyVerseCard` aleatório pelo versículo-chave da lição da semana.
-- Notificações/lembrete por e-mail quando abre quiz semanal.
-- Página dedicada para revisar a lição da semana (texto/PDF da revista).
+- `ranking_season_accumulated` continua existindo (badges, `award_season_end_badges`, `useSmartFeed` etc.).
+- `useSmartFeed`, `MeuDesempenho`, `Historico`, `Quiz` continuam usando `ranking_general` sem alteração (apenas ganham acesso a `final_score` se quiserem).
