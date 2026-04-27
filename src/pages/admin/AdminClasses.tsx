@@ -51,12 +51,13 @@ export default function AdminClasses() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Turmas</h2>
-          <p className="text-sm text-muted-foreground">Gerenciar turmas da EBD</p>
-        </div>
+    <AdminPage
+      title="Turmas"
+      description="Gerenciar turmas da EBD."
+      Icon={GraduationCap}
+      variant="emerald"
+    >
+      <div className="flex items-end justify-end">
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setName(""); } }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-1" /> Nova Turma</Button></DialogTrigger>
           <DialogContent>
