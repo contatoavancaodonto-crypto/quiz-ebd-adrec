@@ -1,14 +1,39 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminGuard } from "./AdminGuard";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Crown, Shield } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PendingRequestsBell } from "./PendingRequestsBell";
+
+const ADMIN_ROOT = "/painel-ebd-2025";
+
+function BackButton() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Não mostra na raiz do painel (Overview)
+  const normalized = location.pathname.replace(/\/$/, "");
+  if (normalized === ADMIN_ROOT) return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => navigate(ADMIN_ROOT)}
+      className="gap-1.5 h-8 px-2 text-muted-foreground hover:text-foreground"
+      aria-label="Voltar ao painel"
+    >
+      <ArrowLeft className="w-4 h-4" />
+      <span className="hidden sm:inline">Voltar</span>
+    </Button>
+  );
+}
+
 
 function RoleBadge() {
   const { isSuperadmin, isChurchAdmin, churchId, loading } = useRoles();
@@ -69,8 +94,9 @@ export function AdminLayout() {
           <AdminSidebar />
           <div className="flex-1 flex flex-col relative z-10 min-w-0">
             <header className="h-14 flex items-center justify-between border-b border-border/60 px-4 sticky top-0 bg-background/70 backdrop-blur-xl z-20">
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <SidebarTrigger />
+                <BackButton />
                 <h1 className="text-lg font-display font-bold text-foreground truncate">
                   Painel Administrativo
                 </h1>
