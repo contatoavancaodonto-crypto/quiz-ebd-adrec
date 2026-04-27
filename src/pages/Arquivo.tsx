@@ -258,7 +258,7 @@ export default function Arquivo() {
             )}
           </motion.div>
         </div>
-      </div>
+      </PageShell>
     </MemberLayout>
   );
 }
