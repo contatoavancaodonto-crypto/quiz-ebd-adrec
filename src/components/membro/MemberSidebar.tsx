@@ -28,13 +28,18 @@ const items = [
 ];
 
 export function MemberSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useRoles();
 
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   const handleLogout = async () => {
+    closeOnMobile();
     await signOut();
     toast.success("Você saiu com sucesso");
     navigate("/auth");
