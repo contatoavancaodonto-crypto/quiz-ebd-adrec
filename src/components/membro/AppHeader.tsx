@@ -2,6 +2,7 @@ import { ArrowLeft, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode } from "react";
 import churchLogo from "@/assets/church-logo.webp";
+import { useFullProfile } from "@/hooks/useFullProfile";
 
 interface BaseProps {
   /** Subtítulo opcional exibido abaixo do título (modo back) */
@@ -53,6 +54,8 @@ type Props = FullHeaderProps | BackHeaderProps;
  */
 export function AppHeader(props: Props) {
   const navigate = useNavigate();
+  const { data: profile } = useFullProfile();
+  const userChurch = profile?.church_name?.trim();
 
   const handleBack = () => {
     if (props.variant !== "back") return;
@@ -107,7 +110,7 @@ export function AppHeader(props: Props) {
                   EBD Online
                 </div>
                 <div className="text-xs font-semibold text-foreground truncate">
-                  CIMADSETA · ADREC
+                  CIMADSETA · {userChurch || "ADREC"}
                 </div>
               </div>
             </div>
