@@ -61,7 +61,7 @@ function RoleBadge() {
   if (loading) return null;
   if (isSuperadmin) {
     return (
-      <Badge className="bg-primary text-primary-foreground gap-1">
+      <Badge className="bg-primary text-primary-foreground gap-1 px-2 py-0.5 h-6">
         <Crown className="w-3 h-3" />
         Superadmin
       </Badge>
