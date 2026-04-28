@@ -57,11 +57,12 @@ export function MemberSidebar() {
                   <NavLink
                     to="/"
                     end
+                    onClick={closeOnMobile}
                     className="hover:bg-muted/50"
                     activeClassName="bg-muted text-primary font-medium"
                   >
                     <Home className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Início</span>}
+                    {(!collapsed || isMobile) && <span>Início</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
