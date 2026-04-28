@@ -88,11 +88,12 @@ export function MemberSidebar() {
                     <NavLink
                       to="/painel-ebd-2025"
                       end
+                      onClick={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <Shield className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Painel Admin</span>}
+                      {(!collapsed || isMobile) && <span>Painel Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
