@@ -61,10 +61,8 @@ export function MemberLayout({
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Sidebar fica disponível no md+ */}
-        <div className="hidden md:flex">
-          <MemberSidebar />
-        </div>
+        {/* Sidebar */}
+        <MemberSidebar />
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header DESKTOP (sempre que md+) */}
