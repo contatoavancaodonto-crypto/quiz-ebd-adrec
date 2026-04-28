@@ -1,8 +1,9 @@
-import { ArrowLeft, Bell } from "lucide-react";
+import { ArrowLeft, Bell, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode } from "react";
 import churchLogo from "@/assets/church-logo.webp";
 import { useFullProfile } from "@/hooks/useFullProfile";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface BaseProps {
   /** Subtítulo opcional exibido abaixo do título (modo back) */
