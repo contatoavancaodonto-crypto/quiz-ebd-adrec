@@ -124,7 +124,14 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/" onClick={closeOnMobile} className="hover:bg-muted/50">
+              <NavLink 
+                to="/" 
+                onClick={closeOnMobile} 
+                className={cn(
+                  "hover:bg-muted/50 transition-colors",
+                  isMobile ? "py-3 px-4 h-auto" : ""
+                )}
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {(!collapsed || isMobile) && <span>Voltar ao app</span>}
               </NavLink>
