@@ -61,7 +61,7 @@ function RoleBadge() {
   if (loading) return null;
   if (isSuperadmin) {
     return (
-      <Badge className="bg-primary text-primary-foreground gap-1">
+      <Badge className="bg-primary text-primary-foreground gap-1 px-2 py-0.5 h-6">
         <Crown className="w-3 h-3" />
         Superadmin
       </Badge>
@@ -69,10 +69,10 @@ function RoleBadge() {
   }
   if (isChurchAdmin) {
     return (
-      <Badge variant="secondary" className="gap-1 max-w-[240px]">
+      <Badge variant="secondary" className="gap-1 max-w-[120px] sm:max-w-[240px]">
         <Shield className="w-3 h-3 shrink-0" />
         <span className="truncate">
-          Admin{churchName ? ` · ${churchName}` : " de Igreja"}
+          {churchName || "Admin"}
         </span>
       </Badge>
     );
@@ -98,7 +98,8 @@ export function AdminLayout() {
                 <SidebarTrigger />
                 <BackButton />
                 <h1 className="text-lg font-display font-bold text-foreground truncate">
-                  Painel Administrativo
+                  <span className="hidden sm:inline">Painel Administrativo</span>
+                  <span className="sm:hidden">Painel</span>
                 </h1>
               </div>
               <div className="flex items-center gap-2">

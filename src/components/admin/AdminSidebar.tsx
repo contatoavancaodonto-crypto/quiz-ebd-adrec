@@ -33,6 +33,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type Item = {
   title: string;
@@ -72,7 +73,8 @@ export function AdminSidebar() {
 
   const items = allItems.filter((i) => {
     if (i.superadminOnly && !isSuperadmin) return false;
-    if (i.churchAdminOnly && (!isChurchAdmin || isSuperadmin)) return false;
+    // Superadmin vê tudo, Church Admin vê apenas o que lhe é permitido
+    if (i.churchAdminOnly && !isChurchAdmin && !isSuperadmin) return false;
     return true;
   });
 
@@ -102,11 +104,14 @@ export function AdminSidebar() {
                       to={item.url}
                       end={item.end}
                       onClick={closeOnMobile}
-                      className="hover:bg-muted/50"
+                      className={cn(
+                        "hover:bg-muted/50 transition-colors",
+                        isMobile ? "py-3 px-4 h-auto" : ""
+                      )}
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {(!collapsed || isMobile) && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -119,19 +124,29 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/" onClick={closeOnMobile} className="hover:bg-muted/50">
+              <NavLink 
+                to="/" 
+                onClick={closeOnMobile} 
+                className={cn(
+                  "hover:bg-muted/50 transition-colors",
+                  isMobile ? "py-3 px-4 h-auto" : ""
+                )}
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                {!collapsed && <span>Voltar ao app</span>}
+                {(!collapsed || isMobile) && <span>Voltar ao app</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className={cn(
+                "text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors",
+                isMobile ? "py-3 px-4 h-auto" : ""
+              )}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Sair</span>}
+              {(!collapsed || isMobile) && <span>Sair</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
