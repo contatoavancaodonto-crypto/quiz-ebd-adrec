@@ -140,7 +140,10 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className={cn(
+                "text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors",
+                isMobile ? "py-3 px-4 h-auto" : ""
+              )}
             >
               <LogOut className="mr-2 h-4 w-4" />
               {(!collapsed || isMobile) && <span>Sair</span>}
