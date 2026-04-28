@@ -154,8 +154,10 @@ export default function AdminUsers() {
     load();
   };
 
-  const churchName = (id: string | null) =>
-    id ? churches.find((c) => c.id === id)?.name ?? "—" : "—";
+  const churchName = (id: string | null) => {
+    if (!id) return "—";
+    return churches.find((c) => c.id === id)?.name ?? "—";
+  };
 
   const filtered = rows.filter((r) => {
     if (roleFilter === "none" && r.role !== null) return false;
@@ -245,7 +247,7 @@ export default function AdminUsers() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {r.role === "admin" ? churchName(r.role_church_id) : "—"}
+                    {r.role === "admin" ? churchName(r.role_church_id) : churchName(r.profile_church_id)}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     {r.hidden_at && (
