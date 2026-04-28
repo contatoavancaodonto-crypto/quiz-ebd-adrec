@@ -56,6 +56,7 @@ type Props = FullHeaderProps | BackHeaderProps;
 export function AppHeader(props: Props) {
   const navigate = useNavigate();
   const { data: profile } = useFullProfile();
+  const { toggleSidebar } = useSidebar();
   const userChurch = profile?.church_name?.trim();
 
   const handleBack = () => {
