@@ -97,8 +97,9 @@ export function AdminLayout() {
               <div className="flex items-center gap-2 min-w-0">
                 <SidebarTrigger />
                 <BackButton />
-                <h1 className="text-lg font-display font-bold text-foreground truncate hidden xs:block sm:block">
-                  Painel
+                <h1 className="text-lg font-display font-bold text-foreground truncate">
+                  <span className="hidden sm:inline">Painel Administrativo</span>
+                  <span className="sm:hidden">Painel</span>
                 </h1>
               </div>
               <div className="flex items-center gap-2">
