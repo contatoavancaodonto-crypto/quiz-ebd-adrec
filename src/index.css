@@ -114,3 +114,10 @@
     box-shadow: 0 0 20px hsl(25 70% 50% / 0.2);
   }
 }
+
+/* Animações de carregamento desativadas globalmente para deixar o app mais rápido */
+.animate-pulse,
+.animate-spin {
+  animation: none !important;
+}
+
