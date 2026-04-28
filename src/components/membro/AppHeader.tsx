@@ -1,8 +1,9 @@
-import { ArrowLeft, Bell } from "lucide-react";
+import { ArrowLeft, Bell, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode } from "react";
 import churchLogo from "@/assets/church-logo.webp";
 import { useFullProfile } from "@/hooks/useFullProfile";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface BaseProps {
   /** Subtítulo opcional exibido abaixo do título (modo back) */
@@ -55,6 +56,7 @@ type Props = FullHeaderProps | BackHeaderProps;
 export function AppHeader(props: Props) {
   const navigate = useNavigate();
   const { data: profile } = useFullProfile();
+  const { toggleSidebar } = useSidebar();
   const userChurch = profile?.church_name?.trim();
 
   const handleBack = () => {
@@ -98,6 +100,13 @@ export function AppHeader(props: Props) {
         ) : (
           <>
             <div className="flex items-center gap-2 min-w-0">
+              <button 
+                onClick={toggleSidebar}
+                className="w-10 h-10 -ml-2 rounded-full hover:bg-muted flex items-center justify-center text-foreground active:scale-95 transition-transform"
+                aria-label="Abrir menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               <div className="w-9 h-9 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
                 <img
                   src={churchLogo}

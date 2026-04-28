@@ -28,13 +28,18 @@ const items = [
 ];
 
 export function MemberSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useRoles();
 
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   const handleLogout = async () => {
+    closeOnMobile();
     await signOut();
     toast.success("Você saiu com sucesso");
     navigate("/auth");
@@ -52,11 +57,12 @@ export function MemberSidebar() {
                   <NavLink
                     to="/"
                     end
+                    onClick={closeOnMobile}
                     className="hover:bg-muted/50"
                     activeClassName="bg-muted text-primary font-medium"
                   >
                     <Home className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Início</span>}
+                    {(!collapsed || isMobile) && <span>Início</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -66,11 +72,12 @@ export function MemberSidebar() {
                     <NavLink
                       to={item.url}
                       end
+                      onClick={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {(!collapsed || isMobile) && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -81,11 +88,12 @@ export function MemberSidebar() {
                     <NavLink
                       to="/painel-ebd-2025"
                       end
+                      onClick={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <Shield className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Painel Admin</span>}
+                      {(!collapsed || isMobile) && <span>Painel Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -102,7 +110,7 @@ export function MemberSidebar() {
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Sair</span>}
+              {(!collapsed || isMobile) && <span>Sair</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
