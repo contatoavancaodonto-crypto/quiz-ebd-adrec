@@ -121,7 +121,7 @@ export function AdminSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/" onClick={closeOnMobile} className="hover:bg-muted/50">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                {!collapsed && <span>Voltar ao app</span>}
+                {(!collapsed || isMobile) && <span>Voltar ao app</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -131,7 +131,7 @@ export function AdminSidebar() {
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Sair</span>}
+              {(!collapsed || isMobile) && <span>Sair</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
