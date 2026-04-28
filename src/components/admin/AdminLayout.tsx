@@ -95,7 +95,9 @@ export function AdminLayout() {
           <div className="flex-1 flex flex-col relative z-10 min-w-0">
             <header className="h-14 flex items-center justify-between border-b border-border/60 px-4 sticky top-0 bg-background/70 backdrop-blur-xl z-20">
               <div className="flex items-center gap-2 min-w-0">
-                <SidebarTrigger />
+                <div className="md:hidden">
+                  <SidebarTrigger />
+                </div>
                 <BackButton />
                 <h1 className="text-lg font-display font-bold text-foreground truncate">
                   <span className="hidden sm:inline">Painel Administrativo</span>
@@ -103,6 +105,9 @@ export function AdminLayout() {
                 </h1>
               </div>
               <div className="flex items-center gap-2">
+                <div className="hidden md:block">
+                  <SidebarTrigger />
+                </div>
                 <PendingRequestsBell />
                 <RoleBadge />
                 <ThemeToggle />

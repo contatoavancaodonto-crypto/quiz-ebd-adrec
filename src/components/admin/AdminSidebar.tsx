@@ -106,7 +106,7 @@ export function AdminSidebar() {
                       onClick={closeOnMobile}
                       className={cn(
                         "hover:bg-muted/50 transition-colors",
-                        isMobile ? "py-3 px-4 h-auto" : ""
+                        isMobile ? "py-4 px-4 h-auto text-base" : ""
                       )}
                       activeClassName="bg-muted text-primary font-medium"
                     >
