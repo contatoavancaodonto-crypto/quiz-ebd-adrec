@@ -92,7 +92,7 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupLabel>Painel Admin</SidebarGroupLabel>
           <SidebarGroupContent>
