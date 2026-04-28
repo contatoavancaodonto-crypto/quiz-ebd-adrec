@@ -121,3 +121,14 @@
   animation: none !important;
 }
 
+/* Bloqueia scroll lateral e zoom por pinça (mobile) */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-x: none;
+}
+
