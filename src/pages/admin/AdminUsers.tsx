@@ -247,7 +247,7 @@ export default function AdminUsers() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {r.role === "admin" ? churchName(r.role_church_id) : churchName(r.profile_church_id)}
+                    {churchName(r.role === "admin" ? r.role_church_id : r.profile_church_id)}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     {r.hidden_at && (
