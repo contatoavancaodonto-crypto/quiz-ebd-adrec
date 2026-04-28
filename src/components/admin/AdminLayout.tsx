@@ -69,10 +69,10 @@ function RoleBadge() {
   }
   if (isChurchAdmin) {
     return (
-      <Badge variant="secondary" className="gap-1 max-w-[240px]">
+      <Badge variant="secondary" className="gap-1 max-w-[120px] sm:max-w-[240px]">
         <Shield className="w-3 h-3 shrink-0" />
         <span className="truncate">
-          Admin{churchName ? ` · ${churchName}` : " de Igreja"}
+          {churchName || "Admin"}
         </span>
       </Badge>
     );
