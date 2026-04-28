@@ -72,7 +72,8 @@ export function AdminSidebar() {
 
   const items = allItems.filter((i) => {
     if (i.superadminOnly && !isSuperadmin) return false;
-    if (i.churchAdminOnly && (!isChurchAdmin || isSuperadmin)) return false;
+    // Superadmin vê tudo, Church Admin vê apenas o que lhe é permitido
+    if (i.churchAdminOnly && !isChurchAdmin && !isSuperadmin) return false;
     return true;
   });
 
