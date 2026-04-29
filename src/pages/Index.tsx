@@ -423,8 +423,8 @@ const Index = () => {
 
           {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
           <section className="space-y-2">
-            <SectionLabel color="primary" label="Versículo do dia" />
-            <DailyVerseCard />
+            <SectionLabel color="primary" label="Plano de Leitura" />
+            <WeeklyReadingCard />
           </section>
 
           {/* ===== FERRAMENTAS PRINCIPAIS — grid 2x2 ===== */}
