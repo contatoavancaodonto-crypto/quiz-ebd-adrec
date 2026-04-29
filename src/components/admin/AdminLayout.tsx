@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PendingRequestsBell } from "./PendingRequestsBell";
 
-const ADMIN_ROOT = "/painel-ebd-2025";
+const ADMIN_ROOT = "/painel";
 
 function BackButton() {
   const navigate = useNavigate();

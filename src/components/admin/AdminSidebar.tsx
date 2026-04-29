@@ -45,23 +45,23 @@ type Item = {
 };
 
 const allItems: Item[] = [
-  { title: "Visão Geral", url: "/painel-ebd-2025", icon: LayoutDashboard, end: true },
+  { title: "Visão Geral", url: "/painel", icon: LayoutDashboard, end: true },
   // Admin de igreja (oculto para superadmin)
-  { title: "Minha Igreja", url: "/painel-ebd-2025/minha-igreja", icon: Building2, churchAdminOnly: true },
-  { title: "Membros da Igreja", url: "/painel-ebd-2025/membros", icon: UsersRound, churchAdminOnly: true },
-  { title: "Admins Locais", url: "/painel-ebd-2025/admins-locais", icon: ShieldCheck, churchAdminOnly: true },
+  { title: "Minha Igreja", url: "/painel/minha-igreja", icon: Building2, churchAdminOnly: true },
+  { title: "Membros da Igreja", url: "/painel/membros", icon: UsersRound, churchAdminOnly: true },
+  { title: "Admins Locais", url: "/painel/admins-locais", icon: ShieldCheck, churchAdminOnly: true },
   // Superadmin
-  { title: "Usuários & Roles", url: "/painel-ebd-2025/usuarios", icon: Users, superadminOnly: true },
-  { title: "Igrejas", url: "/painel-ebd-2025/igrejas", icon: Church, superadminOnly: true },
-  { title: "Turmas", url: "/painel-ebd-2025/turmas", icon: GraduationCap, superadminOnly: true },
-  { title: "Quizzes & Perguntas", url: "/painel-ebd-2025/quizzes", icon: HelpCircle, superadminOnly: true },
-  { title: "Temporadas", url: "/painel-ebd-2025/temporadas", icon: CalendarRange, superadminOnly: true },
+  { title: "Usuários & Roles", url: "/painel/usuarios", icon: Users, superadminOnly: true },
+  { title: "Igrejas", url: "/painel/igrejas", icon: Church, superadminOnly: true },
+  { title: "Turmas", url: "/painel/turmas", icon: GraduationCap, superadminOnly: true },
+  { title: "Quizzes & Perguntas", url: "/painel/quizzes", icon: HelpCircle, superadminOnly: true },
+  { title: "Temporadas", url: "/painel/temporadas", icon: CalendarRange, superadminOnly: true },
   // Compartilhados
-  { title: "Tentativas", url: "/painel-ebd-2025/tentativas", icon: ListChecks },
-  { title: "Respostas Membros", url: "/painel-ebd-2025/respostas-membros", icon: ClipboardCheck },
-  { title: "Badges", url: "/painel-ebd-2025/badges", icon: Award, superadminOnly: true },
-  { title: "Versículos", url: "/painel-ebd-2025/versiculos", icon: BookText, superadminOnly: true },
-  { title: "Materiais", url: "/painel-ebd-2025/materiais", icon: FolderOpen },
+  { title: "Tentativas", url: "/painel/tentativas", icon: ListChecks },
+  { title: "Respostas Membros", url: "/painel/respostas-membros", icon: ClipboardCheck },
+  { title: "Badges", url: "/painel/badges", icon: Award, superadminOnly: true },
+  { title: "Versículos", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
+  { title: "Materiais", url: "/painel/materiais", icon: FolderOpen },
 ];
 
 export function AdminSidebar() {
