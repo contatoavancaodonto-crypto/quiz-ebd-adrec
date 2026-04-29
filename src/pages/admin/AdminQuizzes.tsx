@@ -34,6 +34,7 @@ interface Quiz {
   devotional_wed?: string | null;
   devotional_thu?: string | null;
   devotional_fri?: string | null;
+  devotional_sat?: string | null;
 }
 interface Cls { id: string; name: string; }
 interface Season { id: string; name: string; status: string; }
@@ -65,6 +66,7 @@ export default function AdminQuizzes() {
     devotional_wed: "",
     devotional_thu: "",
     devotional_fri: "",
+    devotional_sat: "",
   });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
@@ -92,6 +94,7 @@ export default function AdminQuizzes() {
     devotional_wed: "",
     devotional_thu: "",
     devotional_fri: "",
+    devotional_sat: "",
   };
 
   const load = async () => {
@@ -155,6 +158,7 @@ export default function AdminQuizzes() {
       devotional_wed: qForm.devotional_wed || null,
       devotional_thu: qForm.devotional_thu || null,
       devotional_fri: qForm.devotional_fri || null,
+      devotional_sat: qForm.devotional_sat || null,
     };
     if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
       return toast.error("Data de abertura deve ser anterior à de fechamento");
@@ -449,6 +453,7 @@ export default function AdminQuizzes() {
                         devotional_wed: q.devotional_wed ?? "",
                         devotional_thu: q.devotional_thu ?? "",
                         devotional_fri: q.devotional_fri ?? "",
+                        devotional_sat: q.devotional_sat ?? "",
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
@@ -623,6 +628,15 @@ export default function AdminQuizzes() {
                           <Input
                             value={qForm.devotional_fri}
                             onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Sábado</Label>
+                          <Input
+                            value={qForm.devotional_sat}
+                            onChange={(e) => setQForm({ ...qForm, devotional_sat: e.target.value })}
                             placeholder="Ref. ou texto"
                             className="text-xs"
                           />

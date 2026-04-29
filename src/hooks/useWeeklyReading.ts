@@ -63,7 +63,7 @@ export const useWeeklyReading = () => {
         };
       }
 
-      // Monday to Friday
+      // Monday to Saturday
       const devotionalKeys = [
         "", // 0 (Sun)
         "devotional_mon",
@@ -71,14 +71,14 @@ export const useWeeklyReading = () => {
         "devotional_wed",
         "devotional_thu",
         "devotional_fri",
-        "", // 6 (Sat)
+        "devotional_sat", // 6 (Sat)
       ];
-
-      const content = day > 0 && day < 6 ? (quiz[devotionalKeys[day] as keyof typeof quiz] as string | null) : null;
-
+      
+      const content = day > 0 && day <= 6 ? (quiz[devotionalKeys[day] as keyof typeof quiz] as string | null) : null;
+      
       return {
-        type: content ? "devotional" : (day === 6 ? "bible_reading" : "none"),
-        title: day === 6 ? "Leitura Bíblica" : "Devocional Diário",
+        type: day === 0 ? "quiz_cta" : (content ? "devotional" : "bible_reading"),
+        title: day === 0 ? "Dia de Quiz!" : (content ? "Devocional Diário" : "Leitura Bíblica"),
         content,
         weeklyBibleReading,
         dayName,
