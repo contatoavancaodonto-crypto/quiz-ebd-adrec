@@ -26,7 +26,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { DailyVerseCard } from "@/components/DailyVerseCard";
+import { WeeklyReadingCard } from "@/components/WeeklyReadingCard";
 import { ClassWeeklyStatusCard } from "@/components/ClassWeeklyStatusCard";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -268,7 +268,7 @@ const Index = () => {
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
           {weeklyQuiz && !seasonExpired ? (
-            <section className="space-y-2">
+            <section id="quiz-semanal-section" className="space-y-2">
               <SectionLabel color="primary" label="Quiz da semana" />
 
               <motion.div
@@ -423,8 +423,8 @@ const Index = () => {
 
           {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
           <section className="space-y-2">
-            <SectionLabel color="primary" label="Versículo do dia" />
-            <DailyVerseCard />
+            <SectionLabel color="primary" label="Plano de Leitura" />
+            <WeeklyReadingCard />
           </section>
 
           {/* ===== FERRAMENTAS PRINCIPAIS — grid 2x2 ===== */}

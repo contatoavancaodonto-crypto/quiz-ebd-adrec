@@ -645,6 +645,11 @@ export type Database = {
           class_id: string
           closes_at: string | null
           created_at: string
+          devotional_fri: string | null
+          devotional_mon: string | null
+          devotional_thu: string | null
+          devotional_tue: string | null
+          devotional_wed: string | null
           id: string
           lesson_key_verse_ref: string | null
           lesson_key_verse_text: string | null
@@ -657,12 +662,18 @@ export type Database = {
           total_questions: number
           trimester: number
           week_number: number | null
+          weekly_bible_reading: string | null
         }
         Insert: {
           active?: boolean
           class_id: string
           closes_at?: string | null
           created_at?: string
+          devotional_fri?: string | null
+          devotional_mon?: string | null
+          devotional_thu?: string | null
+          devotional_tue?: string | null
+          devotional_wed?: string | null
           id?: string
           lesson_key_verse_ref?: string | null
           lesson_key_verse_text?: string | null
@@ -675,12 +686,18 @@ export type Database = {
           total_questions?: number
           trimester?: number
           week_number?: number | null
+          weekly_bible_reading?: string | null
         }
         Update: {
           active?: boolean
           class_id?: string
           closes_at?: string | null
           created_at?: string
+          devotional_fri?: string | null
+          devotional_mon?: string | null
+          devotional_thu?: string | null
+          devotional_tue?: string | null
+          devotional_wed?: string | null
           id?: string
           lesson_key_verse_ref?: string | null
           lesson_key_verse_text?: string | null
@@ -693,6 +710,7 @@ export type Database = {
           total_questions?: number
           trimester?: number
           week_number?: number | null
+          weekly_bible_reading?: string | null
         }
         Relationships: [
           {

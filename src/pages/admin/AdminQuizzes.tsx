@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles } from "lucide-react";
+import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { useRoles } from "@/hooks/useRoles";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { smartDelete } from "@/lib/admin-delete";
@@ -27,6 +28,12 @@ interface Quiz {
   quiz_kind?: string | null;
   lesson_number?: number | null; lesson_title?: string | null;
   lesson_key_verse_ref?: string | null; lesson_key_verse_text?: string | null;
+  weekly_bible_reading?: string | null;
+  devotional_mon?: string | null;
+  devotional_tue?: string | null;
+  devotional_wed?: string | null;
+  devotional_thu?: string | null;
+  devotional_fri?: string | null;
 }
 interface Cls { id: string; name: string; }
 interface Season { id: string; name: string; status: string; }
@@ -40,6 +47,7 @@ export default function AdminQuizzes() {
   const [classes, setClasses] = useState<Cls[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isSuperadmin } = useRoles();
 
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
@@ -51,6 +59,12 @@ export default function AdminQuizzes() {
     lesson_title: "",
     lesson_key_verse_ref: "",
     lesson_key_verse_text: "",
+    weekly_bible_reading: "",
+    devotional_mon: "",
+    devotional_tue: "",
+    devotional_wed: "",
+    devotional_thu: "",
+    devotional_fri: "",
   });
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
@@ -72,6 +86,12 @@ export default function AdminQuizzes() {
     lesson_title: "",
     lesson_key_verse_ref: "",
     lesson_key_verse_text: "",
+    weekly_bible_reading: "",
+    devotional_mon: "",
+    devotional_tue: "",
+    devotional_wed: "",
+    devotional_thu: "",
+    devotional_fri: "",
   };
 
   const load = async () => {
@@ -129,6 +149,12 @@ export default function AdminQuizzes() {
       lesson_title: qForm.lesson_title || null,
       lesson_key_verse_ref: qForm.lesson_key_verse_ref || null,
       lesson_key_verse_text: qForm.lesson_key_verse_text || null,
+      weekly_bible_reading: qForm.weekly_bible_reading || null,
+      devotional_mon: qForm.devotional_mon || null,
+      devotional_tue: qForm.devotional_tue || null,
+      devotional_wed: qForm.devotional_wed || null,
+      devotional_thu: qForm.devotional_thu || null,
+      devotional_fri: qForm.devotional_fri || null,
     };
     if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
       return toast.error("Data de abertura deve ser anterior à de fechamento");
@@ -417,6 +443,12 @@ export default function AdminQuizzes() {
                         lesson_title: q.lesson_title ?? "",
                         lesson_key_verse_ref: q.lesson_key_verse_ref ?? "",
                         lesson_key_verse_text: q.lesson_key_verse_text ?? "",
+                        weekly_bible_reading: q.weekly_bible_reading ?? "",
+                        devotional_mon: q.devotional_mon ?? "",
+                        devotional_tue: q.devotional_tue ?? "",
+                        devotional_wed: q.devotional_wed ?? "",
+                        devotional_thu: q.devotional_thu ?? "",
+                        devotional_fri: q.devotional_fri ?? "",
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
@@ -534,6 +566,71 @@ export default function AdminQuizzes() {
                     rows={2}
                   />
                 </div>
+                {isSuperadmin && (
+                  <div className="space-y-3 pt-3 border-t border-primary/10">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                      <BookOpen className="w-3 h-3" /> Plano de Leitura Semanal
+                    </div>
+                    <div>
+                      <Label className="text-xs">Leitura Bíblica (1x por semana)</Label>
+                      <Input
+                        value={qForm.weekly_bible_reading}
+                        onChange={(e) => setQForm({ ...qForm, weekly_bible_reading: e.target.value })}
+                        placeholder="Ex: João 1-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="text-[10px] font-semibold text-muted-foreground uppercase">Devocionais (Seg-Sex)</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[10px]">Segunda</Label>
+                          <Input
+                            value={qForm.devotional_mon}
+                            onChange={(e) => setQForm({ ...qForm, devotional_mon: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Terça</Label>
+                          <Input
+                            value={qForm.devotional_tue}
+                            onChange={(e) => setQForm({ ...qForm, devotional_tue: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Quarta</Label>
+                          <Input
+                            value={qForm.devotional_wed}
+                            onChange={(e) => setQForm({ ...qForm, devotional_wed: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Quinta</Label>
+                          <Input
+                            value={qForm.devotional_thu}
+                            onChange={(e) => setQForm({ ...qForm, devotional_thu: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Sexta</Label>
+                          <Input
+                            value={qForm.devotional_fri}
+                            onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             <div className="grid grid-cols-2 gap-2">
