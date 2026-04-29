@@ -47,6 +47,7 @@ export default function AdminQuizzes() {
   const [classes, setClasses] = useState<Cls[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isSuperadmin } = useRoles();
 
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
