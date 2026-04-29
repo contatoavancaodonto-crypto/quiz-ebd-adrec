@@ -268,7 +268,7 @@ const Index = () => {
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
           {weeklyQuiz && !seasonExpired ? (
-            <section className="space-y-2">
+            <section id="quiz-semanal-section" className="space-y-2">
               <SectionLabel color="primary" label="Quiz da semana" />
 
               <motion.div
