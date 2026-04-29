@@ -106,9 +106,15 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       return;
     }
     
+    const toastId = toast.loading(`Baixando ${item.title}...`, {
+      description: "Aguarde enquanto preparamos seu arquivo."
+    });
+
     try {
-      toast.loading("Iniciando download...");
       const response = await fetch(item.downloadUrl);
+      
+      if (!response.ok) throw new Error('Falha na resposta do servidor');
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -117,14 +123,40 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
-      toast.dismiss();
-      toast.success("Download concluído!");
+      
+      toast.dismiss(toastId);
+      
+      // Popup de confirmação após o download
+      toast.success("Download concluído!", {
+        description: "O arquivo foi salvo. Deseja abrir agora?",
+        duration: 5000,
+        action: {
+          label: "Abrir Arquivo",
+          onClick: () => {
+            window.open(url, "_blank");
+          }
+        },
+        onAutoClose: () => {
+          window.URL.revokeObjectURL(url);
+        }
+      });
     } catch (error) {
       console.error("Erro no download:", error);
-      // Fallback para abertura em nova aba caso o CORS bloqueie o fetch direto
-      window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
-      toast.dismiss();
+      toast.dismiss(toastId);
+      
+      // Se falhar o download direto (CORS), tenta abrir em nova aba como fallback
+      toast.error("Não foi possível baixar automaticamente", {
+        description: "Vamos abrir o arquivo em uma nova aba para você.",
+        action: {
+          label: "Abrir Manualmente",
+          onClick: () => window.open(item.downloadUrl, "_blank")
+        }
+      });
+      
+      // Delay pequeno antes do fallback automático
+      setTimeout(() => {
+        window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
+      }, 2000);
     }
   };
 
