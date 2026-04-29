@@ -97,7 +97,7 @@ export default function AdminMyChurch() {
   }, [rolesLoading, churchId]);
 
   if (rolesLoading) return null;
-  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel-ebd-2025" replace />;
+  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel" replace />;
 
   const hasPending = requests.some((r) => r.status === "pending");
 
