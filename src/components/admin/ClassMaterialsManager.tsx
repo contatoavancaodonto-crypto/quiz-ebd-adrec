@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Loader2, Trash2, FileText, Download, Mail } from "lucide-react";
+import { Upload, Loader2, Trash2, FileText, Download, Mail, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export function ClassMaterialsManager() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [coverUrl, setCoverUrl] = useState("");
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
   // IDs de turmas permitidas para o admin de igreja (turmas com pelo menos 1 membro da igreja).
@@ -159,6 +160,7 @@ export function ClassMaterialsManager() {
         description: description || null,
         file_path: path,
         file_url: pub.publicUrl,
+        cover_url: coverUrl || null,
       },
       { onConflict: "class_id,trimester,year" }
     );
@@ -169,6 +171,7 @@ export function ClassMaterialsManager() {
       toast.success("Revista publicada!");
       setTitle("");
       setDescription("");
+      setCoverUrl("");
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
       qc.invalidateQueries({ queryKey: ["class-materials-admin"] });
@@ -231,6 +234,10 @@ export function ClassMaterialsManager() {
         <div className="md:col-span-2">
           <Label>Descrição (opcional)</Label>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+        </div>
+        <div className="md:col-span-2">
+          <Label>URL da Capa (opcional)</Label>
+          <Input value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} placeholder="https://..." />
         </div>
         <div className="md:col-span-2">
           <Label>Arquivo PDF</Label>
