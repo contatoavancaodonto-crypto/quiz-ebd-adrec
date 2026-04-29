@@ -28,35 +28,35 @@ const ALUNOS: RevistaItem[] = [
     id: "preadolescentes-aluno-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
     subtitle: "Revista do Aluno", 
-    cover: COVERS.preadolescentes, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1vP5aUzLRDK6w5GrOS2FxE1e9ZtrgFLor" 
   },
   { 
     id: "adolescentes-aluno-13-14", 
     title: "Adolescentes (13-14 anos)", 
     subtitle: "Revista do Aluno", 
-    cover: COVERS.adolescentes, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=157WDP8b5764_t9YWchbQB3AuI76plWWm" 
   },
   { 
     id: "juvenis-aluno-15-17", 
     title: "Juvenis (15-17 anos)", 
     subtitle: "Revista do Aluno", 
-    cover: COVERS.juvenis, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1nA7A3WB3cwY3mBw5-MeUVIyjDbvO0ei3" 
   },
   { 
     id: "jovens-aluno", 
     title: "Jovens", 
     subtitle: "Revista do Aluno", 
-    cover: COVERS.jovens,
+    cover: revistaJovens,
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV"
   },
   { 
     id: "adultos-aluno", 
     title: "Adultos", 
     subtitle: "Revista do Aluno", 
-    cover: COVERS.adultos, 
+    cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=12jsfPsQsZ558ZCOVLxYaITLkpcCmUMuE" 
   },
 ];
@@ -66,35 +66,35 @@ const PROFESSORES: RevistaItem[] = [
     id: "preadolescentes-prof-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
     subtitle: "Revista do Professor", 
-    cover: COVERS.preadolescentes, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l0N3HsZavKCggzauTR1SLK0Mbr0Rt9rZ" 
   },
   { 
     id: "adolescentes-prof-13-14", 
     title: "Adolescentes (13-14 anos)", 
     subtitle: "Revista do Professor", 
-    cover: COVERS.adolescentes, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1ej0g5-yZU2Q_UcyqKi7SrK1PjnjkZEe_" 
   },
   { 
     id: "juvenis-prof-15-17", 
     title: "Juvenis (15-17 anos)", 
     subtitle: "Revista do Professor", 
-    cover: COVERS.juvenis, 
+    cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=13iE5aMz85JUGusO12xPmLBSlnp6Ob2dF" 
   },
   { 
     id: "jovens-prof", 
     title: "Jovens", 
     subtitle: "Revista do Professor", 
-    cover: COVERS.jovens, 
+    cover: revistaJovens, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV" 
   },
   { 
     id: "adultos-prof", 
     title: "Adultos", 
     subtitle: "Revista do Professor", 
-    cover: COVERS.adultos, 
+    cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1wl_rdAJFMwCsoH5mHIeTl9TJ-0Pewcom" 
   },
 ];
