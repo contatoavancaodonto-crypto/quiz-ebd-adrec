@@ -59,28 +59,48 @@ export const WeeklyReadingCard = () => {
                   Hoje é dia de testar seus conhecimentos! O quiz semanal está disponível.
                 </p>
                 <Button 
-                  onClick={() => navigate("/")} 
+                  onClick={() => {
+                    const el = document.getElementById("quiz-semanal-section");
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    else navigate("/");
+                  }} 
                   className="w-full gradient-primary text-white font-bold rounded-2xl h-11 shadow-lg shadow-primary/20 gap-2"
                 >
-                  Ir para o Quiz
+                  Responder Quiz Agora
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="relative">
-                  <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/10 -z-0" />
-                  <p className="text-lg font-display font-bold text-foreground leading-tight relative z-10 italic">
-                    "{reading.content || "Nenhum conteúdo agendado para hoje."}"
-                  </p>
-                </div>
+              <div className="space-y-5">
+                {reading.content && (
+                  <div className="relative">
+                    <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/10 -z-0" />
+                    <p className="text-lg font-display font-bold text-foreground leading-tight relative z-10 italic">
+                      "{reading.content}"
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">
+                      <Sparkles className="h-3 w-3" /> Devocional de hoje
+                    </div>
+                  </div>
+                )}
+
+                {reading.weeklyBibleReading && (
+                  <div className={`p-4 rounded-2xl ${reading.content ? 'bg-muted/50 border border-border/50' : ''}`}>
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Leitura da Semana
+                    </div>
+                    <p className={`${reading.content ? 'text-sm' : 'text-lg font-display font-bold'} text-foreground`}>
+                      {reading.weeklyBibleReading}
+                    </p>
+                  </div>
+                )}
                 
-                <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-primary uppercase tracking-wider">
-                     <BookOpen className="h-3.5 w-3.5" />
-                     {reading.type === "devotional" ? "Devocional do Dia" : "Leitura da Semana"}
-                   </div>
-                </div>
+                {!reading.content && !reading.weeklyBibleReading && (
+                  <p className="text-muted-foreground italic text-sm text-center py-4">
+                    Nenhum conteúdo agendado para hoje.
+                  </p>
+                )}
               </div>
             )}
           </div>
