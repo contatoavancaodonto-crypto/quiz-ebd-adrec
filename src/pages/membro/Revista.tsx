@@ -186,6 +186,11 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
             <Lock className="h-2.5 w-2.5" /> Em breve
           </Badge>
         )}
+        {item.subtitle.includes("Professor") && (
+          <Badge className="absolute top-2 left-2 gap-1 text-[10px] bg-amber-500 hover:bg-amber-600 border-none">
+            <BookOpen className="h-2.5 w-2.5" /> Professor
+          </Badge>
+        )}
       </div>
       <div className="p-3 space-y-2">
         <div>
