@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Hourglass, Lock, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useFullProfile } from "@/hooks/useFullProfile";
 
 const classIcons: Record<string, string> = {
   Adultos: "🤵🏻‍♂️🤵🏻‍♀️",
@@ -19,6 +20,9 @@ interface Props {
 }
 
 export function ClassWeeklyStatusCard({ classId, className }: Props) {
+  const { data: profile } = useFullProfile();
+  const userChurch = profile?.church_name?.trim();
+
   // Quiz aberto agora para esta turma
   const { data: openQuiz } = useQuery({
     queryKey: ["class-weekly-open", classId],
@@ -93,7 +97,14 @@ export function ClassWeeklyStatusCard({ classId, className }: Props) {
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-xl shrink-0">{classIcons[className] ?? "📖"}</span>
           <div className="min-w-0">
-            <div className="text-sm font-bold text-foreground truncate">{className}</div>
+            <div className="text-sm font-bold text-foreground truncate flex items-center gap-1.5">
+              {className}
+              {userChurch && (
+                <span className="text-[9px] font-normal text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full border border-border/30">
+                  {userChurch}
+                </span>
+              )}
+            </div>
             <div className="text-[10px] text-muted-foreground truncate">
               {openQuiz?.title ?? nextQuiz?.title ?? "Sem quiz agendado"}
             </div>
