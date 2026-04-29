@@ -61,7 +61,7 @@ const allItems: Item[] = [
   { title: "Respostas Membros", url: "/painel/respostas-membros", icon: ClipboardCheck },
   { title: "Badges", url: "/painel/badges", icon: Award, superadminOnly: true },
   { title: "Versículos", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
-  { title: "Materiais", url: "/painel/materiais", icon: FolderOpen },
+  { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
 ];
 
 export function AdminSidebar() {
