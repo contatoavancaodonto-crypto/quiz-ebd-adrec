@@ -266,6 +266,12 @@ const Index = () => {
             </div>
           </motion.div>
 
+          {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
+          <section className="space-y-2">
+            <SectionLabel color="primary" label="Plano de Leitura" />
+            <WeeklyReadingCard />
+          </section>
+
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
           {weeklyQuiz && !seasonExpired ? (
             <section id="quiz-semanal-section" className="space-y-2">
@@ -389,43 +395,6 @@ const Index = () => {
               </div>
             </section>
           ) : null}
-
-          {/* ===== PROVÃO TRIMESTRAL ===== */}
-          {showProvao && provao && !seasonExpired && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-background to-background p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="shrink-0 w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-amber-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                    Provão trimestral · {provao.total_questions ?? 13} perguntas
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground leading-tight truncate">
-                    {provao.title}
-                  </h3>
-                </div>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleStartProvao}
-                  className="shrink-0 px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold text-xs flex items-center gap-1"
-                >
-                  Acessar
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
-          <section className="space-y-2">
-            <SectionLabel color="primary" label="Plano de Leitura" />
-            <WeeklyReadingCard />
-          </section>
 
           {/* ===== FERRAMENTAS PRINCIPAIS — grid 2x2 ===== */}
           <section className="space-y-2">
