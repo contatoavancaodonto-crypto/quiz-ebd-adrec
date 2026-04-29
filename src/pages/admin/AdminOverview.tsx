@@ -309,7 +309,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={UsersRound} 
               tone="primary" 
               index={0} 
-              onClick={() => navigate("/painel-ebd-2025/membros")}
+              onClick={() => navigate("/painel/membros")}
             />
             <StatCard 
               label="Admins locais" 
@@ -317,7 +317,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={ShieldCheck} 
               tone="secondary" 
               index={1} 
-              onClick={() => navigate("/painel-ebd-2025/admins-locais")}
+              onClick={() => navigate("/painel/admins-locais")}
             />
             <StatCard 
               label="Turmas usadas" 
@@ -325,7 +325,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={GraduationCap} 
               tone="emerald" 
               index={2} 
-              onClick={() => navigate("/painel-ebd-2025/turmas")}
+              onClick={() => navigate("/painel/turmas")}
             />
             <StatCard 
               label="Tentativas concluídas" 
@@ -333,7 +333,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={ListChecks} 
               tone="amber" 
               index={3} 
-              onClick={() => navigate("/painel-ebd-2025/tentativas")}
+              onClick={() => navigate("/painel/tentativas")}
             />
             <StatCard
               label="Média de acertos"
@@ -341,7 +341,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={Target}
               tone="indigo"
               index={4}
-              onClick={() => navigate("/painel-ebd-2025/tentativas")}
+              onClick={() => navigate("/painel/tentativas")}
             />
             <StatCard
               label="Solicitações pendentes"
@@ -349,7 +349,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={Church}
               tone="rose"
               index={5}
-              onClick={() => navigate("/painel-ebd-2025/minha-igreja")}
+              onClick={() => navigate("/painel/minha-igreja")}
             />
           </div>
         )}
