@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Download, BookOpen, Lock, FileText } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -25,7 +27,8 @@ type RevistaItem = {
   unavailable?: boolean;
 };
 
-const ALUNOS: RevistaItem[] = [
+// Mock data for static display while loading or as fallback
+const STATIC_ALUNOS: RevistaItem[] = [
   { 
     id: "preadolescentes-aluno-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
@@ -63,7 +66,7 @@ const ALUNOS: RevistaItem[] = [
   },
 ];
 
-const PROFESSORES: RevistaItem[] = [
+const STATIC_PROFESSORES: RevistaItem[] = [
   { 
     id: "preadolescentes-prof-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
@@ -217,6 +220,54 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
 export default function Revista() {
   const [tab, setTab] = useState("alunos");
 
+  const { data: dbMaterials, isLoading } = useQuery({
+    queryKey: ["all-class-materials"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("class_materials")
+        .select("*, classes(name, cover_url)")
+        .order("year", { ascending: false })
+        .order("trimester", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const studentsMaterials = useMemo(() => {
+    const list = [...STATIC_ALUNOS];
+    if (dbMaterials) {
+      dbMaterials.forEach(m => {
+        if (!m.title.toLowerCase().includes("professor")) {
+          list.push({
+            id: m.id,
+            title: m.classes?.name || m.title,
+            subtitle: m.title,
+            cover: m.cover_url || m.classes?.cover_url || revistaAdolescentes,
+            downloadUrl: m.file_url,
+          });
+        }
+      });
+    }
+    return list;
+  }, [dbMaterials]);
+
+  const professorsMaterials = useMemo(() => {
+    const list = [...STATIC_PROFESSORES];
+    if (dbMaterials) {
+      dbMaterials.forEach(m => {
+        if (m.title.toLowerCase().includes("professor")) {
+          list.push({
+            id: m.id,
+            title: m.classes?.name || m.title,
+            subtitle: m.title,
+            cover: m.cover_url || m.classes?.cover_url || revistaAdolescentes,
+            downloadUrl: m.file_url,
+          });
+        }
+      });
+    }
+    return list;
+  }, [dbMaterials]);
+
   return (
     <MemberLayout
       title="Revista"
@@ -239,7 +290,7 @@ export default function Revista() {
 
           <TabsContent value="alunos" className="mt-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {ALUNOS.map((item, i) => (
+              {studentsMaterials.map((item, i) => (
                 <RevistaCard key={item.id} item={item} index={i} />
               ))}
             </div>
@@ -247,7 +298,7 @@ export default function Revista() {
 
           <TabsContent value="professores" className="mt-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {PROFESSORES.map((item, i) => (
+              {professorsMaterials.map((item, i) => (
                 <RevistaCard key={item.id} item={item} index={i} />
               ))}
             </div>
