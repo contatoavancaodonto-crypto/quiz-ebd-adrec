@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
 import revistaAdultos from "@/assets/revista-adultos.png";
 import revistaAdolescentes from "@/assets/revista-adolescentes.png";
-import revistaJuvenis from "@/assets/revista-adolescentes.png"; // Juvenis utiliza a mesma base de Adolescentes no momento
+import revistaPreadolescentes from "@/assets/revista-adolescentes.png"; // Usando adolescentes para pré por enquanto
+import revistaJuvenis from "@/assets/revista-adolescentes.png"; // Usando adolescentes para juvenis por enquanto
 
 
 
@@ -29,7 +30,7 @@ const ALUNOS: RevistaItem[] = [
     id: "preadolescentes-aluno-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
     subtitle: "Revista do Aluno", 
-    cover: revistaAdolescentes, 
+    cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1vP5aUzLRDK6w5GrOS2FxE1e9ZtrgFLor" 
   },
   { 
@@ -67,7 +68,7 @@ const PROFESSORES: RevistaItem[] = [
     id: "preadolescentes-prof-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
     subtitle: "Revista do Professor", 
-    cover: revistaAdolescentes, 
+    cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l0N3HsZavKCggzauTR1SLK0Mbr0Rt9rZ" 
   },
   { 
