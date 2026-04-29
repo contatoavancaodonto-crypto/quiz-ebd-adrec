@@ -24,6 +24,7 @@ type RevistaItem = {
 };
 
 const ALUNOS: RevistaItem[] = [
+  { id: "preadolescentes-aluno-11-12", title: "Pré-Adolescentes (11-12 anos)", subtitle: "Revista do Aluno", cover: revistaAdolescentes, unavailable: true },
   { id: "adolescentes-aluno-13-14", title: "Adolescentes (13-14 anos)", subtitle: "Revista do Aluno", cover: revistaAdolescentes, unavailable: true },
   { id: "juvenis-aluno-15-17", title: "Juvenis (15-17 anos)", subtitle: "Revista do Aluno", cover: revistaJuvenis, unavailable: true },
   { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
@@ -31,6 +32,7 @@ const ALUNOS: RevistaItem[] = [
 ];
 
 const PROFESSORES: RevistaItem[] = [
+  { id: "preadolescentes-prof-11-12", title: "Pré-Adolescentes (11-12 anos)", subtitle: "Revista do Professor", cover: revistaAdolescentes, unavailable: true },
   { id: "adolescentes-prof-13-14", title: "Adolescentes (13-14 anos)", subtitle: "Revista do Professor", cover: revistaAdolescentes, unavailable: true },
   { id: "juvenis-prof-15-17", title: "Juvenis (15-17 anos)", subtitle: "Revista do Professor", cover: revistaJuvenis, unavailable: true },
   { id: "jovens-prof", title: "Jovens", subtitle: "Revista do Professor", cover: revistaJovens },
