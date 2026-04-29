@@ -8,6 +8,7 @@ export interface WeeklyReading {
   type: ReadingType;
   title: string;
   content: string | null;
+  weeklyBibleReading: string | null;
   dayName: string;
   lessonTitle?: string;
 }
