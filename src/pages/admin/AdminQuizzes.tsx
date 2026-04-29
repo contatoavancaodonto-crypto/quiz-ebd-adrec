@@ -500,194 +500,190 @@ export default function AdminQuizzes() {
       <Dialog open={quizDialog} onOpenChange={setQuizDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editingQuiz ? "Editar" : "Novo"} Quiz</DialogTitle></DialogHeader>
-          <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-            <div>
-              <Label>Tipo do quiz</Label>
-              <Select value={qForm.quiz_kind} onValueChange={(v) => setQForm({ ...qForm, quiz_kind: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weekly">Semanal (5 perguntas — lição da revista)</SelectItem>
-                  <SelectItem value="trimestral">Provão Trimestral (13 perguntas)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Apenas quizzes <strong>semanais</strong> entram na fila do agendador automático.
-              </p>
-            </div>
-            <div><Label>Título</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Lição 3 — A fé de Abraão" /></div>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            {/* Hierarquia: Trimestre > Turma > Semana */}
+            <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 rounded-lg border border-border">
               <div>
-                <Label>Turma</Label>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Trimestre</Label>
+                <Input 
+                  type="number" min={1} max={4} 
+                  value={qForm.trimester} 
+                  onChange={(e) => setQForm({ ...qForm, trimester: Number(e.target.value) })} 
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Turma</Label>
                 <Select value={qForm.class_id} onValueChange={(v) => setQForm({ ...qForm, class_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Turma" /></SelectTrigger>
                   <SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Semana</Label>
+                <Input 
+                  type="number" min={1} 
+                  value={qForm.week_number} 
+                  onChange={(e) => setQForm({ ...qForm, week_number: e.target.value })} 
+                  placeholder="Semana X"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div><Label>Título do Quiz</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Lição 3 — A fé de Abraão" /></div>
+              
+              <div>
                 <Label>Temporada</Label>
                 <Select value={qForm.season_id} onValueChange={(v) => setQForm({ ...qForm, season_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Selecione a temporada" /></SelectTrigger>
                   <SelectContent>
                     {seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} {s.status === "active" ? "(ativa)" : ""}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Trimestre</Label>
-                <Input type="number" min={1} max={4} value={qForm.trimester} onChange={(e) => setQForm({ ...qForm, trimester: Number(e.target.value) })} />
-              </div>
-              <div>
-                <Label>Nº Semana</Label>
-                <Input type="number" min={1} value={qForm.week_number} onChange={(e) => setQForm({ ...qForm, week_number: e.target.value })} placeholder="1, 2, 3…" />
-              </div>
-            </div>
 
             {qForm.quiz_kind === "weekly" && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-primary">
-                  Lição da revista
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label>Nº da Lição</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={13}
-                      value={qForm.lesson_number}
-                      onChange={(e) => setQForm({ ...qForm, lesson_number: e.target.value })}
-                      placeholder="1..13"
-                    />
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" /> Plano de Leitura
                   </div>
-                  <div>
-                    <Label>Versículo-chave (ref.)</Label>
-                    <Input
-                      value={qForm.lesson_key_verse_ref}
-                      onChange={(e) => setQForm({ ...qForm, lesson_key_verse_ref: e.target.value })}
-                      placeholder="Ex: João 3:16"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Título da lição</Label>
-                  <Input
-                    value={qForm.lesson_title}
-                    onChange={(e) => setQForm({ ...qForm, lesson_title: e.target.value })}
-                    placeholder="Ex: A fé que move montanhas"
-                  />
-                </div>
-                <div>
-                  <Label>Texto do versículo-chave (opcional)</Label>
-                  <Textarea
-                    value={qForm.lesson_key_verse_text}
-                    onChange={(e) => setQForm({ ...qForm, lesson_key_verse_text: e.target.value })}
-                    placeholder="Cole aqui o texto bíblico"
-                    rows={2}
-                  />
-                </div>
-                {isSuperadmin && (
-                  <div className="space-y-3 pt-3 border-t border-primary/10">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
-                      <BookOpen className="w-3 h-3" /> Plano de Leitura Semanal
-                    </div>
-                    <div>
-                      <Label className="text-xs">Leitura Bíblica (1x por semana)</Label>
-                      <Input
-                        value={qForm.weekly_bible_reading}
-                        onChange={(e) => setQForm({ ...qForm, weekly_bible_reading: e.target.value })}
-                        placeholder="Ex: João 1-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      <div className="text-[10px] font-semibold text-muted-foreground uppercase">Devocionais (Seg-Sex)</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-[10px]">Segunda</Label>
-                          <Input
-                            value={qForm.devotional_mon}
-                            onChange={(e) => setQForm({ ...qForm, devotional_mon: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[10px]">Terça</Label>
-                          <Input
-                            value={qForm.devotional_tue}
-                            onChange={(e) => setQForm({ ...qForm, devotional_tue: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[10px]">Quarta</Label>
-                          <Input
-                            value={qForm.devotional_wed}
-                            onChange={(e) => setQForm({ ...qForm, devotional_wed: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[10px]">Quinta</Label>
-                          <Input
-                            value={qForm.devotional_thu}
-                            onChange={(e) => setQForm({ ...qForm, devotional_thu: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[10px]">Sexta</Label>
-                          <Input
-                            value={qForm.devotional_fri}
-                            onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-[10px]">Sábado</Label>
-                          <Input
-                            value={qForm.devotional_sat}
-                            onChange={(e) => setQForm({ ...qForm, devotional_sat: e.target.value })}
-                            placeholder="Ref. ou texto"
-                            className="text-xs"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-between items-center py-2 border-t border-primary/10">
-                  <Label className="text-xs font-semibold">Configuração rápida</Label>
                   <Button 
-                    variant="link" 
+                    variant="ghost" 
                     size="sm" 
-                    className="h-auto p-0 text-xs"
+                    className="h-7 text-[10px] uppercase font-bold bg-primary/10 hover:bg-primary/20 text-primary"
                     onClick={() => {
                       if (editingQuiz) setQuestionsOf(editingQuiz);
                       else toast.error("Salve o quiz primeiro para adicionar perguntas.");
                     }}
                   >
-                    Subir perguntas da semana
+                    Subir Perguntas da Semana
                   </Button>
                 </div>
 
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs font-semibold">1 Leitura Bíblica</Label>
+                    <Input
+                      value={qForm.weekly_bible_reading}
+                      onChange={(e) => setQForm({ ...qForm, weekly_bible_reading: e.target.value })}
+                      placeholder="Ex: João 1-3"
+                      className="bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">6 Versículos (Devocionais)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Segunda</Label>
+                        <Input
+                          value={qForm.devotional_mon}
+                          onChange={(e) => setQForm({ ...qForm, devotional_mon: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Terça</Label>
+                        <Input
+                          value={qForm.devotional_tue}
+                          onChange={(e) => setQForm({ ...qForm, devotional_tue: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Quarta</Label>
+                        <Input
+                          value={qForm.devotional_wed}
+                          onChange={(e) => setQForm({ ...qForm, devotional_wed: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Quinta</Label>
+                        <Input
+                          value={qForm.devotional_thu}
+                          onChange={(e) => setQForm({ ...qForm, devotional_thu: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Sexta</Label>
+                        <Input
+                          value={qForm.devotional_fri}
+                          onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground ml-1">Sábado</Label>
+                        <Input
+                          value={qForm.devotional_sat}
+                          onChange={(e) => setQForm({ ...qForm, devotional_sat: e.target.value })}
+                          placeholder="Ref. ou texto"
+                          className="text-xs bg-background"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-primary/10 space-y-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Informações da Lição</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Nº da Lição</Label>
+                      <Input
+                        type="number" min={1} max={13}
+                        value={qForm.lesson_number}
+                        onChange={(e) => setQForm({ ...qForm, lesson_number: e.target.value })}
+                        placeholder="1..13"
+                        className="bg-background"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Ref. Versículo-chave</Label>
+                      <Input
+                        value={qForm.lesson_key_verse_ref}
+                        onChange={(e) => setQForm({ ...qForm, lesson_key_verse_ref: e.target.value })}
+                        placeholder="Ex: João 3:16"
+                        className="bg-background"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Título da Lição</Label>
+                    <Input
+                      value={qForm.lesson_title}
+                      onChange={(e) => setQForm({ ...qForm, lesson_title: e.target.value })}
+                      placeholder="Ex: A fé que move montanhas"
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
               </div>
             )}
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
               <div>
-                <Label>Abre em</Label>
+                <Label>Janela Abre</Label>
                 <Input type="datetime-local" value={qForm.opens_at} onChange={(e) => setQForm({ ...qForm, opens_at: e.target.value })} />
               </div>
               <div>
-                <Label>Fecha em</Label>
-                <Input type="datetime-local" value={qForm.closes_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
+                <Label>Janela Fecha</Label>
+                <Input type="datetime-local" value={qForm.opens_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
               </div>
             </div>
+          </div>
+
             <p className="text-xs text-muted-foreground">
               Quizzes sem janela funcionam como antes (sem bloqueio). Defina <strong>nº semana</strong> + <strong>temporada</strong> + <strong>janela</strong> para ativar streak e ranking semanal.
             </p>
