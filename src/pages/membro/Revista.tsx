@@ -100,12 +100,32 @@ const PROFESSORES: RevistaItem[] = [
 ];
 
 function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!item.downloadUrl) {
       toast.info("Em breve disponível para download.");
       return;
     }
-    window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
+    
+    try {
+      toast.loading("Iniciando download...");
+      const response = await fetch(item.downloadUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${item.title} - ${item.subtitle}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.dismiss();
+      toast.success("Download concluído!");
+    } catch (error) {
+      console.error("Erro no download:", error);
+      // Fallback para abertura em nova aba caso o CORS bloqueie o fetch direto
+      window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
+      toast.dismiss();
+    }
   };
 
   return (
