@@ -84,6 +84,12 @@ export default function AdminQuizzes() {
     lesson_title: "",
     lesson_key_verse_ref: "",
     lesson_key_verse_text: "",
+    weekly_bible_reading: "",
+    devotional_mon: "",
+    devotional_tue: "",
+    devotional_wed: "",
+    devotional_thu: "",
+    devotional_fri: "",
   };
 
   const load = async () => {
