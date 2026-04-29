@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { useRoles } from "@/hooks/useRoles";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { smartDelete } from "@/lib/admin-delete";
