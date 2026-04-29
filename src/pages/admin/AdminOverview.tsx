@@ -121,7 +121,7 @@ function SuperadminOverview() {
               Icon={Users} 
               tone="primary" 
               index={0} 
-              onClick={() => navigate("/painel-ebd-2025/usuarios")}
+              onClick={() => navigate("/painel/usuarios")}
             />
             <StatCard 
               label="Admins" 
@@ -129,7 +129,7 @@ function SuperadminOverview() {
               Icon={ShieldCheck} 
               tone="secondary" 
               index={1} 
-              onClick={() => navigate("/painel-ebd-2025/admins-locais")}
+              onClick={() => navigate("/painel/admins-locais")}
             />
             <StatCard 
               label="Igrejas" 
@@ -137,7 +137,7 @@ function SuperadminOverview() {
               Icon={Church} 
               tone="indigo" 
               index={2} 
-              onClick={() => navigate("/painel-ebd-2025/igrejas")}
+              onClick={() => navigate("/painel/igrejas")}
             />
             <StatCard 
               label="Turmas" 
@@ -145,7 +145,7 @@ function SuperadminOverview() {
               Icon={GraduationCap} 
               tone="emerald" 
               index={3} 
-              onClick={() => navigate("/painel-ebd-2025/turmas")}
+              onClick={() => navigate("/painel/turmas")}
             />
             <StatCard 
               label="Tentativas" 
@@ -153,7 +153,7 @@ function SuperadminOverview() {
               Icon={ListChecks} 
               tone="amber" 
               index={4} 
-              onClick={() => navigate("/painel-ebd-2025/tentativas")}
+              onClick={() => navigate("/painel/tentativas")}
             />
             <StatCard 
               label="Badges" 
@@ -161,7 +161,7 @@ function SuperadminOverview() {
               Icon={Award} 
               tone="rose" 
               index={5} 
-              onClick={() => navigate("/painel-ebd-2025/badges")}
+              onClick={() => navigate("/painel/badges")}
             />
             <StatCard 
               label="Versículos" 
@@ -169,7 +169,7 @@ function SuperadminOverview() {
               Icon={BookText} 
               tone="primary" 
               index={6} 
-              onClick={() => navigate("/painel-ebd-2025/versiculos")}
+              onClick={() => navigate("/painel/versiculos")}
             />
           </div>
         )}
