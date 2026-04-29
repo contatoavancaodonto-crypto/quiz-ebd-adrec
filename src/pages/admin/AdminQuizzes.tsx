@@ -27,6 +27,12 @@ interface Quiz {
   quiz_kind?: string | null;
   lesson_number?: number | null; lesson_title?: string | null;
   lesson_key_verse_ref?: string | null; lesson_key_verse_text?: string | null;
+  weekly_bible_reading?: string | null;
+  devotional_mon?: string | null;
+  devotional_tue?: string | null;
+  devotional_wed?: string | null;
+  devotional_thu?: string | null;
+  devotional_fri?: string | null;
 }
 interface Cls { id: string; name: string; }
 interface Season { id: string; name: string; status: string; }
