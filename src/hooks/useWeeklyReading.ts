@@ -24,8 +24,6 @@ export const useWeeklyReading = () => {
       const now = new Date();
       const day = now.getDay(); // 0 (Sun) to 6 (Sat)
       
-      // Fetch the most recent active quiz for this class
-      // We look for quizzes that are open or the most recent weekly one
       const { data: quiz, error } = await supabase
         .from("quizzes")
         .select("*")
@@ -38,7 +36,7 @@ export const useWeeklyReading = () => {
         .maybeSingle();
 
       if (error || !quiz) {
-        return { type: "none", title: "", content: null, dayName: "" };
+        return { type: "none", title: "", content: null, weeklyBibleReading: null, dayName: "" };
       }
 
       const days = [
@@ -52,22 +50,14 @@ export const useWeeklyReading = () => {
       ];
 
       const dayName = days[day];
+      const weeklyBibleReading = quiz.weekly_bible_reading || null;
 
       if (day === 0) {
         return {
           type: "quiz_cta",
           title: "Dia de Quiz!",
           content: quiz.title || "Responda o quiz da semana",
-          dayName,
-          lessonTitle: quiz.lesson_title || undefined
-        };
-      }
-
-      if (day === 6) {
-        return {
-          type: "bible_reading",
-          title: "Leitura Bíblica",
-          content: quiz.weekly_bible_reading,
+          weeklyBibleReading,
           dayName,
           lessonTitle: quiz.lesson_title || undefined
         };
@@ -75,21 +65,22 @@ export const useWeeklyReading = () => {
 
       // Monday to Friday
       const devotionalKeys = [
-        "", // 0 (Sun) - handled above
+        "", // 0 (Sun)
         "devotional_mon",
         "devotional_tue",
         "devotional_wed",
         "devotional_thu",
         "devotional_fri",
-        "", // 6 (Sat) - handled above
+        "", // 6 (Sat)
       ];
 
-      const content = quiz[devotionalKeys[day] as keyof typeof quiz] as string | null;
+      const content = day > 0 && day < 6 ? (quiz[devotionalKeys[day] as keyof typeof quiz] as string | null) : null;
 
       return {
-        type: content ? "devotional" : "none",
-        title: "Devocional Diário",
+        type: content ? "devotional" : (day === 6 ? "bible_reading" : "none"),
+        title: day === 6 ? "Leitura Bíblica" : "Devocional Diário",
         content,
+        weeklyBibleReading,
         dayName,
         lessonTitle: quiz.lesson_title || undefined
       };
