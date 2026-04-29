@@ -566,69 +566,71 @@ export default function AdminQuizzes() {
                     rows={2}
                   />
                 </div>
-                <div className="space-y-3 pt-3 border-t border-primary/10">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
-                    <BookOpen className="w-3 h-3" /> Plano de Leitura Semanal
-                  </div>
-                  <div>
-                    <Label className="text-xs">Leitura Bíblica (1x por semana)</Label>
-                    <Input
-                      value={qForm.weekly_bible_reading}
-                      onChange={(e) => setQForm({ ...qForm, weekly_bible_reading: e.target.value })}
-                      placeholder="Ex: João 1-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="text-[10px] font-semibold text-muted-foreground uppercase">Devocionais (Seg-Sex)</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label className="text-[10px]">Segunda</Label>
-                        <Input
-                          value={qForm.devotional_mon}
-                          onChange={(e) => setQForm({ ...qForm, devotional_mon: e.target.value })}
-                          placeholder="Ref. ou texto"
-                          className="text-xs"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[10px]">Terça</Label>
-                        <Input
-                          value={qForm.devotional_tue}
-                          onChange={(e) => setQForm({ ...qForm, devotional_tue: e.target.value })}
-                          placeholder="Ref. ou texto"
-                          className="text-xs"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[10px]">Quarta</Label>
-                        <Input
-                          value={qForm.devotional_wed}
-                          onChange={(e) => setQForm({ ...qForm, devotional_wed: e.target.value })}
-                          placeholder="Ref. ou texto"
-                          className="text-xs"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[10px]">Quinta</Label>
-                        <Input
-                          value={qForm.devotional_thu}
-                          onChange={(e) => setQForm({ ...qForm, devotional_thu: e.target.value })}
-                          placeholder="Ref. ou texto"
-                          className="text-xs"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[10px]">Sexta</Label>
-                        <Input
-                          value={qForm.devotional_fri}
-                          onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
-                          placeholder="Ref. ou texto"
-                          className="text-xs"
-                        />
+                {isSuperadmin && (
+                  <div className="space-y-3 pt-3 border-t border-primary/10">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                      <BookOpen className="w-3 h-3" /> Plano de Leitura Semanal
+                    </div>
+                    <div>
+                      <Label className="text-xs">Leitura Bíblica (1x por semana)</Label>
+                      <Input
+                        value={qForm.weekly_bible_reading}
+                        onChange={(e) => setQForm({ ...qForm, weekly_bible_reading: e.target.value })}
+                        placeholder="Ex: João 1-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="text-[10px] font-semibold text-muted-foreground uppercase">Devocionais (Seg-Sex)</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[10px]">Segunda</Label>
+                          <Input
+                            value={qForm.devotional_mon}
+                            onChange={(e) => setQForm({ ...qForm, devotional_mon: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Terça</Label>
+                          <Input
+                            value={qForm.devotional_tue}
+                            onChange={(e) => setQForm({ ...qForm, devotional_tue: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Quarta</Label>
+                          <Input
+                            value={qForm.devotional_wed}
+                            onChange={(e) => setQForm({ ...qForm, devotional_wed: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Quinta</Label>
+                          <Input
+                            value={qForm.devotional_thu}
+                            onChange={(e) => setQForm({ ...qForm, devotional_thu: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Sexta</Label>
+                          <Input
+                            value={qForm.devotional_fri}
+                            onChange={(e) => setQForm({ ...qForm, devotional_fri: e.target.value })}
+                            placeholder="Ref. ou texto"
+                            className="text-xs"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
             <div className="grid grid-cols-2 gap-2">
