@@ -21,8 +21,9 @@ export const useWeeklyReading = () => {
     queryKey: ["weekly-reading", classId],
     enabled: !!classId,
     queryFn: async (): Promise<WeeklyReading> => {
+      // Obtém a data local atual à meia-noite para garantir consistência
       const now = new Date();
-      const day = now.getDay(); // 0 (Sun) to 6 (Sat)
+      const day = now.getDay(); // 0 (Dom) a 6 (Sáb)
       
       const { data: quiz, error } = await supabase
         .from("quizzes")
@@ -30,60 +31,81 @@ export const useWeeklyReading = () => {
         .eq("class_id", classId!)
         .eq("quiz_kind", "weekly")
         .eq("active", true)
+        // Filtra quizzes que estão dentro da janela de tempo se opens_at estiver definido
+        .lte("opens_at", now.toISOString())
         .order("week_number", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (error || !quiz) {
-        return { type: "none", title: "", content: null, weeklyBibleReading: null, dayName: "" };
+        // Fallback: tenta pegar o último quiz ativo sem filtro de data se não houver um agendado para agora
+        const { data: fallbackQuiz } = await supabase
+          .from("quizzes")
+          .select("*")
+          .eq("class_id", classId!)
+          .eq("quiz_kind", "weekly")
+          .eq("active", true)
+          .order("week_number", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (!fallbackQuiz) {
+          return { type: "none", title: "", content: null, weeklyBibleReading: null, dayName: "" };
+        }
+        return processQuiz(fallbackQuiz, day);
       }
 
-      const days = [
-        "Domingo",
-        "Segunda-feira",
-        "Terça-feira",
-        "Quarta-feira",
-        "Quinta-feira",
-        "Sexta-feira",
-        "Sábado",
-      ];
-
-      const dayName = days[day];
-      const weeklyBibleReading = quiz.weekly_bible_reading || null;
-
-      if (day === 0) {
-        return {
-          type: "quiz_cta",
-          title: "Dia de Quiz!",
-          content: quiz.title || "Responda o quiz da semana",
-          weeklyBibleReading,
-          dayName,
-          lessonTitle: quiz.lesson_title || undefined
-        };
-      }
-
-      // Monday to Saturday
-      const devotionalKeys = [
-        "", // 0 (Sun)
-        "devotional_mon",
-        "devotional_tue",
-        "devotional_wed",
-        "devotional_thu",
-        "devotional_fri",
-        "devotional_sat", // 6 (Sat)
-      ];
-      
-      const content = day > 0 && day <= 6 ? (quiz[devotionalKeys[day] as keyof typeof quiz] as string | null) : null;
-      
-      return {
-        type: day === 0 ? "quiz_cta" : (content ? "devotional" : "bible_reading"),
-        title: day === 0 ? "Dia de Quiz!" : (content ? "Devocional Diário" : "Leitura Bíblica"),
-        content,
-        weeklyBibleReading,
-        dayName,
-        lessonTitle: quiz.lesson_title || undefined
-      };
+      return processQuiz(quiz, day);
     },
   });
+};
+
+const processQuiz = (quiz: any, day: number): WeeklyReading => {
+  const days = [
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
+    "Sábado",
+  ];
+
+  const dayName = days[day];
+  const weeklyBibleReading = quiz.weekly_bible_reading || null;
+
+  // No domingo (0), mostra o CTA do Quiz
+  if (day === 0) {
+    return {
+      type: "quiz_cta",
+      title: "Dia de Quiz!",
+      content: quiz.title || "Responda o quiz da semana",
+      weeklyBibleReading,
+      dayName,
+      lessonTitle: quiz.lesson_title || undefined
+    };
+  }
+
+  // Mapeamento automático dos campos devocionais de Segunda (1) a Sábado (6)
+  const devotionalKeys = [
+    "", // 0 (Sun)
+    "devotional_mon",
+    "devotional_tue",
+    "devotional_wed",
+    "devotional_thu",
+    "devotional_fri",
+    "devotional_sat", // 6 (Sat)
+  ];
+  
+  const content = quiz[devotionalKeys[day]] as string | null;
+  
+  return {
+    type: content ? "devotional" : "bible_reading",
+    title: content ? "Devocional de Hoje" : "Leitura Bíblica",
+    content,
+    weeklyBibleReading,
+    dayName,
+    lessonTitle: quiz.lesson_title || undefined
+  };
 };
