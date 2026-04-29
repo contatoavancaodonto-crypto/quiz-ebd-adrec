@@ -86,7 +86,7 @@ export function MemberSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
-                      to="/painel-ebd-2025"
+                      to="/painel"
                       end
                       onClick={closeOnMobile}
                       className="hover:bg-muted/50"
