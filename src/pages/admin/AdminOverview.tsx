@@ -164,7 +164,7 @@ function SuperadminOverview() {
               onClick={() => navigate("/painel/badges")}
             />
             <StatCard 
-              label="Versículos" 
+              label="Plano de Leitura" 
               value={c.verses} 
               Icon={BookText} 
               tone="primary" 

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,7 @@ export default function AdminQuizzes() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
   const { isSuperadmin } = useRoles();
+  const navigate = useNavigate();
 
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
@@ -645,6 +648,21 @@ export default function AdminQuizzes() {
                     </div>
                   </div>
                 )}
+                <div className="flex justify-between items-center py-2 border-t border-primary/10">
+                  <Label className="text-xs font-semibold">Configuração rápida</Label>
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="h-auto p-0 text-xs"
+                    onClick={() => {
+                      if (editingQuiz) setQuestionsOf(editingQuiz);
+                      else toast.error("Salve o quiz primeiro para adicionar perguntas.");
+                    }}
+                  >
+                    Subir perguntas da semana
+                  </Button>
+                </div>
+
               </div>
             )}
             <div className="grid grid-cols-2 gap-2">

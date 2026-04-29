@@ -60,7 +60,7 @@ const allItems: Item[] = [
   { title: "Tentativas", url: "/painel/tentativas", icon: ListChecks },
   { title: "Respostas Membros", url: "/painel/respostas-membros", icon: ClipboardCheck },
   { title: "Badges", url: "/painel/badges", icon: Award, superadminOnly: true },
-  { title: "Versículos", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
+  { title: "Plano de Leitura", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
   { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
 ];
 

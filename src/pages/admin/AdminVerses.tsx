@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { smartDelete } from "@/lib/admin-delete";
 interface Verse { id: string; book: string; chapter: number; verse: number; text: string; theme: string; active: boolean; }
 
 export default function AdminVerses() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -54,17 +56,26 @@ export default function AdminVerses() {
 
   return (
     <AdminPage
-      title="Versículos"
+      title="Plano de Leitura"
       description="Pool do versículo do dia (até 500 mostrados)."
       Icon={BookText}
       variant="secondary"
       actions={
-        <Button
-          onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé" }); setOpen(true); }}
-          className="bg-white text-foreground hover:bg-white/90 shadow"
-        >
-          <Plus className="w-4 h-4 mr-1" /> Novo Versículo
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => navigate("/painel/quizzes")}
+            variant="outline"
+            className="shadow"
+          >
+            Configurar por Semana
+          </Button>
+          <Button
+            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé" }); setOpen(true); }}
+            className="bg-white text-foreground hover:bg-white/90 shadow"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Novo Versículo
+          </Button>
+        </div>
       }
     >
       <div className="relative max-w-sm">
