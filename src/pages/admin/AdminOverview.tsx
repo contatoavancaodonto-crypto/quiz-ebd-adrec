@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Users,
@@ -56,6 +57,7 @@ function SkeletonGrid() {
 
 function SuperadminOverview() {
   const [c, setC] = useState<SuperadminCounts | null>(null);
+  const navigate = useNavigate();
 
   const load = useCallback(async () => {
     const [u, a, ch, cls, att, bd, vs, sn] = await Promise.all([
@@ -113,13 +115,62 @@ function SuperadminOverview() {
           <SkeletonGrid />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="Usuários" value={c.users} Icon={Users} tone="primary" index={0} />
-            <StatCard label="Admins" value={c.admins} Icon={ShieldCheck} tone="secondary" index={1} />
-            <StatCard label="Igrejas" value={c.churches} Icon={Church} tone="indigo" index={2} />
-            <StatCard label="Turmas" value={c.classes} Icon={GraduationCap} tone="emerald" index={3} />
-            <StatCard label="Tentativas" value={c.attempts} Icon={ListChecks} tone="amber" index={4} />
-            <StatCard label="Badges" value={c.badges} Icon={Award} tone="rose" index={5} />
-            <StatCard label="Versículos" value={c.verses} Icon={BookText} tone="primary" index={6} />
+            <StatCard 
+              label="Usuários" 
+              value={c.users} 
+              Icon={Users} 
+              tone="primary" 
+              index={0} 
+              onClick={() => navigate("/painel-ebd-2025/usuarios")}
+            />
+            <StatCard 
+              label="Admins" 
+              value={c.admins} 
+              Icon={ShieldCheck} 
+              tone="secondary" 
+              index={1} 
+              onClick={() => navigate("/painel-ebd-2025/admins-locais")}
+            />
+            <StatCard 
+              label="Igrejas" 
+              value={c.churches} 
+              Icon={Church} 
+              tone="indigo" 
+              index={2} 
+              onClick={() => navigate("/painel-ebd-2025/igrejas")}
+            />
+            <StatCard 
+              label="Turmas" 
+              value={c.classes} 
+              Icon={GraduationCap} 
+              tone="emerald" 
+              index={3} 
+              onClick={() => navigate("/painel-ebd-2025/turmas")}
+            />
+            <StatCard 
+              label="Tentativas" 
+              value={c.attempts} 
+              Icon={ListChecks} 
+              tone="amber" 
+              index={4} 
+              onClick={() => navigate("/painel-ebd-2025/tentativas")}
+            />
+            <StatCard 
+              label="Badges" 
+              value={c.badges} 
+              Icon={Award} 
+              tone="rose" 
+              index={5} 
+              onClick={() => navigate("/painel-ebd-2025/badges")}
+            />
+            <StatCard 
+              label="Versículos" 
+              value={c.verses} 
+              Icon={BookText} 
+              tone="primary" 
+              index={6} 
+              onClick={() => navigate("/painel-ebd-2025/versiculos")}
+            />
           </div>
         )}
       </section>
@@ -129,6 +180,7 @@ function SuperadminOverview() {
 
 function ChurchAdminOverview({ churchId }: { churchId: string }) {
   const [c, setC] = useState<ChurchAdminCounts | null>(null);
+  const navigate = useNavigate();
 
   const load = useCallback(async () => {
     const [chData, profsRes, adminsRes, attemptsRes, pendingRes, seasonRes] = await Promise.all([
@@ -251,16 +303,45 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
           <SkeletonGrid />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <StatCard label="Membros" value={c.members} Icon={UsersRound} tone="primary" index={0} />
-            <StatCard label="Admins locais" value={c.localAdmins} Icon={ShieldCheck} tone="secondary" index={1} />
-            <StatCard label="Turmas usadas" value={c.classesUsed} Icon={GraduationCap} tone="emerald" index={2} />
-            <StatCard label="Tentativas concluídas" value={c.attempts} Icon={ListChecks} tone="amber" index={3} />
+            <StatCard 
+              label="Membros" 
+              value={c.members} 
+              Icon={UsersRound} 
+              tone="primary" 
+              index={0} 
+              onClick={() => navigate("/painel-ebd-2025/membros")}
+            />
+            <StatCard 
+              label="Admins locais" 
+              value={c.localAdmins} 
+              Icon={ShieldCheck} 
+              tone="secondary" 
+              index={1} 
+              onClick={() => navigate("/painel-ebd-2025/admins-locais")}
+            />
+            <StatCard 
+              label="Turmas usadas" 
+              value={c.classesUsed} 
+              Icon={GraduationCap} 
+              tone="emerald" 
+              index={2} 
+              onClick={() => navigate("/painel-ebd-2025/turmas")}
+            />
+            <StatCard 
+              label="Tentativas concluídas" 
+              value={c.attempts} 
+              Icon={ListChecks} 
+              tone="amber" 
+              index={3} 
+              onClick={() => navigate("/painel-ebd-2025/tentativas")}
+            />
             <StatCard
               label="Média de acertos"
               value={c.avgAccuracy !== null ? `${c.avgAccuracy.toFixed(1)}%` : "—"}
               Icon={Target}
               tone="indigo"
               index={4}
+              onClick={() => navigate("/painel-ebd-2025/tentativas")}
             />
             <StatCard
               label="Solicitações pendentes"
@@ -268,6 +349,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
               Icon={Church}
               tone="rose"
               index={5}
+              onClick={() => navigate("/painel-ebd-2025/minha-igreja")}
             />
           </div>
         )}
