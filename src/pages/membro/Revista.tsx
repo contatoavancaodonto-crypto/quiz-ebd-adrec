@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
 import revistaAdultos from "@/assets/revista-adultos.png";
 import revistaAdolescentes from "@/assets/revista-adolescentes.png";
+import revistaJuvenis from "@/assets/revista-adolescentes.png"; // Juvenis utiliza a mesma base de Adolescentes no momento
 
 
 
@@ -42,7 +43,7 @@ const ALUNOS: RevistaItem[] = [
     id: "juvenis-aluno-15-17", 
     title: "Juvenis (15-17 anos)", 
     subtitle: "Revista do Aluno", 
-    cover: revistaAdolescentes, 
+    cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1nA7A3WB3cwY3mBw5-MeUVIyjDbvO0ei3" 
   },
   { 
@@ -80,7 +81,7 @@ const PROFESSORES: RevistaItem[] = [
     id: "juvenis-prof-15-17", 
     title: "Juvenis (15-17 anos)", 
     subtitle: "Revista do Professor", 
-    cover: revistaAdolescentes, 
+    cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=13iE5aMz85JUGusO12xPmLBSlnp6Ob2dF" 
   },
   { 
