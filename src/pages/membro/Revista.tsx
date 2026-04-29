@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
 import revistaAdultos from "@/assets/revista-adultos.png";
 import revistaAdolescentes from "@/assets/revista-adolescentes.png";
-import revistaPreadolescentes from "@/assets/revista-adolescentes.png"; // Usando adolescentes para pré por enquanto
+import revistaPreadolescentes from "@/assets/revista-preadolescentes.png";
 import revistaJuvenis from "@/assets/revista-juvenis.png";
 
 
