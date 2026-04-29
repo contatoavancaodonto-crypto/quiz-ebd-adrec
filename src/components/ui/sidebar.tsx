@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -165,10 +165,8 @@ const Sidebar = React.forwardRef<
           }
           side={side}
         >
-          <VisuallyHidden>
-            <SheetTitle>Menu de navegação</SheetTitle>
-            <SheetDescription>Navegue pelas seções do aplicativo</SheetDescription>
-          </VisuallyHidden>
+          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+          <SheetDescription className="sr-only">Navegue pelas seções do aplicativo</SheetDescription>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>
