@@ -200,6 +200,7 @@ export type Database = {
       class_materials: {
         Row: {
           class_id: string
+          cover_url: string | null
           created_at: string
           description: string | null
           file_path: string
@@ -212,6 +213,7 @@ export type Database = {
         }
         Insert: {
           class_id: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           file_path: string
@@ -224,6 +226,7 @@ export type Database = {
         }
         Update: {
           class_id?: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           file_path?: string
@@ -268,18 +271,21 @@ export type Database = {
       classes: {
         Row: {
           active: boolean
+          cover_url: string | null
           created_at: string
           id: string
           name: string
         }
         Insert: {
           active?: boolean
+          cover_url?: string | null
           created_at?: string
           id?: string
           name: string
         }
         Update: {
           active?: boolean
+          cover_url?: string | null
           created_at?: string
           id?: string
           name?: string
