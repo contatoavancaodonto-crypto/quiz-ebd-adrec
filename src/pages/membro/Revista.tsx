@@ -92,7 +92,6 @@ const STATIC_PROFESSORES: RevistaItem[] = [
     id: "jovens-prof", 
     title: "Jovens", 
     subtitle: "Revista do Professor", 
-    cover: revistaJovens, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV" 
   },
   { 
