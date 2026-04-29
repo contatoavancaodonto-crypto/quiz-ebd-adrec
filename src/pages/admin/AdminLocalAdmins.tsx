@@ -84,7 +84,7 @@ export default function AdminLocalAdmins() {
   }, [rolesLoading, churchId]);
 
   if (rolesLoading) return null;
-  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel-ebd-2025" replace />;
+  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel" replace />;
 
   const revoke = async (a: AdminEntry) => {
     if (!confirm(`Remover ${a.first_name ?? "este admin"} do papel de admin local?`)) return;
@@ -107,7 +107,7 @@ export default function AdminLocalAdmins() {
       variant="secondary"
       actions={
         <Button asChild className="bg-white text-foreground hover:bg-white/90 shadow">
-          <Link to="/painel-ebd-2025/membros">
+          <Link to="/painel/membros">
             <Shield className="w-4 h-4 mr-1" /> Promover um membro
           </Link>
         </Button>
