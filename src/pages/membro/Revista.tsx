@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import revistaJovens from "@/assets/revista-jovens.png";
-import revistaAdultos from "@/assets/revista-adultos.png";
-import revistaAdolescentes from "@/assets/revista-adolescentes.png";
-import revistaJuvenis from "@/assets/revista-adolescentes.png"; // Usando a mesma para juvenis por enquanto
+const COVERS = {
+  preadolescentes: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&auto=format&fit=crop",
+  adolescentes: "https://images.unsplash.com/photo-1491845339678-2c49b29e061c?w=800&auto=format&fit=crop",
+  juvenis: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&auto=format&fit=crop",
+  jovens: "https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800&auto=format&fit=crop",
+  adultos: "https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?w=800&auto=format&fit=crop",
+};
 
 
 type RevistaItem = {
