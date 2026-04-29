@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import revistaJovens from "@/assets/revista-jovens.png";
 import revistaAdultos from "@/assets/revista-adultos.png";
 import revistaAdolescentes from "@/assets/revista-adolescentes.png";
+import revistaJuvenis from "@/assets/revista-adolescentes.png"; // Usando a mesma para juvenis por enquanto
+
 
 type RevistaItem = {
   id: string;
@@ -22,13 +24,15 @@ type RevistaItem = {
 };
 
 const ALUNOS: RevistaItem[] = [
-  { id: "adolescentes-aluno", title: "Adolescentes", subtitle: "Revista do Aluno", cover: revistaAdolescentes, unavailable: true },
+  { id: "adolescentes-aluno-13-14", title: "Adolescentes (13-14 anos)", subtitle: "Revista do Aluno", cover: revistaAdolescentes, unavailable: true },
+  { id: "juvenis-aluno-15-17", title: "Juvenis (15-17 anos)", subtitle: "Revista do Aluno", cover: revistaJuvenis, unavailable: true },
   { id: "jovens-aluno", title: "Jovens", subtitle: "Revista do Aluno", cover: revistaJovens },
   { id: "adultos-aluno", title: "Adultos", subtitle: "Revista do Aluno", cover: revistaAdultos },
 ];
 
 const PROFESSORES: RevistaItem[] = [
-  { id: "adolescentes-prof", title: "Adolescentes", subtitle: "Revista do Professor", cover: revistaAdolescentes, unavailable: true },
+  { id: "adolescentes-prof-13-14", title: "Adolescentes (13-14 anos)", subtitle: "Revista do Professor", cover: revistaAdolescentes, unavailable: true },
+  { id: "juvenis-prof-15-17", title: "Juvenis (15-17 anos)", subtitle: "Revista do Professor", cover: revistaJuvenis, unavailable: true },
   { id: "jovens-prof", title: "Jovens", subtitle: "Revista do Professor", cover: revistaJovens },
   { id: "adultos-prof", title: "Adultos", subtitle: "Revista do Professor", cover: revistaAdultos },
 ];
