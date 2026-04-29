@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+// Validation added successfully
 
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -142,6 +143,18 @@ export default function AdminQuizzes() {
 
   const saveQuiz = async () => {
     if (!qForm.title || !qForm.class_id) return toast.error("Preencha título e turma");
+
+    if (qForm.quiz_kind === "weekly") {
+      const { devotional_mon, devotional_tue, devotional_wed, devotional_thu, devotional_fri, devotional_sat, weekly_bible_reading } = qForm;
+      const devotionals = [devotional_mon, devotional_tue, devotional_wed, devotional_thu, devotional_fri, devotional_sat];
+      const hasAllVerses = devotionals.every(v => v && v.trim().length > 0);
+      const hasReading = weekly_bible_reading && weekly_bible_reading.trim().length > 0;
+      
+      if (!hasAllVerses || !hasReading) {
+        return toast.error("O plano de leitura semanal deve ter 1 leitura bíblica e os 6 devocionais (Seg-Sáb) preenchidos.");
+      }
+    }
+
     const payload: any = {
       title: qForm.title,
       class_id: qForm.class_id,
