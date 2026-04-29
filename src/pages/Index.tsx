@@ -26,7 +26,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { DailyVerseCard } from "@/components/DailyVerseCard";
+import { WeeklyReadingCard } from "@/components/WeeklyReadingCard";
 import { ClassWeeklyStatusCard } from "@/components/ClassWeeklyStatusCard";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
