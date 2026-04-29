@@ -441,6 +441,12 @@ export default function AdminQuizzes() {
                         lesson_title: q.lesson_title ?? "",
                         lesson_key_verse_ref: q.lesson_key_verse_ref ?? "",
                         lesson_key_verse_text: q.lesson_key_verse_text ?? "",
+                        weekly_bible_reading: q.weekly_bible_reading ?? "",
+                        devotional_mon: q.devotional_mon ?? "",
+                        devotional_tue: q.devotional_tue ?? "",
+                        devotional_wed: q.devotional_wed ?? "",
+                        devotional_thu: q.devotional_thu ?? "",
+                        devotional_fri: q.devotional_fri ?? "",
                       });
                       setQuizDialog(true);
                     }}>Editar</Button>
