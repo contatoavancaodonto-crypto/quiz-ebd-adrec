@@ -647,6 +647,7 @@ export type Database = {
           created_at: string
           devotional_fri: string | null
           devotional_mon: string | null
+          devotional_sat: string | null
           devotional_thu: string | null
           devotional_tue: string | null
           devotional_wed: string | null
@@ -671,6 +672,7 @@ export type Database = {
           created_at?: string
           devotional_fri?: string | null
           devotional_mon?: string | null
+          devotional_sat?: string | null
           devotional_thu?: string | null
           devotional_tue?: string | null
           devotional_wed?: string | null
@@ -695,6 +697,7 @@ export type Database = {
           created_at?: string
           devotional_fri?: string | null
           devotional_mon?: string | null
+          devotional_sat?: string | null
           devotional_thu?: string | null
           devotional_tue?: string | null
           devotional_wed?: string | null

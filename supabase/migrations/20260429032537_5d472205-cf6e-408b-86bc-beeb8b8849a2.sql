@@ -1,0 +1,1 @@
+ALTER TABLE public.quizzes ADD COLUMN devotional_sat TEXT;

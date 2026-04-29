@@ -85,12 +85,12 @@ export const WeeklyReadingCard = () => {
                 )}
 
                 {reading.weeklyBibleReading && (
-                  <div className={`p-4 rounded-2xl ${reading.content ? 'bg-muted/50 border border-border/50' : ''}`}>
+                  <div className={`p-4 rounded-2xl bg-muted/50 border border-border/50`}>
                     <div className="flex items-center gap-2 text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">
                       <BookOpen className="h-3.5 w-3.5" />
-                      Leitura da Semana
+                      Leitura Bíblica Semanal
                     </div>
-                    <p className={`${reading.content ? 'text-sm' : 'text-lg font-display font-bold'} text-foreground`}>
+                    <p className="text-sm text-foreground">
                       {reading.weeklyBibleReading}
                     </p>
                   </div>
