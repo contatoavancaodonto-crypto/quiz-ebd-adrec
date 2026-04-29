@@ -147,6 +147,12 @@ export default function AdminQuizzes() {
       lesson_title: qForm.lesson_title || null,
       lesson_key_verse_ref: qForm.lesson_key_verse_ref || null,
       lesson_key_verse_text: qForm.lesson_key_verse_text || null,
+      weekly_bible_reading: qForm.weekly_bible_reading || null,
+      devotional_mon: qForm.devotional_mon || null,
+      devotional_tue: qForm.devotional_tue || null,
+      devotional_wed: qForm.devotional_wed || null,
+      devotional_thu: qForm.devotional_thu || null,
+      devotional_fri: qForm.devotional_fri || null,
     };
     if (payload.opens_at && payload.closes_at && new Date(payload.opens_at) >= new Date(payload.closes_at)) {
       return toast.error("Data de abertura deve ser anterior à de fechamento");
