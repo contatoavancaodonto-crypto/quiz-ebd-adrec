@@ -679,15 +679,15 @@ export default function AdminQuizzes() {
               </div>
               <div>
                 <Label>Janela Fecha</Label>
-                <Input type="datetime-local" value={qForm.opens_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
+                <Input type="datetime-local" value={qForm.closes_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
               </div>
             </div>
-          </div>
-
-            <p className="text-xs text-muted-foreground">
+            
+            <p className="text-xs text-muted-foreground mt-2">
               Quizzes sem janela funcionam como antes (sem bloqueio). Defina <strong>nº semana</strong> + <strong>temporada</strong> + <strong>janela</strong> para ativar streak e ranking semanal.
             </p>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setQuizDialog(false)}>Cancelar</Button>
             <Button onClick={saveQuiz}>Salvar</Button>
