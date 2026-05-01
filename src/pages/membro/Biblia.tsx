@@ -1,37 +1,36 @@
 import { useMemo, useState } from "react";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen, Search, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero } from "@/components/ui/page-hero";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import bibliaData from "@/data/biblia-acf.json";
+import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
 
-interface Book {
-  abbrev: string;
-  name: string;
-  chapters: string[][];
-}
-
-const BOOKS = bibliaData as Book[];
 const OT_COUNT = 39;
-const OLD_TESTAMENT = BOOKS.slice(0, OT_COUNT);
-const NEW_TESTAMENT = BOOKS.slice(OT_COUNT);
 
 export default function Biblia() {
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const { data: BOOKS, isLoading, isError, refetch } = useBibliaData();
+  const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
-  const filterBooks = (list: Book[]) =>
+  const { OLD_TESTAMENT, NEW_TESTAMENT } = useMemo(() => {
+    if (!BOOKS) return { OLD_TESTAMENT: [] as BibliaBook[], NEW_TESTAMENT: [] as BibliaBook[] };
+    return {
+      OLD_TESTAMENT: BOOKS.slice(0, OT_COUNT),
+      NEW_TESTAMENT: BOOKS.slice(OT_COUNT),
+    };
+  }, [BOOKS]);
+
+  const filterBooks = (list: BibliaBook[]) =>
     !search.trim()
       ? list
       : list.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()));
 
-  const filteredOT = useMemo(() => filterBooks(OLD_TESTAMENT), [search]);
-  const filteredNT = useMemo(() => filterBooks(NEW_TESTAMENT), [search]);
+  const filteredOT = useMemo(() => filterBooks(OLD_TESTAMENT), [search, OLD_TESTAMENT]);
+  const filteredNT = useMemo(() => filterBooks(NEW_TESTAMENT), [search, NEW_TESTAMENT]);
 
   // Step 3: verses (drill profundo - sem bottom nav)
   if (selectedBook && selectedChapter !== null) {
@@ -95,7 +94,7 @@ export default function Biblia() {
   }
 
   // Step 1: book list
-  const renderBooks = (list: Book[]) => (
+  const renderBooks = (list: BibliaBook[]) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {list.map((book, i) => (
         <motion.button
@@ -116,6 +115,18 @@ export default function Biblia() {
           Nenhum livro encontrado.
         </p>
       )}
+    </div>
+  );
+
+  // Skeleton placeholder enquanto carrega o JSON
+  const renderSkeleton = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-[58px] rounded-xl bg-card border border-border animate-pulse"
+        />
+      ))}
     </div>
   );
 
@@ -144,18 +155,40 @@ export default function Biblia() {
           />
         </div>
 
-        <Tabs defaultValue="at" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="at">Antigo Test.</TabsTrigger>
-            <TabsTrigger value="nt">Novo Test.</TabsTrigger>
-          </TabsList>
-          <TabsContent value="at" className="mt-4">
-            {renderBooks(filteredOT)}
-          </TabsContent>
-          <TabsContent value="nt" className="mt-4">
-            {renderBooks(filteredNT)}
-          </TabsContent>
-        </Tabs>
+        {isError ? (
+          <div className="text-center py-12 space-y-3">
+            <p className="text-sm text-muted-foreground">Não conseguimos carregar a Bíblia.</p>
+            <button
+              onClick={() => refetch()}
+              className="text-sm text-primary font-semibold underline underline-offset-4"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <Tabs defaultValue="at" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="at">Antigo Test.</TabsTrigger>
+              <TabsTrigger value="nt">Novo Test.</TabsTrigger>
+            </TabsList>
+            <TabsContent value="at" className="mt-4">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Carregando livros…
+                  </p>
+                  {renderSkeleton()}
+                </div>
+              ) : (
+                renderBooks(filteredOT)
+              )}
+            </TabsContent>
+            <TabsContent value="nt" className="mt-4">
+              {isLoading ? renderSkeleton() : renderBooks(filteredNT)}
+            </TabsContent>
+          </Tabs>
+        )}
       </PageShell>
     </MemberLayout>
   );

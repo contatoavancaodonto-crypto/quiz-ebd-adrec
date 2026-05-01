@@ -1,28 +1,11 @@
 import { useMemo, useState } from "react";
-import { Music2, Search } from "lucide-react";
+import { Music2, Search, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero } from "@/components/ui/page-hero";
 import { Input } from "@/components/ui/input";
-import harpaData from "@/data/harpa-crista.json";
-
-interface Hino {
-  hino: string;
-  coro: string;
-  verses: Record<string, string>;
-}
-
-const HINOS: Array<{ number: number; title: string; data: Hino }> = Object.entries(
-  harpaData as Record<string, Hino | unknown>,
-)
-  .filter(([k]) => /^\d+$/.test(k))
-  .map(([k, v]) => {
-    const data = v as Hino;
-    const title = data.hino.replace(/^\d+\s*-\s*/, "").trim();
-    return { number: Number(k), title, data };
-  })
-  .sort((a, b) => a.number - b.number);
+import { useHarpaData, type Hino } from "@/hooks/useHarpaData";
 
 function renderHtml(text: string) {
   return text.split(/<br\s*\/?>/i).map((line, i) => (
@@ -32,9 +15,28 @@ function renderHtml(text: string) {
   ));
 }
 
+interface HinoItem {
+  number: number;
+  title: string;
+  data: Hino;
+}
+
 export default function Harpa() {
+  const { data: harpaData, isLoading, isError, refetch } = useHarpaData();
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<(typeof HINOS)[number] | null>(null);
+  const [selected, setSelected] = useState<HinoItem | null>(null);
+
+  const HINOS: HinoItem[] = useMemo(() => {
+    if (!harpaData) return [];
+    return Object.entries(harpaData)
+      .filter(([k]) => /^\d+$/.test(k))
+      .map(([k, v]) => {
+        const data = v as Hino;
+        const title = data.hino.replace(/^\d+\s*-\s*/, "").trim();
+        return { number: Number(k), title, data };
+      })
+      .sort((a, b) => a.number - b.number);
+  }, [harpaData]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -43,11 +45,9 @@ export default function Harpa() {
       return HINOS.filter((h) => String(h.number).startsWith(q));
     }
     return HINOS.filter(
-      (h) =>
-        h.title.toLowerCase().includes(q) ||
-        String(h.number).includes(q),
+      (h) => h.title.toLowerCase().includes(q) || String(h.number).includes(q),
     );
-  }, [search]);
+  }, [search, HINOS]);
 
   // Hino aberto - drill profundo, sem bottom nav
   if (selected) {
@@ -113,30 +113,55 @@ export default function Harpa() {
           />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
-          {filtered.length === 0 && (
-            <p className="text-muted-foreground text-sm p-6 text-center">
-              Nenhum hino encontrado.
-            </p>
-          )}
-          {filtered.slice(0, 200).map((h) => (
+        {isError ? (
+          <div className="text-center py-12 space-y-3">
+            <p className="text-sm text-muted-foreground">Não conseguimos carregar a Harpa.</p>
             <button
-              key={h.number}
-              onClick={() => setSelected(h)}
-              className="w-full text-left px-4 py-3 hover:bg-muted/50 active:bg-muted transition-colors flex items-center gap-3"
+              onClick={() => refetch()}
+              className="text-sm text-primary font-semibold underline underline-offset-4"
             >
-              <span className="font-display font-extrabold text-primary w-10 shrink-0 tabular-nums text-sm">
-                {h.number}
-              </span>
-              <span className="truncate text-sm font-medium text-foreground">{h.title}</span>
+              Tentar novamente
             </button>
-          ))}
-          {filtered.length > 200 && (
-            <p className="text-[11px] text-muted-foreground p-3 text-center">
-              Mostrando 200 de {filtered.length}. Refine a busca para ver mais.
+          </div>
+        ) : isLoading ? (
+          <div className="rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
+            <p className="text-xs text-muted-foreground p-3 flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Carregando hinos…
             </p>
-          )}
-        </div>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="px-4 py-3 flex items-center gap-3">
+                <div className="h-4 w-8 rounded bg-muted animate-pulse" />
+                <div className="h-4 flex-1 rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
+            {filtered.length === 0 && (
+              <p className="text-muted-foreground text-sm p-6 text-center">
+                Nenhum hino encontrado.
+              </p>
+            )}
+            {filtered.slice(0, 200).map((h) => (
+              <button
+                key={h.number}
+                onClick={() => setSelected(h)}
+                className="w-full text-left px-4 py-3 hover:bg-muted/50 active:bg-muted transition-colors flex items-center gap-3"
+              >
+                <span className="font-display font-extrabold text-primary w-10 shrink-0 tabular-nums text-sm">
+                  {h.number}
+                </span>
+                <span className="truncate text-sm font-medium text-foreground">{h.title}</span>
+              </button>
+            ))}
+            {filtered.length > 200 && (
+              <p className="text-[11px] text-muted-foreground p-3 text-center">
+                Mostrando 200 de {filtered.length}. Refine a busca para ver mais.
+              </p>
+            )}
+          </div>
+        )}
       </PageShell>
     </MemberLayout>
   );
