@@ -44,6 +44,7 @@ import AdminBadges from "./pages/admin/AdminBadges";
 import AdminVerses from "./pages/admin/AdminVerses";
 import AdminMaterials from "./pages/admin/AdminMaterials";
 import AdminAuditLog from "./pages/admin/AdminAuditLog";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 // Lazy SOMENTE para páginas pesadas (JSONs grandes da Bíblia/Harpa)
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
@@ -98,6 +99,7 @@ const App = () => (
                 <Route path="versiculos" element={<AdminVerses />} />
                 <Route path="materiais" element={<AdminMaterials />} />
                 <Route path="auditoria" element={<AdminAuditLog />} />
+                <Route path="notificacoes" element={<AdminNotifications />} />
               </Route>
               <Route path="/membro" element={<MeuPerfil />} />
               <Route path="/membro/perfil" element={<MeuPerfil />} />
