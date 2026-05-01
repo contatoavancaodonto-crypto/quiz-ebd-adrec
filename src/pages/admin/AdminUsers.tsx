@@ -316,6 +316,14 @@ export default function AdminUsers() {
         </Table>
       </Card>
 
+      <EditMemberDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        member={editTarget}
+        allowChurchEdit={true}
+        onSaved={load}
+      />
+
       <Dialog open={promoteOpen} onOpenChange={setPromoteOpen}>
         <DialogContent>
           <DialogHeader>
