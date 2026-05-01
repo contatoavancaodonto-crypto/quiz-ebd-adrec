@@ -21,7 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search, Crown, EyeOff, Eye } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown, EyeOff, Eye, Pencil } from "lucide-react";
+import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
 import { AdminPage } from "@/components/admin/AdminPage";
@@ -34,6 +35,7 @@ interface ProfileRow {
   last_name: string | null;
   email: string | null;
   phone: string | null;
+  area: number | null;
   profile_church_id: string | null;
   role: "superadmin" | "admin" | null;
   role_church_id: string | null;
@@ -57,13 +59,15 @@ export default function AdminUsers() {
   const [target, setTarget] = useState<ProfileRow | null>(null);
   const [newRole, setNewRole] = useState<"admin" | "superadmin">("admin");
   const [newChurchId, setNewChurchId] = useState<string>("");
+  const [editTarget, setEditTarget] = useState<EditableMember | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
     const [profilesRes, rolesRes, churchesRes] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, church_id, hidden_at")
+        .select("id, first_name, last_name, email, phone, area, church_id, hidden_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, church_id"),
       supabase.from("churches").select("id, name").eq("active", true).order("name"),
@@ -85,6 +89,7 @@ export default function AdminUsers() {
           last_name: p.last_name,
           email: p.email,
           phone: p.phone,
+          area: p.area ?? null,
           profile_church_id: p.church_id,
           role: r?.role ?? null,
           role_church_id: r?.church_id ?? null,
@@ -255,6 +260,24 @@ export default function AdminUsers() {
                         Oculto
                       </Badge>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditTarget({
+                          id: r.id,
+                          first_name: r.first_name,
+                          last_name: r.last_name,
+                          email: r.email,
+                          phone: r.phone,
+                          area: r.area,
+                          church_id: r.profile_church_id,
+                        });
+                        setEditOpen(true);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4 mr-1" /> Editar
+                    </Button>
                     {r.role ? (
                       <Button size="sm" variant="outline" onClick={() => removeRole(r)}>
                         <ShieldOff className="w-4 h-4 mr-1" /> Remover
@@ -292,6 +315,14 @@ export default function AdminUsers() {
           </TableBody>
         </Table>
       </Card>
+
+      <EditMemberDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        member={editTarget}
+        allowChurchEdit={true}
+        onSaved={load}
+      />
 
       <Dialog open={promoteOpen} onOpenChange={setPromoteOpen}>
         <DialogContent>

@@ -15,9 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Shield, ShieldOff, Loader2 } from "lucide-react";
+import { Search, Shield, ShieldOff, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
+import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
 
 interface Member {
   id: string;
@@ -39,6 +40,8 @@ export default function AdminChurchMembers() {
   const [rows, setRows] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [editTarget, setEditTarget] = useState<EditableMember | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = async () => {
     if (!churchId) return;
@@ -197,7 +200,24 @@ export default function AdminChurchMembers() {
                       <Badge variant="secondary">Membro</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditTarget({
+                          id: m.id,
+                          first_name: m.first_name,
+                          last_name: m.last_name,
+                          email: m.email,
+                          phone: m.phone,
+                          area: m.area,
+                        });
+                        setEditOpen(true);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4 mr-1" /> Editar
+                    </Button>
                     {m.is_admin ? (
                       <Button size="sm" variant="outline" onClick={() => revoke(m)}>
                         <ShieldOff className="w-4 h-4 mr-1" /> Remover admin
@@ -214,6 +234,14 @@ export default function AdminChurchMembers() {
           </TableBody>
         </Table>
       </Card>
+
+      <EditMemberDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        member={editTarget}
+        allowChurchEdit={false}
+        onSaved={load}
+      />
     </AdminPage>
   );
 }
