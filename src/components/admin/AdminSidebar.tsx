@@ -16,6 +16,7 @@ import {
   UsersRound,
   ShieldCheck,
   History,
+  Megaphone,
 } from "lucide-react";
 import {
   Sidebar,
@@ -64,6 +65,7 @@ const allItems: Item[] = [
   { title: "Plano de Leitura", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
   { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
   { title: "Histórico de Alterações", url: "/painel/auditoria", icon: History, superadminOnly: true },
+  { title: "Notificações", url: "/painel/notificacoes", icon: Megaphone, superadminOnly: true },
 ];
 
 export function AdminSidebar() {
