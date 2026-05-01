@@ -89,6 +89,7 @@ export default function AdminUsers() {
           last_name: p.last_name,
           email: p.email,
           phone: p.phone,
+          area: p.area ?? null,
           profile_church_id: p.church_id,
           role: r?.role ?? null,
           role_church_id: r?.church_id ?? null,
@@ -259,6 +260,24 @@ export default function AdminUsers() {
                         Oculto
                       </Badge>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditTarget({
+                          id: r.id,
+                          first_name: r.first_name,
+                          last_name: r.last_name,
+                          email: r.email,
+                          phone: r.phone,
+                          area: r.area,
+                          church_id: r.profile_church_id,
+                        });
+                        setEditOpen(true);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4 mr-1" /> Editar
+                    </Button>
                     {r.role ? (
                       <Button size="sm" variant="outline" onClick={() => removeRole(r)}>
                         <ShieldOff className="w-4 h-4 mr-1" /> Remover
