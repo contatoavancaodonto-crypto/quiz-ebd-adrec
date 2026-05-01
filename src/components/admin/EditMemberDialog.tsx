@@ -110,7 +110,7 @@ export function EditMemberDialog({
       update.church_id = churchId || null;
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("profiles")
       .update(update)
       .eq("id", member.id);
