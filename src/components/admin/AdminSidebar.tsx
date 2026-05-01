@@ -15,6 +15,7 @@ import {
   Building2,
   UsersRound,
   ShieldCheck,
+  History,
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +63,7 @@ const allItems: Item[] = [
   { title: "Badges", url: "/painel/badges", icon: Award, superadminOnly: true },
   { title: "Plano de Leitura", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
   { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
+  { title: "Histórico de Alterações", url: "/painel/auditoria", icon: History, superadminOnly: true },
 ];
 
 export function AdminSidebar() {

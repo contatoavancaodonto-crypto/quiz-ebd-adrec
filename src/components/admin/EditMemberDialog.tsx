@@ -98,7 +98,7 @@ export function EditMemberDialog({
     }
 
     setSaving(true);
-    const update: Record<string, any> = {
+    const newValues: Record<string, any> = {
       first_name: firstName.trim(),
       last_name: lastName.trim() || null,
       email: email.trim() || null,
@@ -107,19 +107,82 @@ export function EditMemberDialog({
       display_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
     };
     if (allowChurchEdit) {
-      update.church_id = churchId || null;
+      newValues.church_id = churchId || null;
+    }
+
+    // Snapshot dos valores antigos para auditoria
+    const oldValues: Record<string, any> = {
+      first_name: member.first_name,
+      last_name: member.last_name,
+      email: member.email,
+      phone: member.phone,
+      area: member.area,
+    };
+    if (allowChurchEdit) {
+      oldValues.church_id = member.church_id ?? null;
     }
 
     const { error } = await (supabase as any)
       .from("profiles")
-      .update(update)
+      .update(newValues)
       .eq("id", member.id);
 
-    setSaving(false);
     if (error) {
+      setSaving(false);
       toast.error("Falha ao salvar: " + error.message);
       return;
     }
+
+    // Calcula diff (apenas campos que mudaram)
+    const changes: Record<string, { from: any; to: any }> = {};
+    for (const key of Object.keys(oldValues)) {
+      const before = oldValues[key] ?? null;
+      const after = newValues[key] ?? null;
+      if (before !== after) {
+        changes[key] = { from: before, to: after };
+      }
+    }
+
+    if (Object.keys(changes).length > 0) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const editorId = authData.user?.id;
+        let editorName: string | null = null;
+        let editorRole: string | null = null;
+        if (editorId) {
+          const [{ data: editorProfile }, { data: editorRoles }] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("first_name, last_name, display_name")
+              .eq("id", editorId)
+              .maybeSingle(),
+            supabase.from("user_roles").select("role").eq("user_id", editorId),
+          ]);
+          editorName =
+            (editorProfile as any)?.display_name ||
+            `${(editorProfile as any)?.first_name ?? ""} ${(editorProfile as any)?.last_name ?? ""}`.trim() ||
+            null;
+          const roles = (editorRoles ?? []).map((r: any) => r.role);
+          editorRole = roles.includes("superadmin")
+            ? "superadmin"
+            : roles.includes("admin")
+            ? "admin"
+            : null;
+        }
+        await (supabase as any).from("profile_edit_audit").insert({
+          profile_id: member.id,
+          edited_by: editorId,
+          editor_name: editorName,
+          editor_role: editorRole,
+          changes,
+        });
+      } catch (e) {
+        // Auditoria não deve bloquear a edição
+        console.warn("Falha ao registrar auditoria:", e);
+      }
+    }
+
+    setSaving(false);
     toast.success("Dados atualizados com sucesso");
     onOpenChange(false);
     onSaved?.();

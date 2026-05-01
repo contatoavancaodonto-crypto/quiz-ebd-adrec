@@ -398,6 +398,36 @@ export type Database = {
           },
         ]
       }
+      profile_edit_audit: {
+        Row: {
+          changes: Json
+          created_at: string
+          edited_by: string | null
+          editor_name: string | null
+          editor_role: string | null
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          changes?: Json
+          created_at?: string
+          edited_by?: string | null
+          editor_name?: string | null
+          editor_role?: string | null
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          edited_by?: string | null
+          editor_name?: string | null
+          editor_role?: string | null
+          id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           area: number | null
