@@ -21,7 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search, Crown, EyeOff, Eye } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown, EyeOff, Eye, Pencil } from "lucide-react";
+import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
 import { AdminPage } from "@/components/admin/AdminPage";
