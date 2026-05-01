@@ -16,14 +16,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { prefetchBiblia } from "@/hooks/useBibliaData";
+import { prefetchHarpa } from "@/hooks/useHarpaData";
 
-const items = [
+const items: Array<{
+  title: string;
+  url: string;
+  icon: typeof User;
+  prefetch?: () => void;
+}> = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
   { title: "Histórico", url: "/membro/historico", icon: History },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
-  { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen },
-  { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2 },
+  { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
+  { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, prefetch: prefetchHarpa },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
 ];
 
@@ -73,6 +80,8 @@ export function MemberSidebar() {
                       to={item.url}
                       end
                       onClick={closeOnMobile}
+                      onMouseEnter={() => item.prefetch?.()}
+                      onTouchStart={() => item.prefetch?.()}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >

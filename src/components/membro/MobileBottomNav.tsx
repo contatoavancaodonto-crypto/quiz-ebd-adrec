@@ -1,11 +1,12 @@
 import { Home, Trophy, BookOpen, User, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { prefetchBiblia } from "@/hooks/useBibliaData";
 
 const items = [
   { label: "Início", icon: Home, path: "/" },
   { label: "Ranking", icon: Trophy, path: "/ranking" },
-  { label: "Bíblia", icon: BookOpen, path: "/membro/biblia" },
+  { label: "Bíblia", icon: BookOpen, path: "/membro/biblia", prefetch: prefetchBiblia },
   { label: "Perfil", icon: User, path: "/membro/perfil" },
 ];
 
@@ -45,6 +46,8 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
+                onMouseEnter={() => (item as any).prefetch?.()}
+                onTouchStart={() => (item as any).prefetch?.()}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
               >
                 <Icon
@@ -86,6 +89,8 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
+                onMouseEnter={() => (item as any).prefetch?.()}
+                onTouchStart={() => (item as any).prefetch?.()}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
               >
                 <Icon
