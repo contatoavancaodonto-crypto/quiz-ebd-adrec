@@ -35,6 +35,7 @@ interface ProfileRow {
   last_name: string | null;
   email: string | null;
   phone: string | null;
+  area: number | null;
   profile_church_id: string | null;
   role: "superadmin" | "admin" | null;
   role_church_id: string | null;
@@ -58,13 +59,15 @@ export default function AdminUsers() {
   const [target, setTarget] = useState<ProfileRow | null>(null);
   const [newRole, setNewRole] = useState<"admin" | "superadmin">("admin");
   const [newChurchId, setNewChurchId] = useState<string>("");
+  const [editTarget, setEditTarget] = useState<EditableMember | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
     const [profilesRes, rolesRes, churchesRes] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, church_id, hidden_at")
+        .select("id, first_name, last_name, email, phone, area, church_id, hidden_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, church_id"),
       supabase.from("churches").select("id, name").eq("active", true).order("name"),
