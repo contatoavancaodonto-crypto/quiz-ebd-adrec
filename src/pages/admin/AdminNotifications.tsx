@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -7,6 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,7 +37,13 @@ interface NotifRow {
   link: string | null;
   source: string;
   scope: string;
+  scope_id: string | null;
   created_at: string;
+}
+
+interface ClassRow {
+  id: string;
+  name: string;
 }
 
 export default function AdminNotifications() {
@@ -42,21 +55,56 @@ export default function AdminNotifications() {
   const [sending, setSending] = useState(false);
   const [items, setItems] = useState<NotifRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [classes, setClasses] = useState<ClassRow[]>([]);
+
+  // Envio
+  const [sendScope, setSendScope] = useState<"global" | "class">("global");
+  const [sendClassId, setSendClassId] = useState<string>("");
+
+  // Filtros do histórico
+  const [filterScope, setFilterScope] = useState<string>("all");
+  const [filterClassId, setFilterClassId] = useState<string>("all");
 
   const refresh = async () => {
     const { data } = await (supabase as any)
       .from("notifications")
-      .select("id, title, body, link, source, scope, created_at")
+      .select("id, title, body, link, source, scope, scope_id, created_at")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(200);
     setItems(data ?? []);
     setLoading(false);
+  };
+
+  const loadClasses = async () => {
+    const { data } = await supabase
+      .from("classes")
+      .select("id, name")
+      .eq("active", true)
+      .order("name");
+    setClasses((data as ClassRow[]) ?? []);
   };
 
   useEffect(() => {
     if (!isSuperadmin) return;
     refresh();
+    loadClasses();
   }, [isSuperadmin]);
+
+  const classNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    classes.forEach((c) => m.set(c.id, c.name));
+    return m;
+  }, [classes]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((n) => {
+      if (filterScope !== "all" && n.scope !== filterScope) return false;
+      if (filterClassId !== "all") {
+        if (n.scope !== "class" || n.scope_id !== filterClassId) return false;
+      }
+      return true;
+    });
+  }, [items, filterScope, filterClassId]);
 
   if (rolesLoading) return null;
   if (!isSuperadmin) return <Navigate to="/painel" replace />;
@@ -66,13 +114,18 @@ export default function AdminNotifications() {
       toast.error("Informe um título");
       return;
     }
+    if (sendScope === "class" && !sendClassId) {
+      toast.error("Selecione a turma de destino");
+      return;
+    }
     setSending(true);
     const { error } = await (supabase as any).from("notifications").insert({
       title: title.trim(),
       body: body.trim() || null,
       link: link.trim() || null,
       source: "manual",
-      scope: "global",
+      scope: sendScope,
+      scope_id: sendScope === "class" ? sendClassId : null,
       created_by: user?.id ?? null,
     });
     setSending(false);
@@ -80,7 +133,11 @@ export default function AdminNotifications() {
       toast.error("Falha ao enviar: " + error.message);
       return;
     }
-    toast.success("Notificação enviada para todos os membros");
+    toast.success(
+      sendScope === "global"
+        ? "Notificação enviada para todos os membros"
+        : `Notificação enviada para a turma ${classNameById.get(sendClassId) ?? ""}`,
+    );
     setTitle("");
     setBody("");
     setLink("");
@@ -88,7 +145,7 @@ export default function AdminNotifications() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Excluir esta notificação para todos?")) return;
+    if (!confirm("Excluir esta notificação?")) return;
     const { error } = await (supabase as any)
       .from("notifications")
       .delete()
@@ -101,6 +158,14 @@ export default function AdminNotifications() {
     refresh();
   };
 
+  const scopeLabel = (scope: string, scopeId: string | null) => {
+    if (scope === "global") return "Todos";
+    if (scope === "class")
+      return `Turma: ${scopeId ? classNameById.get(scopeId) ?? "—" : "—"}`;
+    if (scope === "church") return "Igreja";
+    return scope;
+  };
+
   return (
     <AdminPage
       Icon={Megaphone}
@@ -109,6 +174,41 @@ export default function AdminNotifications() {
     >
       <Card className="p-5 mb-6">
         <div className="grid gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Destinatários</Label>
+              <Select
+                value={sendScope}
+                onValueChange={(v) => setSendScope(v as "global" | "class")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="global">Todos os membros</SelectItem>
+                  <SelectItem value="class">Turma específica</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {sendScope === "class" && (
+              <div>
+                <Label>Turma *</Label>
+                <Select value={sendClassId} onValueChange={setSendClassId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a turma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
           <div>
             <Label htmlFor="notif-title">Título *</Label>
             <Input
@@ -149,26 +249,54 @@ export default function AdminNotifications() {
               ) : (
                 <Send className="w-4 h-4 mr-2" />
               )}
-              Enviar para todos
+              {sendScope === "global" ? "Enviar para todos" : "Enviar para turma"}
             </Button>
           </div>
         </div>
       </Card>
 
       <Card className="p-0 overflow-hidden">
-        <div className="px-5 py-3 border-b border-border">
-          <h3 className="font-bold text-sm">Histórico</h3>
-          <p className="text-xs text-muted-foreground">
-            Últimas 100 notificações enviadas (manuais + automáticas).
-          </p>
+        <div className="px-5 py-3 border-b border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="font-bold text-sm">Histórico</h3>
+            <p className="text-xs text-muted-foreground">
+              {filteredItems.length} de {items.length} notificações
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Select value={filterScope} onValueChange={setFilterScope}>
+              <SelectTrigger className="w-full sm:w-[170px] h-9">
+                <SelectValue placeholder="Escopo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os escopos</SelectItem>
+                <SelectItem value="global">Global</SelectItem>
+                <SelectItem value="class">Turma</SelectItem>
+                <SelectItem value="church">Igreja</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterClassId} onValueChange={setFilterClassId}>
+              <SelectTrigger className="w-full sm:w-[200px] h-9">
+                <SelectValue placeholder="Turma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as turmas</SelectItem>
+                {classes.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         {loading ? (
           <div className="p-10 text-center text-muted-foreground text-sm">
             Carregando...
           </div>
-        ) : items.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <div className="p-10 text-center text-muted-foreground text-sm">
-            Nenhuma notificação enviada ainda.
+            Nenhuma notificação encontrada com esses filtros.
           </div>
         ) : (
           <Table>
@@ -176,13 +304,14 @@ export default function AdminNotifications() {
               <TableRow>
                 <TableHead>Quando</TableHead>
                 <TableHead>Origem</TableHead>
+                <TableHead>Escopo</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Mensagem</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((n) => (
+              {filteredItems.map((n) => (
                 <TableRow key={n.id}>
                   <TableCell className="text-xs whitespace-nowrap">
                     {formatDistanceToNow(new Date(n.created_at), {
@@ -200,6 +329,11 @@ export default function AdminNotifications() {
                         : n.source === "new_material"
                         ? "Novo material"
                         : n.source}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px]">
+                      {scopeLabel(n.scope, n.scope_id)}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium text-sm">{n.title}</TableCell>
