@@ -103,7 +103,7 @@ export default function AdminNotifications() {
 
   return (
     <AdminPage
-      icon={Megaphone}
+      Icon={Megaphone}
       title="Notificações"
       description="Envie avisos para todos os membros do app. Aparecem no sino do header em tempo real."
     >
