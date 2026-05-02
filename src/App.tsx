@@ -27,6 +27,7 @@ import Historico from "./pages/membro/Historico";
 import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Suporte from "./pages/membro/Suporte";
+import Comunidade from "./pages/membro/Comunidade";
 
 // Admin
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -47,6 +48,7 @@ import AdminMaterials from "./pages/admin/AdminMaterials";
 import AdminAuditLog from "./pages/admin/AdminAuditLog";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminSupport from "./pages/admin/AdminSupport";
+import AdminCommunity from "./pages/admin/AdminCommunity";
 
 // Lazy SOMENTE para páginas pesadas (JSONs grandes da Bíblia/Harpa)
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
