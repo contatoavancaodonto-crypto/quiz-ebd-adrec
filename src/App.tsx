@@ -105,12 +105,14 @@ const App = () => (
                 <Route path="auditoria" element={<AdminAuditLog />} />
                 <Route path="notificacoes" element={<AdminNotifications />} />
                 <Route path="suporte" element={<AdminSupport />} />
+                <Route path="comunidade" element={<AdminCommunity />} />
               </Route>
               <Route path="/membro" element={<MeuPerfil />} />
               <Route path="/membro/perfil" element={<MeuPerfil />} />
               <Route path="/membro/desempenho" element={<MeuDesempenho />} />
               <Route path="/membro/historico" element={<Historico />} />
               <Route path="/membro/revista" element={<Revista />} />
+              <Route path="/membro/comunidade" element={<Comunidade />} />
               <Route path="/membro/biblia" element={<Biblia />} />
               <Route path="/membro/harpa" element={<Harpa />} />
               <Route path="/membro/configuracoes" element={<Configuracoes />} />
