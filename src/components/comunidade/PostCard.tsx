@@ -11,7 +11,10 @@ import {
   Flag, 
   Trash2, 
   Edit2,
-  CheckCircle2
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ShieldCheck
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -114,6 +117,32 @@ export function PostCard({ post, isAdminView = false }: PostCardProps) {
       </CardHeader>
 
       <CardContent className="p-4 pt-2">
+        {(isAuthor || isAdminView) && post.status !== "approved" && (
+          <div className={cn(
+            "mb-4 p-3 rounded-lg flex items-center gap-3 text-sm font-medium",
+            post.status === "pending" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-destructive/10 text-destructive border border-destructive/20"
+          )}>
+            {post.status === "pending" ? (
+              <>
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>Sua postagem está em análise por conter possível conteúdo inadequado.</span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>Esta postagem foi bloqueada por violar as diretrizes da comunidade. {post.moderation_reason && `(Motivo: ${post.moderation_reason})`}</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {isAdminView && post.status === "approved" && (
+          <div className="mb-4 p-2 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-2 text-xs">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span>Conteúdo aprovado por IA</span>
+          </div>
+        )}
+
         {isEditing ? (
           <div className="space-y-2">
             <textarea

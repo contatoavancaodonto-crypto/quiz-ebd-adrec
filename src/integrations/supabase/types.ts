@@ -321,6 +321,39 @@ export type Database = {
           },
         ]
       }
+      moderation_logs: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string | null
+          id: string
+          reason: string | null
+          risk_level: string | null
+          status: Database["public"]["Enums"]["moderation_status"]
+          user_id: string | null
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          risk_level?: string | null
+          status: Database["public"]["Enums"]["moderation_status"]
+          user_id?: string | null
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          risk_level?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notification_reads: {
         Row: {
           id: string
@@ -469,7 +502,10 @@ export type Database = {
           created_at: string
           deleted: boolean
           id: string
+          moderation_reason: string | null
           post_id: string
+          risk_level: string | null
+          status: Database["public"]["Enums"]["moderation_status"] | null
           user_id: string
         }
         Insert: {
@@ -477,7 +513,10 @@ export type Database = {
           created_at?: string
           deleted?: boolean
           id?: string
+          moderation_reason?: string | null
           post_id: string
+          risk_level?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"] | null
           user_id: string
         }
         Update: {
@@ -485,7 +524,10 @@ export type Database = {
           created_at?: string
           deleted?: boolean
           id?: string
+          moderation_reason?: string | null
           post_id?: string
+          risk_level?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"] | null
           user_id?: string
         }
         Relationships: [
@@ -574,6 +616,9 @@ export type Database = {
           deleted: boolean
           id: string
           image_url: string | null
+          moderation_reason: string | null
+          risk_level: string | null
+          status: Database["public"]["Enums"]["moderation_status"] | null
           updated_at: string
           user_id: string
         }
@@ -584,6 +629,9 @@ export type Database = {
           deleted?: boolean
           id?: string
           image_url?: string | null
+          moderation_reason?: string | null
+          risk_level?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"] | null
           updated_at?: string
           user_id: string
         }
@@ -594,6 +642,9 @@ export type Database = {
           deleted?: boolean
           id?: string
           image_url?: string | null
+          moderation_reason?: string | null
+          risk_level?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"] | null
           updated_at?: string
           user_id?: string
         }
@@ -1757,6 +1808,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "superadmin"
+      moderation_status: "approved" | "pending" | "blocked"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1885,6 +1937,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "superadmin"],
+      moderation_status: ["approved", "pending", "blocked"],
     },
   },
 } as const
