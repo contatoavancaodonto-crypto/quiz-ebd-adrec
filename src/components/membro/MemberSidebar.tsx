@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +32,7 @@ const items: Array<{
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, prefetch: prefetchHarpa },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
+  { title: "Suporte", url: "/membro/suporte", icon: LifeBuoy },
 ];
 
 export function MemberSidebar() {

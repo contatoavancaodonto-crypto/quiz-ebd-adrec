@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   History,
   Megaphone,
+  LifeBuoy,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,6 +67,7 @@ const allItems: Item[] = [
   { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
   { title: "Histórico de Alterações", url: "/painel/auditoria", icon: History, superadminOnly: true },
   { title: "Notificações", url: "/painel/notificacoes", icon: Megaphone, superadminOnly: true },
+  { title: "Suporte", url: "/painel/suporte", icon: LifeBuoy, superadminOnly: true },
 ];
 
 export function AdminSidebar() {

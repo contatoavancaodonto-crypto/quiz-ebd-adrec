@@ -51,6 +51,7 @@ export function useNotifications(limit = 30) {
       if (n.scope === "global") return true;
       if (n.scope === "class" && classId && n.scope_id === classId) return true;
       if (n.scope === "church" && churchId && n.scope_id === churchId) return true;
+      if (n.scope === "user" && n.scope_id === user.id) return true;
       return false;
     });
 
