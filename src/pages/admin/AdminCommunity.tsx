@@ -150,8 +150,17 @@ export default function AdminCommunity() {
               </Button>
             </header>
 
-            <Tabs defaultValue="reports" className="space-y-6">
+            <Tabs defaultValue="moderation" className="space-y-6">
               <TabsList className="bg-muted/50 p-1">
+                <TabsTrigger value="moderation" className="gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  Fila de Moderação (IA)
+                  {moderationQueue.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                      {moderationQueue.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <ShieldAlert className="h-4 w-4" />
                   Denúncias
