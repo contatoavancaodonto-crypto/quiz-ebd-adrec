@@ -4,12 +4,13 @@ import { useCommunity } from "@/hooks/useCommunity";
 import { AppHeader } from "@/components/membro/AppHeader";
 import { MemberSidebar } from "@/components/membro/MemberSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Loader2, Users } from "lucide-react";
+import { Loader2, Users, Globe, Church } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Comunidade() {
   const { user } = useAuth();
-  const { posts, loading } = useCommunity();
+  const { posts, loading, filter, setFilter } = useCommunity();
 
   return (
     <SidebarProvider>
@@ -26,6 +27,24 @@ export default function Comunidade() {
                 </p>
               </div>
 
+              <Tabs 
+                defaultValue="all" 
+                value={filter} 
+                onValueChange={(v) => setFilter(v as "all" | "church")}
+                className="mb-6"
+              >
+                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+                  <TabsTrigger value="all" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Geral
+                  </TabsTrigger>
+                  <TabsTrigger value="church" className="flex items-center gap-2">
+                    <Church className="h-4 w-4" />
+                    Minha Igreja
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
               <PostComposer />
 
               <div className="space-y-4">
@@ -41,8 +60,16 @@ export default function Comunidade() {
                 ) : (
                   <div className="text-center py-20 bg-muted/20 rounded-xl border border-dashed">
                     <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground font-medium">Nenhuma postagem ainda.</p>
-                    <p className="text-xs text-muted-foreground mt-1">Seja o primeiro a compartilhar algo!</p>
+                    <p className="text-muted-foreground font-medium">
+                      {filter === "church" 
+                        ? "Ainda não há postagens da sua igreja." 
+                        : "Nenhuma postagem ainda."}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {filter === "church"
+                        ? "Que tal ser o primeiro a compartilhar algo com seus irmãos?"
+                        : "Seja o primeiro a compartilhar algo!"}
+                    </p>
                   </div>
                 )}
               </div>
