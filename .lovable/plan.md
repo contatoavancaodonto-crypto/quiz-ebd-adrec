@@ -1,70 +1,100 @@
-## Problema
 
-Hoje a Bíblia e a Harpa demoram para abrir porque:
+# Sistema de Suporte e Sugestões
 
-- **Bíblia (`biblia-acf.json`)**: 3,9 MB carregados via `import` no topo do arquivo.
-- **Harpa (`harpa-crista.json`)**: 517 KB carregados da mesma forma.
+Página onde o membro abre um "ticket" (bug, sugestão, dúvida ou ajuda) e o superadmin gerencia/responde tudo num painel dedicado.
 
-Mesmo com lazy-load da rota, ao clicar em "Bíblia" o navegador precisa baixar e parsear ~4 MB de JSON antes de mostrar a tela. Em rede 4G isso facilmente passa de 2-3 segundos. No celular, o parse do JSON também trava a UI.
+## 1. Banco de dados
 
-Além disso, esses 4 MB são baixados de novo toda vez que o usuário entra (sem cache eficiente), pois são embutidos no bundle JS.
+Nova tabela `support_tickets` (não reaproveitar a `suggestions` antiga, que é só texto solto e sem RLS de leitura pelo dono):
 
-## Solução
-
-Mover os dois JSONs para **assets estáticos servidos sob demanda**, com cache do navegador e cache em memória. A página abre **instantaneamente** mostrando o esqueleto, e os dados chegam em segundo plano (geralmente em <500ms na 2ª visita, pois ficam em cache).
-
-### O que muda na prática para o usuário
-
-1. Clicar em "Bíblia" ou "Harpa" → tela aparece **na hora** com um pequeno indicador "Carregando livros…".
-2. Na primeira visita: 0,5-1,5s para os dados aparecerem.
-3. Nas próximas visitas: **instantâneo** (cache do navegador + cache em memória da sessão).
-4. A busca, navegação por capítulo/hino e leitura ficam idênticas.
-
-## Mudanças técnicas
-
-### 1. Mover JSONs para `public/data/`
-
-```text
-public/data/biblia-acf.json   (servido como /data/biblia-acf.json)
-public/data/harpa-crista.json (servido como /data/harpa-crista.json)
-```
-
-Removendo do bundle JS, esses arquivos passam a ser baixados **só quando** o usuário entra na página, com cache HTTP do navegador.
-
-### 2. Hooks com fetch + cache em memória
-
-Criar `src/hooks/useBibliaData.ts` e `src/hooks/useHarpaData.ts` usando React Query. Vantagens:
-
-- Cache em memória durante a sessão (segunda abertura = instantâneo).
-- `staleTime: Infinity` (dados não mudam).
-- Loading state limpo.
-
-### 3. Refatorar `Biblia.tsx` e `Harpa.tsx`
-
-- Remover `import bibliaData from "@/data/biblia-acf.json"`.
-- Usar o hook e mostrar um esqueleto leve enquanto carrega.
-- Manter exatamente a mesma UI/UX.
-
-### 4. Pré-carregar em hover/foco (opcional, ganho extra)
-
-Nos links de menu ("Bíblia", "Harpa"), disparar o fetch em `onMouseEnter` / `onTouchStart`. Quando o usuário clica, os dados já estão chegando ou já chegaram.
-
-## Resultado esperado
-
-| Cenário | Antes | Depois |
+| Coluna | Tipo | Observação |
 |---|---|---|
-| Primeiro clique em Bíblia (4G) | 2-4s tela em branco | Tela na hora + dados em ~1s |
-| Segundo clique na mesma sessão | 1-2s | Instantâneo |
-| Bundle JS inicial do app | inclui ~4 MB de JSON | 4 MB removidos |
+| id | uuid PK | |
+| user_id | uuid | FK lógica para `auth.users` (dono do ticket) |
+| user_name | text | snapshot do nome no momento do envio |
+| user_email | text | snapshot |
+| church_id | uuid | snapshot da igreja |
+| category | text | `bug` \| `suggestion` \| `question` \| `other` |
+| priority | text | `low` \| `normal` \| `high` (auto: bug=high) |
+| subject | text | até 120 chars |
+| message | text | até 2000 chars |
+| screenshot_url | text nullable | upload opcional (bucket `support`) |
+| page_url | text nullable | URL onde estava ao abrir |
+| user_agent | text nullable | para debug de bug |
+| status | text | `open` \| `in_progress` \| `resolved` \| `closed` |
+| admin_response | text nullable | resposta do superadmin |
+| resolved_by | uuid nullable | |
+| resolved_at | timestamptz nullable | |
+| created_at, updated_at | timestamptz | |
 
-Ganho colateral: o **app inteiro** fica mais leve para baixar na primeira visita (-4 MB do bundle), o que melhora o tempo de abertura inicial em todas as páginas.
+Nova tabela `support_ticket_messages` (thread de conversa entre membro e superadmin):
+- id, ticket_id, author_id, author_role (`user`/`admin`), body, created_at.
 
-## Arquivos afetados
+**RLS:**
+- `support_tickets`: 
+  - SELECT: dono (`user_id = auth.uid()`) **ou** superadmin.
+  - INSERT: autenticado, `user_id = auth.uid()`.
+  - UPDATE: superadmin (status, admin_response, resolved_*).
+  - DELETE: superadmin.
+- `support_ticket_messages`: SELECT pelo dono do ticket ou superadmin; INSERT pelo dono do ticket ou superadmin.
 
-- `src/pages/membro/Biblia.tsx` — refatorar para hook
-- `src/pages/membro/Harpa.tsx` — refatorar para hook
-- `src/hooks/useBibliaData.ts` — novo
-- `src/hooks/useHarpaData.ts` — novo
-- `src/data/biblia-acf.json` → mover para `public/data/`
-- `src/data/harpa-crista.json` → mover para `public/data/`
-- `src/components/membro/MobileBottomNav.tsx` e `MemberSidebar.tsx` — adicionar prefetch em hover (opcional)
+**Bucket de storage** `support` (público read, insert por autenticado) para anexar 1 screenshot.
+
+**Realtime** habilitado nas duas tabelas para o painel atualizar sozinho e o membro ver respostas em tempo real.
+
+**Notificação automática:** trigger que, ao inserir `admin_response` ou nova mensagem do admin, cria registro em `notifications` (escopo `user`) — reaproveitando o sistema de sino que já existe. (Se o escopo `user` ainda não existir no enum/check, adicionar.)
+
+## 2. Página do membro — `/membro/suporte`
+
+Nova rota com layout `MemberLayout`. Conteúdo:
+
+**Topo:** hero curto "Como podemos ajudar?".
+
+**Formulário** (validado com `zod`):
+- Categoria (cards selecionáveis com ícone): Bug, Sugestão, Dúvida, Outro.
+- Assunto (input, max 120).
+- Descrição (textarea, max 2000, contador).
+- Anexar print (opcional, upload para bucket `support`).
+- Botão "Enviar". Captura automática de `page_url` e `user_agent` quando categoria = bug.
+
+**Abaixo do form: "Meus chamados"** — lista dos tickets do usuário com badge de status colorido, categoria e data. Clique abre um drawer com a thread de mensagens (membro pode responder enquanto status ≠ `closed`).
+
+Toast de confirmação no envio + atualização realtime quando o admin responde.
+
+## 3. Entrada no menu (membro)
+
+- `MemberSidebar.tsx`: adicionar item **"Suporte"** (ícone `LifeBuoy`) após "Configurações", no fim da lista (parte de baixo do menu, como solicitado).
+- Não adicionar ao `MobileBottomNav` (já tem 4 itens + FAB); fica acessível via sidebar/drawer mobile.
+
+## 4. Painel superadmin — `/painel/suporte`
+
+Nova página `AdminSupport.tsx` + entrada na `AdminSidebar` (ícone `LifeBuoy`, `superadminOnly`).
+
+**Layout:**
+- Cards de KPI no topo: Abertos, Em andamento, Resolvidos hoje, Tempo médio de resposta.
+- Filtros: status, categoria, prioridade, busca por texto/usuário.
+- Tabela de tickets (assunto, usuário, igreja, categoria, prioridade, status, criado em).
+- Clique abre **drawer/dialog** com:
+  - Detalhes (incluindo `page_url`, `user_agent`, screenshot).
+  - Thread de mensagens (admin pode responder).
+  - Ações: mudar status, definir prioridade, marcar como resolvido (preenche `resolved_by/resolved_at` e dispara notificação ao membro).
+
+Atualização realtime via `supabase.channel`.
+
+## 5. Detalhes técnicos
+
+- Arquivos novos:
+  - `src/pages/membro/Suporte.tsx`
+  - `src/pages/admin/AdminSupport.tsx`
+  - `src/components/suporte/TicketForm.tsx`
+  - `src/components/suporte/TicketThread.tsx`
+  - `src/hooks/useSupportTickets.ts`
+  - Migração SQL (tabelas, RLS, bucket, trigger de notificação, realtime).
+- Edições:
+  - `src/App.tsx` — rotas `/membro/suporte` e `/painel/suporte`.
+  - `src/components/membro/MemberSidebar.tsx` — item "Suporte".
+  - `src/components/admin/AdminSidebar.tsx` — item "Suporte" (superadmin).
+- Validação com `zod` no front; limites de tamanho também no SQL via trigger (evitar CHECK com funções não imutáveis).
+- Filtra `TESTE123` nas listagens administrativas, conforme regra do projeto.
+
+## Decisões a confirmar antes de implementar
