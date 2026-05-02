@@ -249,6 +249,7 @@ export default function AdminCommunity() {
                 )}
               </TabsContent>
 
+              <TabsContent value="reports" className="space-y-4">
                 {loading ? (
                   <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
                 ) : reports.length > 0 ? (
