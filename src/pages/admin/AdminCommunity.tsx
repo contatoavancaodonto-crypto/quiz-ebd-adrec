@@ -52,6 +52,22 @@ export default function AdminCommunity() {
         `)
         .order("created_at", { ascending: false });
 
+      // Fetch pending/blocked content for moderation queue
+      const { data: queueData } = await supabase
+        .from("posts")
+        .select(`
+          *,
+          author:profiles(
+            display_name,
+            first_name,
+            last_name,
+            avatar_url,
+            church:churches(name)
+          )
+        `)
+        .in("status", ["pending", "blocked"])
+        .order("created_at", { ascending: false });
+
       const formattedPosts = (postsData || []).map((p: any) => ({
         ...p,
         author: {
@@ -60,16 +76,45 @@ export default function AdminCommunity() {
         },
         likes_count: p.likes?.length || 0,
         comments_count: p.comments?.filter((c: any) => !c.deleted).length || 0,
-        user_has_liked: false // Not relevant in admin view
+        user_has_liked: false
       }));
 
       setPosts(formattedPosts);
       setReports(reportsData || []);
+      setModerationQueue(queueData || []);
     } catch (error) {
       console.error("Error fetching admin community data:", error);
       toast.error("Erro ao carregar dados de moderação");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const approveContent = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .update({ status: "approved" })
+        .eq("id", id);
+      if (error) throw error;
+      toast.success("Conteúdo aprovado");
+      fetchData();
+    } catch (error) {
+      toast.error("Erro ao aprovar conteúdo");
+    }
+  };
+
+  const blockContent = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .update({ status: "blocked" })
+        .eq("id", id);
+      if (error) throw error;
+      toast.success("Conteúdo bloqueado");
+      fetchData();
+    } catch (error) {
+      toast.error("Erro ao bloquear conteúdo");
     }
   };
 
