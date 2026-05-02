@@ -132,6 +132,25 @@ export default function AdminCommunity() {
 
   useEffect(() => {
     fetchData();
+
+    // Listen for changes in posts (status changes or new posts) and reports
+    const postsChannel = supabase
+      .channel("admin-community-rt")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "posts" },
+        () => fetchData()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "post_reports" },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postsChannel);
+    };
   }, []);
 
   const deletePermanently = async (postId: string) => {
