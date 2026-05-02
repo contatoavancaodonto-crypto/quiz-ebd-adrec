@@ -27,6 +27,7 @@ const items: Array<{
 }> = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
+  { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Histórico", url: "/membro/historico", icon: History },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
