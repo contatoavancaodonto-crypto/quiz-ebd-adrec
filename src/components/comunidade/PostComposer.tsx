@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImagePlus, X, Send } from "lucide-react";
+import { ImagePlus, X, Send, Sparkles, Loader2 } from "lucide-react";
 import { useCommunity } from "@/hooks/useCommunity";
+import { useAI } from "@/hooks/useAI";
 
 export function PostComposer() {
   const [content, setContent] = useState("");
@@ -11,7 +12,32 @@ export function PostComposer() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { createPost } = useCommunity();
+  const { spellCheck, checking } = useAI();
+
+  useEffect(() => {
+    if (content.trim()) {
+      spellCheck(content, (corrected) => {
+        // Only update if the user hasn't typed much more
+        // And try to preserve cursor if possible
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          setContent(corrected);
+          // Restore cursor position after state update (next tick)
+          setTimeout(() => {
+            if (textarea) {
+              textarea.setSelectionRange(start, end);
+            }
+          }, 0);
+        } else {
+          setContent(corrected);
+        }
+      });
+    }
+  }, [content, spellCheck]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
