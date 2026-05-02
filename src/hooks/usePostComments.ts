@@ -96,32 +96,12 @@ export function usePostComments(postId: string) {
   const moderateContent = async (type: "post" | "comment", id: string, content: string) => {
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "moderate", text: content }
+        body: { mode: "moderate", text: content, type, id, userId: user?.id }
       });
 
       if (error) throw error;
 
-      const { status, risk_level, reason } = data;
-      const table = type === "post" ? "posts" : "post_comments";
-      
-      const { error: updateError } = await supabase
-        .from(table as any)
-        .update({ status, risk_level, moderation_reason: reason } as any)
-        .eq("id", id);
-
-      if (updateError) throw updateError;
-
-      // Log moderation
-      await supabase.from("moderation_logs").insert({
-        content_type: type,
-        content_id: id,
-        user_id: user?.id,
-        status,
-        risk_level,
-        reason
-      });
-
-      if (status === "blocked") {
+      if (data?.status === "blocked") {
         toast.error("Seu comentário foi bloqueado por conter conteúdo inadequado.");
       }
     } catch (error) {
