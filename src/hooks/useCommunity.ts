@@ -41,12 +41,12 @@ export function useCommunity() {
         .from("posts")
         .select(`
           *,
-          author:profiles!posts_user_id_fkey (
+          author:profiles(
             display_name,
             first_name,
             last_name,
             avatar_url,
-            church:churches!profiles_church_id_fkey (
+            church:churches(
               name
             )
           ),
