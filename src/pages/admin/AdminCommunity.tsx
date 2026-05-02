@@ -15,6 +15,7 @@ import { ptBR } from "date-fns/locale";
 export default function AdminCommunity() {
   const [posts, setPosts] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [moderationQueue, setModerationQueue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
