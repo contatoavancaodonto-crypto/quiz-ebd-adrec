@@ -81,8 +81,8 @@ export function useCommunity() {
   useEffect(() => {
     fetchPosts();
 
-    const postsChannel = supabase
-      .channel("community-posts")
+    const channel = supabase
+      .channel(`community-posts-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "posts" },
@@ -101,7 +101,7 @@ export function useCommunity() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(postsChannel);
+      supabase.removeChannel(channel);
     };
   }, [fetchPosts]);
 

@@ -496,6 +496,13 @@ export type Database = {
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_likes: {
@@ -611,6 +618,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ranking_general"
             referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
