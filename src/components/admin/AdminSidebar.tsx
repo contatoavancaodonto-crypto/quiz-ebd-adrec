@@ -68,6 +68,7 @@ const allItems: Item[] = [
   { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
   { title: "Histórico de Alterações", url: "/painel/auditoria", icon: History, superadminOnly: true },
   { title: "Notificações", url: "/painel/notificacoes", icon: Megaphone, superadminOnly: true },
+  { title: "Comunidade", url: "/painel/comunidade", icon: MessageSquare, superadminOnly: true },
   { title: "Suporte", url: "/painel/suporte", icon: LifeBuoy, superadminOnly: true },
 ];
 
