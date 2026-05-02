@@ -35,18 +35,42 @@ export function useCommunity() {
   const [userProfile, setUserProfile] = useState<{ church_id: string | null } | null>(null);
 
   useEffect(() => {
-    if (user && !userProfile) {
-      const fetchProfile = async () => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("church_id")
-          .eq("id", user.id)
-          .single();
-        setUserProfile(profile);
-      };
-      fetchProfile();
-    }
-  }, [user, userProfile]);
+    if (!user) return;
+
+    // Fetch initial profile
+    const fetchProfile = async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("church_id")
+        .eq("id", user.id)
+        .single();
+      setUserProfile(profile);
+    };
+    fetchProfile();
+
+    // Listen for real-time changes to the user's profile (specifically church_id)
+    const profileChannel = supabase
+      .channel(`user-profile-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (payload.new && "church_id" in payload.new) {
+            setUserProfile({ church_id: payload.new.church_id });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+    };
+  }, [user]);
 
   const fetchPosts = useCallback(async () => {
     try {
