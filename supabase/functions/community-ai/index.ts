@@ -12,7 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, text, imageUrl } = await req.json();
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { mode, text, imageUrl, type, id, userId } = await req.json();
 
     if (mode === "spellcheck") {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -46,7 +51,7 @@ serve(async (req) => {
         {
           role: "system",
           content: `Você é um moderador de conteúdo para uma comunidade cristã (EBD). 
-          Analise o texto (e imagem se houver) em busca de: palavrões, ofensas, spam, agressividade ou conteúdo inadequado.
+          Analise o texto em busca de: palavrões, ofensas, spam, agressividade ou conteúdo inadequado.
           Classifique como: 'approved', 'pending' ou 'blocked'.
           'pending': se houver dúvida ou conteúdo levemente agressivo.
           'blocked': conteúdo claramente ofensivo, pornográfico ou violento.
@@ -54,11 +59,6 @@ serve(async (req) => {
         },
         { role: "user", content: text },
       ];
-
-      if (imageUrl) {
-        // Handle image analysis if using a vision model
-        // For now, let's just use gpt-4o-mini for text
-      }
 
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -76,6 +76,30 @@ serve(async (req) => {
 
       const data = await response.json();
       const result = JSON.parse(data.choices[0].message.content);
+
+      // Update database if ID is provided
+      if (id && type) {
+        const table = type === "post" ? "posts" : "post_comments";
+        await supabaseClient
+          .from(table)
+          .update({ 
+            status: result.status, 
+            risk_level: result.risk_level, 
+            moderation_reason: result.reason 
+          })
+          .eq("id", id);
+
+        // Log moderation
+        await supabaseClient.from("moderation_logs").insert({
+          content_type: type,
+          content_id: id,
+          user_id: userId,
+          status: result.status,
+          risk_level: result.risk_level,
+          reason: result.reason
+        });
+      }
+
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
