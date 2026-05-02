@@ -6,7 +6,7 @@ import { PostCard } from "@/components/comunidade/PostCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ShieldAlert, MessageSquare, ListFilter, Trash2 } from "lucide-react";
+import { Loader2, ShieldAlert, MessageSquare, ListFilter, Trash2, ShieldCheck, AlertTriangle, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
