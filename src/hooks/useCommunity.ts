@@ -12,6 +12,9 @@ export interface Post {
   updated_at: string;
   deleted: boolean;
   church_id: string | null;
+  status: "approved" | "pending" | "blocked";
+  risk_level: string | null;
+  moderation_reason: string | null;
   author?: {
     display_name: string | null;
     first_name: string | null;
