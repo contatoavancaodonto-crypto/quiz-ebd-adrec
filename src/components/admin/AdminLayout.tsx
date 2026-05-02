@@ -10,6 +10,7 @@ import { useRoles } from "@/hooks/useRoles";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PendingRequestsBell } from "./PendingRequestsBell";
+import { ModerationBell } from "./ModerationBell";
 
 const ADMIN_ROOT = "/painel";
 
@@ -109,6 +110,7 @@ export function AdminLayout() {
                   <SidebarTrigger />
                 </div>
                 <PendingRequestsBell />
+                <ModerationBell />
                 <RoleBadge />
                 <ThemeToggle />
               </div>
