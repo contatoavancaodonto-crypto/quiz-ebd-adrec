@@ -6,11 +6,23 @@ import { PostCard } from "@/components/comunidade/PostCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ShieldAlert, MessageSquare, ListFilter, Trash2, ShieldCheck, AlertTriangle, ShieldX } from "lucide-react";
+import { 
+  Loader2, 
+  ShieldAlert, 
+  MessageSquare, 
+  ListFilter, 
+  Trash2, 
+  ShieldCheck, 
+  AlertTriangle, 
+  ShieldX,
+  Clock
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminCommunity() {
   const [posts, setPosts] = useState<any[]>([]);
