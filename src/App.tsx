@@ -27,6 +27,7 @@ import Historico from "./pages/membro/Historico";
 import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Suporte from "./pages/membro/Suporte";
+import Comunidade from "./pages/membro/Comunidade";
 
 // Admin
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -47,6 +48,7 @@ import AdminMaterials from "./pages/admin/AdminMaterials";
 import AdminAuditLog from "./pages/admin/AdminAuditLog";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminSupport from "./pages/admin/AdminSupport";
+import AdminCommunity from "./pages/admin/AdminCommunity";
 
 // Lazy SOMENTE para páginas pesadas (JSONs grandes da Bíblia/Harpa)
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
@@ -103,12 +105,14 @@ const App = () => (
                 <Route path="auditoria" element={<AdminAuditLog />} />
                 <Route path="notificacoes" element={<AdminNotifications />} />
                 <Route path="suporte" element={<AdminSupport />} />
+                <Route path="comunidade" element={<AdminCommunity />} />
               </Route>
               <Route path="/membro" element={<MeuPerfil />} />
               <Route path="/membro/perfil" element={<MeuPerfil />} />
               <Route path="/membro/desempenho" element={<MeuDesempenho />} />
               <Route path="/membro/historico" element={<Historico />} />
               <Route path="/membro/revista" element={<Revista />} />
+              <Route path="/membro/comunidade" element={<Comunidade />} />
               <Route path="/membro/biblia" element={<Biblia />} />
               <Route path="/membro/harpa" element={<Harpa />} />
               <Route path="/membro/configuracoes" element={<Configuracoes />} />

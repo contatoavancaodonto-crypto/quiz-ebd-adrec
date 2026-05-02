@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,7 @@ const items: Array<{
 }> = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
+  { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Histórico", url: "/membro/historico", icon: History },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
