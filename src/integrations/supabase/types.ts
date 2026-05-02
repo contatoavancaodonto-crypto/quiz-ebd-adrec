@@ -1800,6 +1800,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_superadmins: {
+        Args: { body: string; link: string; source: string; title: string }
+        Returns: undefined
+      }
       reject_church_edit_request: {
         Args: { p_note?: string; p_request_id: string }
         Returns: undefined
