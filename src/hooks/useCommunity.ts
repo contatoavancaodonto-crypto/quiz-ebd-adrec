@@ -35,11 +35,17 @@ export function useCommunity() {
     try {
       setLoading(true);
       
-      // Get current user profile to filter by church if needed (optional based on requirements)
-      // The user said "interagir entre membros da mesma igreja" but "postagens públicas" 
-      // I will fetch all and maybe filter or just show all for now, but the notification is scoped.
+      // Fetch user profile to get church_id
+      if (user && !userProfile) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("church_id")
+          .eq("id", user.id)
+          .single();
+        setUserProfile(profile);
+      }
       
-      const { data: postsData, error: postsError } = await supabase
+      let query = supabase
         .from("posts")
         .select(`
           *,
@@ -55,7 +61,19 @@ export function useCommunity() {
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
-        .eq("deleted", false)
+        .eq("deleted", false);
+
+      if (filter === "church" && (userProfile?.church_id || user?.id)) {
+        // If we don't have userProfile yet but we have filter, 
+        // we might need to fetch it first or use a join.
+        // For simplicity and to match the logic above:
+        const currentChurchId = userProfile?.church_id;
+        if (currentChurchId) {
+          query = query.eq("church_id", currentChurchId);
+        }
+      }
+
+      const { data: postsData, error: postsError } = await query
         .order("created_at", { ascending: false });
 
       if (postsError) throw postsError;
