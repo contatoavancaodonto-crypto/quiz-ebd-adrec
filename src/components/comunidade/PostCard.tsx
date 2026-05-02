@@ -11,7 +11,10 @@ import {
   Flag, 
   Trash2, 
   Edit2,
-  CheckCircle2
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ShieldCheck
 } from "lucide-react";
 import {
   DropdownMenu,
