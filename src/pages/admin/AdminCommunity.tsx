@@ -176,7 +176,79 @@ export default function AdminCommunity() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="reports" className="space-y-4">
+              <TabsContent value="moderation" className="space-y-4">
+                {loading ? (
+                  <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
+                ) : moderationQueue.length > 0 ? (
+                  <div className="grid gap-6">
+                    {moderationQueue.map((item) => (
+                      <Card key={item.id} className={cn(
+                        "overflow-hidden border-none shadow-sm ring-1 ring-border/50",
+                        item.status === "blocked" ? "opacity-75 bg-destructive/5" : ""
+                      )}>
+                        <div className={cn(
+                          "px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between",
+                          item.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-destructive text-destructive-foreground"
+                        )}>
+                          <span className="flex items-center gap-1.5">
+                            {item.status === "pending" ? <Clock className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                            Status IA: {item.status === "pending" ? "Pendente / Em Análise" : "Bloqueado"}
+                          </span>
+                          <span>Nível de Risco: {item.risk_level || "Não informado"}</span>
+                        </div>
+                        <div className="p-4 flex gap-4">
+                          <Avatar className="h-10 w-10 border">
+                            <AvatarImage src={item.author?.avatar_url || undefined} />
+                            <AvatarFallback>{item.author?.first_name?.[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <div className="font-semibold text-sm">
+                                {item.author?.display_name || `${item.author?.first_name} ${item.author?.last_name}`}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(item.created_at), "dd/MM HH:mm", { locale: ptBR })} • {item.author?.church?.name}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-muted/30 p-3 rounded-lg border border-dashed text-sm italic">
+                              {item.content}
+                              {item.image_url && (
+                                <img src={item.image_url} alt="Post" className="mt-2 rounded max-h-40 w-auto object-cover" />
+                              )}
+                            </div>
+
+                            {item.moderation_reason && (
+                              <div className="text-xs text-destructive flex items-start gap-1.5 bg-destructive/5 p-2 rounded">
+                                <ShieldX className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                                <span><strong>Motivo IA:</strong> {item.moderation_reason}</span>
+                              </div>
+                            )}
+
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button variant="outline" size="sm" className="text-destructive" onClick={() => deletePermanently(item.id)}>
+                                <Trash2 className="h-4 w-4 mr-2" /> Excluir Permanente
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => blockContent(item.id)}>
+                                <AlertTriangle className="h-4 w-4 mr-2" /> Bloquear
+                              </Button>
+                              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => approveContent(item.id)}>
+                                <ShieldCheck className="h-4 w-4 mr-2" /> Aprovar Conteúdo
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-20 bg-muted/20 rounded-xl border border-dashed">
+                    <ShieldCheck className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground">Fila de moderação limpa. Nenhum conteúdo suspeito detectado pela IA.</p>
+                  </div>
+                )}
+              </TabsContent>
+
                 {loading ? (
                   <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
                 ) : reports.length > 0 ? (
