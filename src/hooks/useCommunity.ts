@@ -31,19 +31,23 @@ export function useCommunity() {
   const [filter, setFilter] = useState<"all" | "church">("all");
   const [userProfile, setUserProfile] = useState<{ church_id: string | null } | null>(null);
 
-  const fetchPosts = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch user profile to get church_id
-      if (user && !userProfile) {
+  useEffect(() => {
+    if (user && !userProfile) {
+      const fetchProfile = async () => {
         const { data: profile } = await supabase
           .from("profiles")
           .select("church_id")
           .eq("id", user.id)
           .single();
         setUserProfile(profile);
-      }
+      };
+      fetchProfile();
+    }
+  }, [user, userProfile]);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
       
       let query = supabase
         .from("posts")
@@ -96,7 +100,7 @@ export function useCommunity() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, filter, userProfile?.church_id]);
 
   useEffect(() => {
     fetchPosts();
