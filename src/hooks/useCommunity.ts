@@ -28,6 +28,8 @@ export function useCommunity() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "church">("all");
+  const [userProfile, setUserProfile] = useState<{ church_id: string | null } | null>(null);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -103,7 +105,7 @@ export function useCommunity() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchPosts]);
+  }, [fetchPosts, filter]);
 
   const createPost = async (content: string, imageFile?: File) => {
     if (!user) return;
@@ -219,6 +221,8 @@ export function useCommunity() {
   return {
     posts,
     loading,
+    filter,
+    setFilter,
     createPost,
     toggleLike,
     deletePost,
