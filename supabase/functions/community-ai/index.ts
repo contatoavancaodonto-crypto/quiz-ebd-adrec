@@ -77,7 +77,6 @@ serve(async (req) => {
       const data = await response.json();
       const result = JSON.parse(data.choices[0].message.content);
 
-      // Update database if ID is provided
       if (id && type) {
         const table = type === "post" ? "posts" : "post_comments";
         await supabaseClient
@@ -89,7 +88,6 @@ serve(async (req) => {
           })
           .eq("id", id);
 
-        // Log moderation
         await supabaseClient.from("moderation_logs").insert({
           content_type: type,
           content_id: id,
@@ -98,6 +96,16 @@ serve(async (req) => {
           risk_level: result.risk_level,
           reason: result.reason
         });
+
+        if (result.status === "pending" || result.status === "blocked") {
+          await supabaseClient.from("notifications").insert({
+            title: "Conteúdo aguardando moderação",
+            body: `Um ${type === "post" ? "post" : "comentário"} foi marcado como ${result.status === "pending" ? "suspeito" : "bloqueado"} pela IA.`,
+            source: "system",
+            scope: "admin",
+            link: "/painel/comunidade"
+          });
+        }
       }
 
       return new Response(JSON.stringify(result), {
