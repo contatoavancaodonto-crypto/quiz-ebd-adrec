@@ -18,6 +18,7 @@ import {
   History,
   Megaphone,
   LifeBuoy,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
