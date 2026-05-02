@@ -28,16 +28,28 @@ export function useCommunity() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "church">("all");
+  const [userProfile, setUserProfile] = useState<{ church_id: string | null } | null>(null);
+
+  useEffect(() => {
+    if (user && !userProfile) {
+      const fetchProfile = async () => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("church_id")
+          .eq("id", user.id)
+          .single();
+        setUserProfile(profile);
+      };
+      fetchProfile();
+    }
+  }, [user, userProfile]);
 
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       
-      // Get current user profile to filter by church if needed (optional based on requirements)
-      // The user said "interagir entre membros da mesma igreja" but "postagens públicas" 
-      // I will fetch all and maybe filter or just show all for now, but the notification is scoped.
-      
-      const { data: postsData, error: postsError } = await supabase
+      let query = supabase
         .from("posts")
         .select(`
           *,
@@ -53,7 +65,25 @@ export function useCommunity() {
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
-        .eq("deleted", false)
+        .eq("deleted", false);
+
+      if (filter === "church") {
+        if (userProfile === null) {
+          // If profile is still loading, don't fetch posts yet to avoid flash of "all posts"
+          return;
+        }
+        
+        if (userProfile.church_id) {
+          query = query.eq("church_id", userProfile.church_id);
+        } else {
+          // If user has no church, show empty feed for church filter
+          setPosts([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const { data: postsData, error: postsError } = await query
         .order("created_at", { ascending: false });
 
       if (postsError) throw postsError;
@@ -76,7 +106,7 @@ export function useCommunity() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, filter, userProfile?.church_id]);
 
   useEffect(() => {
     fetchPosts();
@@ -103,7 +133,7 @@ export function useCommunity() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchPosts]);
+  }, [fetchPosts, filter]);
 
   const createPost = async (content: string, imageFile?: File) => {
     if (!user) return;
@@ -219,6 +249,8 @@ export function useCommunity() {
   return {
     posts,
     loading,
+    filter,
+    setFilter,
     createPost,
     toggleLike,
     deletePost,
