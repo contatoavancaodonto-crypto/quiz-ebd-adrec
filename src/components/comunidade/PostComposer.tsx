@@ -72,12 +72,26 @@ export function PostComposer() {
     <Card className="mb-6 overflow-hidden border-none shadow-sm ring-1 ring-border/50">
       <CardContent className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Textarea
-            placeholder="Compartilhe um aprendizado, reflexão ou mensagem..."
-            className="min-h-[100px] resize-none border-none bg-muted/50 focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Compartilhe um aprendizado, reflexão ou mensagem..."
+              className="min-h-[100px] resize-none border-none bg-muted/50 focus-visible:ring-0 focus-visible:ring-offset-0 text-base pr-10"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+            {checking && (
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 text-[10px] text-primary animate-pulse bg-background/50 px-2 py-1 rounded-full border border-primary/20 backdrop-blur-sm">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>IA revisando...</span>
+              </div>
+            )}
+            {!checking && content.length > 10 && (
+              <div className="absolute top-2 right-2 text-primary/40">
+                <Sparkles className="h-4 w-4" />
+              </div>
+            )}
+          </div>
 
           {preview && (
             <div className="relative group rounded-lg overflow-hidden border">
