@@ -67,13 +67,19 @@ export function useCommunity() {
         `)
         .eq("deleted", false);
 
-      if (filter === "church" && (userProfile?.church_id || user?.id)) {
-        // If we don't have userProfile yet but we have filter, 
-        // we might need to fetch it first or use a join.
-        // For simplicity and to match the logic above:
-        const currentChurchId = userProfile?.church_id;
-        if (currentChurchId) {
-          query = query.eq("church_id", currentChurchId);
+      if (filter === "church") {
+        if (userProfile === null) {
+          // If profile is still loading, don't fetch posts yet to avoid flash of "all posts"
+          return;
+        }
+        
+        if (userProfile.church_id) {
+          query = query.eq("church_id", userProfile.church_id);
+        } else {
+          // If user has no church, show empty feed for church filter
+          setPosts([]);
+          setLoading(false);
+          return;
         }
       }
 
