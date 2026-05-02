@@ -70,16 +70,62 @@ export function usePostComments(postId: string) {
   const addComment = async (content: string) => {
     if (!user) return;
     try {
-      const { error } = await supabase.from("post_comments").insert({
-        post_id: postId,
-        user_id: user.id,
-        content
-      });
+      const { data: newComment, error } = await supabase
+        .from("post_comments")
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          content,
+          status: "pending"
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Call AI moderation (async)
+      moderateContent("comment", newComment.id, content);
+      
+      toast.success("Comentário enviado para análise.");
     } catch (error: any) {
       console.error("Error adding comment:", error);
       toast.error("Erro ao comentar");
+    }
+  };
+
+  const moderateContent = async (type: "post" | "comment", id: string, content: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("community-ai", {
+        body: { mode: "moderate", text: content }
+      });
+
+      if (error) throw error;
+
+      const { status, risk_level, reason } = data;
+      const table = type === "post" ? "posts" : "post_comments";
+      
+      const { error: updateError } = await supabase
+        .from(table as any)
+        .update({ status, risk_level, moderation_reason: reason } as any)
+        .eq("id", id);
+
+      if (updateError) throw updateError;
+
+      // Log moderation
+      await supabase.from("moderation_logs").insert({
+        content_type: type,
+        content_id: id,
+        user_id: user?.id,
+        status,
+        risk_level,
+        reason
+      });
+
+      if (status === "blocked") {
+        toast.error("Seu comentário foi bloqueado por conter conteúdo inadequado.");
+      }
+    } catch (error) {
+      console.error("Moderation error:", error);
     }
   };
 
