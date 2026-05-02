@@ -190,43 +190,18 @@ export function useCommunity() {
   const moderateContent = async (type: "post" | "comment", id: string, content: string, imageUrl?: string | null) => {
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "moderate", text: content, imageUrl }
+        body: { mode: "moderate", text: content, imageUrl, type, id, userId: user?.id }
       });
 
       if (error) throw error;
 
-      const { status, risk_level, reason } = data;
-
-      const table = type === "post" ? "posts" : "post_comments";
-      
-      const { error: updateError } = await supabase
-        .from(table as any)
-        .update({ status, risk_level, moderation_reason: reason } as any)
-        .eq("id", id);
-
-      if (updateError) throw updateError;
-
-      // Log moderation
-      await supabase.from("moderation_logs").insert({
-        content_type: type,
-        content_id: id,
-        user_id: user?.id,
-        status,
-        risk_level,
-        reason
-      });
+      const { status } = data;
 
       if (status === "blocked") {
         toast.error("Sua postagem foi bloqueada por conter conteúdo inadequado.");
-      } else if (status === "approved") {
-        // Post is now visible due to RLS
       }
     } catch (error) {
       console.error("Moderation error:", error);
-      // Default to approved if AI fails to avoid blocking users? 
-      // User says "Não bloquear conteúdo válido indevidamente".
-      // Let's set it to approved if there's an error in AI for now, or keep as pending for manual review.
-      // Better: keep as pending.
     }
   };
 
