@@ -30,7 +30,7 @@ export function usePostComments(postId: string) {
         .from("post_comments")
         .select(`
           *,
-          author:profiles!post_comments_user_id_fkey (
+          author:profiles(
             display_name,
             first_name,
             last_name,
@@ -42,7 +42,7 @@ export function usePostComments(postId: string) {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      setComments(data || []);
+      setComments((data as any) || []);
     } catch (error: any) {
       console.error("Error fetching comments:", error);
     } finally {
