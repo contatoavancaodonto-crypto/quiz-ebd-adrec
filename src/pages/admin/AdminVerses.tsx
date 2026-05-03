@@ -327,7 +327,8 @@ export default function AdminVerses() {
                       text: v.text, 
                       theme: v.theme,
                       class_id: v.class_id || "",
-                      trimester: v.trimester || 1
+                      trimester: v.trimester || 1,
+                      scheduled_date: v.scheduled_date || ""
                     }); 
                     setOpen(true);
                   }}>Editar</Button>
