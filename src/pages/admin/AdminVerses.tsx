@@ -50,12 +50,14 @@ export default function AdminVerses() {
     text: "", 
     theme: "fé", 
     class_id: "" as string | null, 
-    trimester: 1 
+    trimester: 1,
+    scheduled_date: "" as string | null
   });
 
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiDate, setAiDate] = useState("");
 
   const load = async () => {
     setLoading(true);
