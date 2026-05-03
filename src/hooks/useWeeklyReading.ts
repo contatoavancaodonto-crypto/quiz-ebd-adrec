@@ -108,7 +108,6 @@ const processQuiz = (quiz: any, day: number): WeeklyReading => {
     };
   }
 
-  // Mapeamento automático dos campos de Segunda (1) a Sábado (6)
   const readingKeys = [
     "", // 0 (Sun)
     "devotional_mon",
