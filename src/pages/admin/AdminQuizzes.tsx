@@ -201,6 +201,71 @@ export default function AdminQuizzes() {
     setQuizDialog(false); setEditingQuiz(null); setQForm(emptyForm); load();
   };
 
+  const deleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Tem certeza que deseja apagar os ${selectedIds.size} itens selecionados?`)) return;
+
+    setLoading(true);
+    for (const id of Array.from(selectedIds)) {
+      await smartDelete({ table: "quizzes", id });
+    }
+    toast.success(`${selectedIds.size} itens removidos`);
+    setSelectedIds(new Set());
+    load();
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const toggleSelectAll = (ids: string[]) => {
+    if (selectedIds.size === ids.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(ids));
+    }
+  };
+
+  const handleAiImport = async () => {
+    if (!aiText.trim()) return toast.error("Cole o texto para processar");
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-ai", {
+        body: { mode: "parse_reading_plan", text: aiText },
+      });
+
+      if (error) throw error;
+      
+      setQForm((prev) => ({
+        ...prev,
+        weekly_bible_reading: data.weekly_bible_reading || prev.weekly_bible_reading,
+        devotional_mon: data.devotional_mon || prev.devotional_mon,
+        devotional_tue: data.devotional_tue || prev.devotional_tue,
+        devotional_wed: data.devotional_wed || prev.devotional_wed,
+        devotional_thu: data.devotional_thu || prev.devotional_thu,
+        devotional_fri: data.devotional_fri || prev.devotional_fri,
+        devotional_sat: data.devotional_sat || prev.devotional_sat,
+        lesson_title: data.lesson_title || prev.lesson_title,
+        lesson_number: data.lesson_number || prev.lesson_number,
+        lesson_key_verse_ref: data.lesson_key_verse_ref || prev.lesson_key_verse_ref,
+        lesson_key_verse_text: data.lesson_key_verse_text || prev.lesson_key_verse_text,
+        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : prev.title
+      }));
+
+      toast.success("Plano processado com sucesso!");
+      setAiImportOpen(false);
+      setAiText("");
+      setQuizDialog(true);
+    } catch (err: any) {
+      toast.error("Falha ao processar com IA: " + err.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const toggleActive = async (q: Quiz) => {
     const { error } = await supabase.from("quizzes").update({ active: !q.active }).eq("id", q.id);
     if (error) return toast.error(error.message);
