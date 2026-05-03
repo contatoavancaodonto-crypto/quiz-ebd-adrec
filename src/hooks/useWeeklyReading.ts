@@ -13,6 +13,16 @@ export interface WeeklyReading {
   lessonTitle?: string;
 }
 
+const days = [
+  "Domingo",
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado",
+];
+
 export const useWeeklyReading = () => {
   const { profile } = useProfile();
   const classId = profile?.class_id;
