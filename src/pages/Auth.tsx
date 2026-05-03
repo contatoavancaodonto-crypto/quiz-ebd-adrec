@@ -67,10 +67,16 @@ const Auth = () => {
   // Login fields
   const [identifier, setIdentifier] = useState("");
   const [loginPwd, setLoginPwd] = useState("");
+  const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
   const [keepLoggedIn, setKeepLoggedIn] = useState(() => {
     const v = localStorage.getItem("keepLoggedIn");
     return v === null ? true : v === "true";
   });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("last_login_method");
+    if (saved) setLastLoginMethod(saved);
+  }, []);
 
   // Signup fields
   const [firstName, setFirstName] = useState("");
