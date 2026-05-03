@@ -39,6 +39,9 @@ import {
   useTrimestralProvao,
 } from "@/hooks/useWeeklyQuiz";
 import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
+import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
+import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
+
 import { toast } from "sonner";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -75,7 +78,38 @@ const TOOL_TILES = [
   },
 ];
 
+const WeeklyLessonsList = () => {
+  const { data: lessons, isLoading } = useWeeklyLessons();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[1, 2].map((i) => (
+          <div key={i} className="h-48 rounded-3xl bg-muted animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!lessons || lessons.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground italic">
+        Nenhuma lição encontrada.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {lessons.map((lesson, i) => (
+        <WeeklyLessonCard key={lesson.id} lesson={lesson} index={i} />
+      ))}
+    </div>
+  );
+};
+
 const Index = () => {
+
   const navigate = useNavigate();
   const { setParticipant, setChurch } = useQuizStore();
   const { user, loading: authLoading } = useAuth();
@@ -267,11 +301,10 @@ const Index = () => {
             </div>
           </motion.div>
 
-          {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
+          {/* ===== PLANO DE LEITURA POR LIÇÃO ===== */}
           <section className="space-y-4">
-            <SectionLabel color="primary" label="Plano de Leitura" />
-            <WeeklyReadingCard />
-            <WeeklyVersesGrid />
+            <SectionLabel color="primary" label="Plano de Leitura por Lição" />
+            <WeeklyLessonsList />
           </section>
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
