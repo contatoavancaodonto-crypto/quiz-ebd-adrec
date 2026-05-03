@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 
-export type ReadingType = "devotional" | "bible_reading" | "quiz_cta" | "none";
+export type ReadingType = "verse" | "bible_reading" | "quiz_cta" | "none";
 
 export interface WeeklyReading {
   type: ReadingType;
