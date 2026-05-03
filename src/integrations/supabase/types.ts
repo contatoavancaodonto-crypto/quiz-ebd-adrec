@@ -1392,33 +1392,68 @@ export type Database = {
           active: boolean
           book: string
           chapter: number
+          class_id: string | null
           created_at: string
           id: string
           text: string
           theme: string
+          trimester: number | null
           verse: number
         }
         Insert: {
           active?: boolean
           book: string
           chapter: number
+          class_id?: string | null
           created_at?: string
           id?: string
           text: string
           theme?: string
+          trimester?: number | null
           verse: number
         }
         Update: {
           active?: boolean
           book?: string
           chapter?: number
+          class_id?: string | null
           created_at?: string
           id?: string
           text?: string
           theme?: string
+          trimester?: number | null
           verse?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "verses_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verses_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "verses_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "verses_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+        ]
       }
     }
     Views: {
