@@ -208,7 +208,7 @@ export default function AdminVerses() {
             <Sparkles className="w-4 h-4 mr-1 text-primary" /> Importar com IA
           </Button>
           <Button
-            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1 }); setOpen(true); }}
+            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1, scheduled_date: "" }); setOpen(true); }}
             className="text-foreground shadow bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-1" /> Novo Versículo
