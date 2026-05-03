@@ -63,12 +63,12 @@ export default function AdminMyChurch() {
       ]);
       if (cancelled) return;
       if (ch) {
-        setChurch(ch as ChurchData);
+        setChurch(ch as unknown as ChurchData);
         setName(ch.name ?? "");
         setPastor(ch.pastor_president ?? "");
         setPhone(ch.requester_phone ?? "");
       }
-      setRequests((reqs as EditRequest[]) ?? []);
+      setRequests((reqs as unknown as EditRequest[]) ?? []);
       setLoading(false);
     };
     load();
@@ -131,7 +131,7 @@ export default function AdminMyChurch() {
       proposed_pastor_president,
       proposed_requester_phone,
       status: "pending",
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
