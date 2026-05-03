@@ -158,8 +158,7 @@ export default function AdminVerses() {
         weekly_bible_reading: data.weekly_bible_reading || null,
         devotional_mon: data.verses?.find((v: any) => v.day.toLowerCase().includes("segunda"))?.text || 
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("mon"))?.text || null,
-        devotional_tue: data.verses?.find((v: any) => v.day.toLowerCase().includes("terca")) || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("terça"))?.text || 
+        devotional_tue: data.verses?.find((v: any) => v.day.toLowerCase().includes("terca") || v.day.toLowerCase().includes("terça"))?.text || 
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("tue"))?.text || null,
         devotional_wed: data.verses?.find((v: any) => v.day.toLowerCase().includes("quarta"))?.text || 
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("wed"))?.text || null,
@@ -167,8 +166,7 @@ export default function AdminVerses() {
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("thu"))?.text || null,
         devotional_fri: data.verses?.find((v: any) => v.day.toLowerCase().includes("sexta"))?.text || 
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("fri"))?.text || null,
-        devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado")) || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("sábado"))?.text || 
+        devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado") || v.day.toLowerCase().includes("sábado"))?.text || 
                         data.verses?.find((v: any) => v.day.toLowerCase().includes("sat"))?.text || null,
         quiz_kind: "weekly",
         active: true,
