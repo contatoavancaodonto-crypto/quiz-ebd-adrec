@@ -291,24 +291,55 @@ export type Database = {
       }
       daily_verse: {
         Row: {
+          class_id: string | null
           created_at: string
           date: string
           id: string
           verse_id: string
         }
         Insert: {
+          class_id?: string | null
           created_at?: string
           date: string
           id?: string
           verse_id: string
         }
         Update: {
+          class_id?: string | null
           created_at?: string
           date?: string
           id?: string
           verse_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "daily_verse_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_verse_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "daily_verse_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "daily_verse_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
           {
             foreignKeyName: "daily_verse_verse_id_fkey"
             columns: ["verse_id"]
@@ -1812,7 +1843,7 @@ export type Database = {
         }[]
       }
       get_or_create_daily_verse: {
-        Args: never
+        Args: { p_class_id?: string }
         Returns: {
           book: string
           chapter: number
