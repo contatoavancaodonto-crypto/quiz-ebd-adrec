@@ -10,7 +10,6 @@ import { useChurches } from "@/hooks/useChurches";
 
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
-const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 
 const phoneMask = (v: string) => {
   const d = v.replace(/\D/g, "").slice(0, 11);
@@ -21,7 +20,7 @@ const phoneMask = (v: string) => {
 
 const schema = z.object({
   phone: z.string().trim().min(14, "Telefone inválido"),
-  area: z.string().min(1, "Selecione sua área"),
+  class_id: z.string().min(1, "Selecione sua classe"),
   church: z.string().min(1, "Selecione sua igreja"),
   acceptTerms: z.literal(true, { errorMap: () => ({ message: "Aceite os termos" }) }),
   acceptUpdates: z.literal(true, { errorMap: () => ({ message: "Aceite necessário" }) }),
@@ -37,7 +36,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
   const { churches: CHURCHES } = useChurches();
   const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
-  const [area, setArea] = useState("");
+  const [classId, setClassId] = useState("");
   const [church, setChurch] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptUpdates, setAcceptUpdates] = useState(false);
@@ -48,7 +47,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
   const [pendingChurchRequest, setPendingChurchRequest] = useState<ChurchRequest | null>(null);
 
   const valid =
-    phone.length >= 14 && area && church && acceptTerms && acceptUpdates;
+    phone.length >= 14 && classId && church && acceptTerms && acceptUpdates;
 
   const handleChurchChange = (v: string) => {
     if (v === ADD_CHURCH) {
@@ -73,7 +72,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    const parsed = schema.safeParse({ phone, area, church, acceptTerms, acceptUpdates });
+    const parsed = schema.safeParse({ phone, class_id: classId, church, acceptTerms, acceptUpdates });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
       parsed.error.issues.forEach((i) => (fe[i.path[0] as string] = i.message));
@@ -101,7 +100,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
             approved: false,
             requester_pastor_name: pendingChurchRequest.pastorName,
             requester_phone: pendingChurchRequest.pastorPhone.replace(/\D/g, ""),
-            requester_area: parseInt(pendingChurchRequest.pastorArea, 10),
+            // requester_area is removed from DB, so we don't send it.
           })
           .select("id")
           .single();
@@ -113,7 +112,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
         .from("profiles")
         .update({
           phone: phone.replace(/\D/g, ""),
-          area: parseInt(area, 10),
+          class_id: classId,
           church_id: churchId,
         })
         .eq("id", userId);
@@ -163,13 +162,10 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   placeholder="(11) 99999-9999"
                   error={errors.phone}
                 />
-                <ModalSelect
-                  label="Qual sua área?"
-                  value={area}
-                  onChange={setArea}
-                  placeholder="Selecione sua área"
-                  options={AREAS.map((a) => ({ value: a, label: `Área ${a}` }))}
-                  error={errors.area}
+                <ModalClassSelect
+                  value={classId}
+                  onChange={setClassId}
+                  error={errors.class_id}
                 />
                 <ModalSearchSelect
                   label="Qual o nome da sua igreja?"
@@ -357,3 +353,25 @@ const ModalCheckbox = ({ checked, onChange, label, error }: {
     {error && <p className="text-xs text-destructive mt-1 ml-6">{error}</p>}
   </div>
 );
+
+const ModalClassSelect = ({ value, onChange, error }: {
+  value: string; onChange: (v: string) => void; error?: string;
+}) => {
+  const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
+  
+  useEffect(() => {
+    supabase.from("classes").select("id, name").eq("active", true).order("name")
+      .then(({ data }) => setClasses(data || []));
+  }, []);
+
+  return (
+    <ModalSelect
+      label="Qual sua classe?"
+      value={value}
+      onChange={onChange}
+      placeholder="Selecione sua classe"
+      options={classes.map(c => ({ value: c.id, label: c.name }))}
+      error={error}
+    />
+  );
+};
