@@ -128,6 +128,8 @@ export default function AdminVerses() {
 
   const handleAiImport = async () => {
     if (!aiText.trim()) return toast.error("Cole o texto para processar");
+    if (!aiDate) return toast.error("Selecione a data de referência (segunda-feira)");
+    
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
@@ -136,28 +138,24 @@ export default function AdminVerses() {
 
       if (error) throw error;
       
-      let opens_at = null;
-      let closes_at = null;
-      if (aiDate) {
-        const monday = new Date(aiDate + "T00:00:00");
-        opens_at = monday.toISOString();
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        sunday.setHours(23, 59, 59, 999);
-        closes_at = sunday.toISOString();
-      }
-
-      const versesToInsert = (data.verses || []).map((v: any) => ({
-        book: v.book || "Desconhecido",
-        chapter: v.chapter || 1,
-        verse: v.verse || 1,
-        text: v.text || "",
-        theme: data.lesson_title || "Lição",
-        class_id: aiClassId || null,
-        trimester: aiTrimester || 1,
-        scheduled_date: aiDate || null,
-        active: true
-      }));
+      const monday = new Date(aiDate + "T12:00:00");
+      
+      const versesToInsert = (data.verses || []).map((v: any, index: number) => {
+        const scheduledDate = new Date(monday);
+        scheduledDate.setDate(monday.getDate() + index);
+        
+        return {
+          book: v.book || "Desconhecido",
+          chapter: v.chapter || 1,
+          verse: v.verse || 1,
+          text: v.text || "",
+          theme: data.lesson_title || "Lição",
+          class_id: aiClassId || null,
+          trimester: aiTrimester || 1,
+          scheduled_date: scheduledDate.toISOString().split('T')[0],
+          active: true
+        };
+      });
 
       if (versesToInsert.length === 0) {
         throw new Error("Nenhum versículo encontrado no texto processado.");
@@ -169,10 +167,7 @@ export default function AdminVerses() {
 
       if (insertError) throw insertError;
 
-      // Removida a inserção automática de questões para cumprir o requisito de não gerar perguntas automaticamente no upload.
-      // O usuário deve gerenciar as questões manualmente ou via ação explícita após a criação da lição.
-      
-      toast.success("Versículos importados com sucesso!");
+      toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
       setAiImportOpen(false);
       setAiText("");
       setAiDate("");
