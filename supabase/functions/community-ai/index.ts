@@ -167,22 +167,37 @@ serve(async (req) => {
         { role: "user", content: text },
       ];
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+          "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "google/gemini-2.5-flash",
           messages,
           response_format: { type: "json_object" },
-          temperature: 0,
         }),
       });
 
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("AI Gateway error:", response.status, errText);
+        return new Response(JSON.stringify({ error: `IA falhou: ${response.status}` }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const data = await response.json();
-      const result = JSON.parse(data.choices[0].message.content);
+      const content = data?.choices?.[0]?.message?.content;
+      if (!content) {
+        return new Response(JSON.stringify({ error: "Resposta vazia da IA" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const result = JSON.parse(content);
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
