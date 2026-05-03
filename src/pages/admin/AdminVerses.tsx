@@ -26,6 +26,7 @@ interface Verse {
   active: boolean; 
   class_id?: string | null;
   trimester?: number | null;
+  scheduled_date?: string | null;
 }
 
 interface Cls { id: string; name: string; }
@@ -38,6 +39,7 @@ export default function AdminVerses() {
   const [q, setQ] = useState("");
   const [classFilter, setClassFilter] = useState<string>("all");
   const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const [open, setOpen] = useState(false);
@@ -49,12 +51,14 @@ export default function AdminVerses() {
     text: "", 
     theme: "fé", 
     class_id: "" as string | null, 
-    trimester: 1 
+    trimester: 1,
+    scheduled_date: "" as string | null
   });
 
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiDate, setAiDate] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -74,7 +78,8 @@ export default function AdminVerses() {
     const payload = {
       ...form,
       class_id: form.class_id || null,
-      trimester: form.trimester || null
+      trimester: form.trimester || null,
+      scheduled_date: form.scheduled_date || null
     };
 
     if (editing) {
@@ -87,7 +92,7 @@ export default function AdminVerses() {
     toast.success("Salvo");
     setOpen(false); 
     setEditing(null); 
-    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1 }); 
+    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1, scheduled_date: "" }); 
     load();
   };
 
@@ -130,11 +135,23 @@ export default function AdminVerses() {
       if (error) throw error;
       
       if (data.verses && Array.from(data.verses).length > 0) {
-        const versesToInsert = data.verses.map((v: any) => ({
-          ...v,
-          class_id: classFilter !== "all" ? classFilter : null,
-          trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1
-        }));
+        let currentBatchDate = aiDate ? new Date(aiDate + "T12:00:00") : null;
+        
+        const versesToInsert = data.verses.map((v: any, index: number) => {
+          let scheduled_date = null;
+          if (currentBatchDate) {
+            const dateObj = new Date(currentBatchDate);
+            dateObj.setDate(dateObj.getDate() + index);
+            scheduled_date = dateObj.toISOString().split('T')[0];
+          }
+
+          return {
+            ...v,
+            class_id: classFilter !== "all" ? classFilter : null,
+            trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1,
+            scheduled_date
+          };
+        });
 
         const { error: insertError } = await supabase.from("verses").insert(versesToInsert);
         if (insertError) throw insertError;
@@ -142,6 +159,7 @@ export default function AdminVerses() {
         toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
         setAiImportOpen(false);
         setAiText("");
+        setAiDate("");
         load();
       } else {
         toast.error("Nenhum versículo identificado no texto.");
@@ -163,7 +181,8 @@ export default function AdminVerses() {
     const matchesSearch = `${r.book} ${r.text} ${r.theme}`.toLowerCase().includes(q.toLowerCase());
     const matchesClass = classFilter === "all" || r.class_id === classFilter;
     const matchesTrimester = trimesterFilter === "all" || r.trimester === Number(trimesterFilter);
-    return matchesSearch && matchesClass && matchesTrimester;
+    const matchesDate = !dateFilter || r.scheduled_date === dateFilter;
+    return matchesSearch && matchesClass && matchesTrimester && matchesDate;
   });
 
   const filteredIds = filtered.map(f => f.id);
@@ -191,7 +210,7 @@ export default function AdminVerses() {
             <Sparkles className="w-4 h-4 mr-1 text-primary" /> Importar com IA
           </Button>
           <Button
-            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1 }); setOpen(true); }}
+            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1, scheduled_date: "" }); setOpen(true); }}
             className="text-foreground shadow bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-1" /> Novo Versículo
@@ -229,6 +248,18 @@ export default function AdminVerses() {
             </SelectContent>
           </Select>
         </div>
+        
+        <div className="w-full md:w-40 space-y-1">
+          <Label>Data</Label>
+          <div className="flex gap-1">
+            <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="h-10" />
+            {dateFilter && (
+              <Button variant="ghost" size="icon" onClick={() => setDateFilter("")} className="h-10 w-10">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
 
         {selectedIds.size > 0 && (
           <Button variant="destructive" onClick={deleteSelected} className="gap-2">
@@ -255,6 +286,7 @@ export default function AdminVerses() {
                 </Button>
               </TableHead>
               <TableHead>Referência</TableHead>
+              <TableHead>Agendado</TableHead>
               <TableHead>Classe/Trim</TableHead>
               <TableHead>Texto</TableHead>
               <TableHead>Status</TableHead>
@@ -263,9 +295,9 @@ export default function AdminVerses() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
             ) : filtered.map((v) => (
               <TableRow key={v.id} className={selectedIds.has(v.id) ? "bg-muted/50" : ""}>
                 <TableCell>
@@ -282,6 +314,15 @@ export default function AdminVerses() {
                   </Button>
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap">{v.book} {v.chapter}:{v.verse}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {v.scheduled_date ? (
+                    <span className="text-sm font-medium">
+                      {new Date(v.scheduled_date + "T12:00:00").toLocaleDateString('pt-BR')}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">Não agendado</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     {v.class_id ? (
@@ -310,7 +351,8 @@ export default function AdminVerses() {
                       text: v.text, 
                       theme: v.theme,
                       class_id: v.class_id || "",
-                      trimester: v.trimester || 1
+                      trimester: v.trimester || 1,
+                      scheduled_date: v.scheduled_date || ""
                     }); 
                     setOpen(true);
                   }}>Editar</Button>
@@ -344,7 +386,15 @@ export default function AdminVerses() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} Versículo</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label>Data de Exibição</Label>
+                <Input 
+                  type="date" 
+                  value={form.scheduled_date || ""} 
+                  onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })}
+                />
+              </div>
               <div className="space-y-1">
                 <Label>Classe (Opcional)</Label>
                 <Select 
@@ -396,16 +446,29 @@ export default function AdminVerses() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Cole abaixo uma lista de versículos ou um texto corrido. A IA identificará automaticamente a referência (Livro, Cap, Vers), o texto completo e sugerirá um tema.
-            </p>
-            <Textarea
-              placeholder="Ex: João 3:16 - Porque Deus amou o mundo...
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Data de Início</Label>
+                <Input 
+                  type="date" 
+                  value={aiDate} 
+                  onChange={(e) => setAiDate(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Opcional: Se preenchida, os versículos serão agendados em sequência a partir desta data.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Texto dos Versículos</Label>
+              <Textarea
+                placeholder="Ex: João 3:16 - Porque Deus amou o mundo...
 Salmos 23:1 - O Senhor é meu pastor..."
-              className="min-h-[300px] font-mono text-sm"
-              value={aiText}
-              onChange={(e) => setAiText(e.target.value)}
-            />
+                className="min-h-[200px] font-mono text-sm"
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+              />
+            </div>
             <div className="flex justify-between items-center text-xs text-muted-foreground bg-muted p-2 rounded">
               <span>Os versículos serão importados para a <strong>{classFilter === 'all' ? 'Geral' : classes.find(c => c.id === classFilter)?.name}</strong> e <strong>{trimesterFilter === 'all' ? '1º Trimestre' : `${trimesterFilter}º Trimestre`}</strong>.</span>
             </div>

@@ -38,6 +38,7 @@ import {
   useParticipantStreak,
   useTrimestralProvao,
 } from "@/hooks/useWeeklyQuiz";
+import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { toast } from "sonner";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -267,9 +268,10 @@ const Index = () => {
           </motion.div>
 
           {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
-          <section className="space-y-2">
+          <section className="space-y-4">
             <SectionLabel color="primary" label="Plano de Leitura" />
             <WeeklyReadingCard />
+            <WeeklyVersesGrid />
           </section>
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}

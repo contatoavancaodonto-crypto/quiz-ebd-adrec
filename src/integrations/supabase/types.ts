@@ -1426,6 +1426,7 @@ export type Database = {
           class_id: string | null
           created_at: string
           id: string
+          scheduled_date: string | null
           text: string
           theme: string
           trimester: number | null
@@ -1438,6 +1439,7 @@ export type Database = {
           class_id?: string | null
           created_at?: string
           id?: string
+          scheduled_date?: string | null
           text: string
           theme?: string
           trimester?: number | null
@@ -1450,6 +1452,7 @@ export type Database = {
           class_id?: string | null
           created_at?: string
           id?: string
+          scheduled_date?: string | null
           text?: string
           theme?: string
           trimester?: number | null

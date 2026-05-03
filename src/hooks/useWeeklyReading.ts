@@ -13,6 +13,16 @@ export interface WeeklyReading {
   lessonTitle?: string;
 }
 
+const days = [
+  "Domingo",
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado",
+];
+
 export const useWeeklyReading = () => {
   const { profile } = useProfile();
   const classId = profile?.class_id;
@@ -25,13 +35,34 @@ export const useWeeklyReading = () => {
       const now = new Date();
       const day = now.getDay(); // 0 (Dom) a 6 (Sáb)
       
+      // 1. Tenta buscar versículo agendado para hoje na tabela verses
+      const { data: scheduledVerse } = await supabase
+        .from("verses")
+        .select("*")
+        .eq("scheduled_date", now.toISOString().split('T')[0])
+        .eq("active", true)
+        .or(`class_id.eq.${classId},class_id.is.null`)
+        .order("class_id", { ascending: false, nullsFirst: false }) // Prioriza o da classe
+        .limit(1)
+        .maybeSingle();
+
+      if (scheduledVerse) {
+        return {
+          type: "devotional",
+          title: "Devocional de Hoje",
+          content: scheduledVerse.text,
+          weeklyBibleReading: null,
+          dayName: days[day],
+          lessonTitle: scheduledVerse.theme
+        };
+      }
+
       const { data: quiz, error } = await supabase
         .from("quizzes")
         .select("*")
         .eq("class_id", classId!)
         .eq("quiz_kind", "weekly")
         .eq("active", true)
-        // Filtra quizzes que estão dentro da janela de tempo se opens_at estiver definido
         .lte("opens_at", now.toISOString())
         .order("week_number", { ascending: false })
         .order("created_at", { ascending: false })
@@ -62,16 +93,6 @@ export const useWeeklyReading = () => {
 };
 
 const processQuiz = (quiz: any, day: number): WeeklyReading => {
-  const days = [
-    "Domingo",
-    "Segunda-feira",
-    "Terça-feira",
-    "Quarta-feira",
-    "Quinta-feira",
-    "Sexta-feira",
-    "Sábado",
-  ];
-
   const dayName = days[day];
   const weeklyBibleReading = quiz.weekly_bible_reading || null;
 
