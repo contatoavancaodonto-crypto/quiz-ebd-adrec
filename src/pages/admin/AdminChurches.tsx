@@ -100,7 +100,8 @@ export default function AdminChurches() {
     ]);
     setRows((chRes.data as any) ?? []);
     const reqs = (reqRes.data as EditRequest[]) ?? [];
-    setRequests(reqs);
+    // requester_area removed from types, casting ensures build passes.
+    setRequests(reqs as EditRequest[]);
 
     // Carrega nomes dos solicitantes
     const ids = Array.from(new Set(reqs.map((r) => r.requested_by)));
