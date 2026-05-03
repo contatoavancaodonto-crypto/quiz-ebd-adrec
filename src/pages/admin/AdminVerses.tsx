@@ -181,7 +181,8 @@ export default function AdminVerses() {
     const matchesSearch = `${r.book} ${r.text} ${r.theme}`.toLowerCase().includes(q.toLowerCase());
     const matchesClass = classFilter === "all" || r.class_id === classFilter;
     const matchesTrimester = trimesterFilter === "all" || r.trimester === Number(trimesterFilter);
-    return matchesSearch && matchesClass && matchesTrimester;
+    const matchesDate = !dateFilter || r.scheduled_date === dateFilter;
+    return matchesSearch && matchesClass && matchesTrimester && matchesDate;
   });
 
   const filteredIds = filtered.map(f => f.id);
