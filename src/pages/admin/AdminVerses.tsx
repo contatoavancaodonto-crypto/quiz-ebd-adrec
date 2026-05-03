@@ -172,7 +172,7 @@ export default function AdminVerses() {
       // Removida a inserção automática de questões para cumprir o requisito de não gerar perguntas automaticamente no upload.
       // O usuário deve gerenciar as questões manualmente ou via ação explícita após a criação da lição.
       
-      toast.success("Lição criada com sucesso! (Sem perguntas automáticas)");
+      toast.success("Versículos importados com sucesso!");
       setAiImportOpen(false);
       setAiText("");
       setAiDate("");
