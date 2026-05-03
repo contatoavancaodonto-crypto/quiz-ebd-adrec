@@ -264,6 +264,7 @@ serve(async (req) => {
       });
     }
 
+    return new Response(JSON.stringify({ error: "Invalid mode" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
