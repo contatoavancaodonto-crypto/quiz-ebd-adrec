@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen } from "lucide-react";
+import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen, Search, CheckSquare, Square } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useRoles } from "@/hooks/useRoles";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
@@ -53,6 +53,14 @@ export default function AdminQuizzes() {
   const { isSuperadmin } = useRoles();
   const navigate = useNavigate();
 
+  // Filtros
+  const [classFilter, setClassFilter] = useState<string>("all");
+  const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Seleção em lote
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
   const [qForm, setQForm] = useState({
@@ -71,6 +79,10 @@ export default function AdminQuizzes() {
     devotional_fri: "",
     devotional_sat: "",
   });
+
+  const [aiImportOpen, setAiImportOpen] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -187,6 +199,71 @@ export default function AdminQuizzes() {
     }
     toast.success("Salvo");
     setQuizDialog(false); setEditingQuiz(null); setQForm(emptyForm); load();
+  };
+
+  const deleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Tem certeza que deseja apagar os ${selectedIds.size} itens selecionados?`)) return;
+
+    setLoading(true);
+    for (const id of Array.from(selectedIds)) {
+      await smartDelete({ table: "quizzes", id });
+    }
+    toast.success(`${selectedIds.size} itens removidos`);
+    setSelectedIds(new Set());
+    load();
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const toggleSelectAll = (ids: string[]) => {
+    if (selectedIds.size === ids.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(ids));
+    }
+  };
+
+  const handleAiImport = async () => {
+    if (!aiText.trim()) return toast.error("Cole o texto para processar");
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-ai", {
+        body: { mode: "parse_reading_plan", text: aiText },
+      });
+
+      if (error) throw error;
+      
+      setQForm((prev) => ({
+        ...prev,
+        weekly_bible_reading: data.weekly_bible_reading || prev.weekly_bible_reading,
+        devotional_mon: data.devotional_mon || prev.devotional_mon,
+        devotional_tue: data.devotional_tue || prev.devotional_tue,
+        devotional_wed: data.devotional_wed || prev.devotional_wed,
+        devotional_thu: data.devotional_thu || prev.devotional_thu,
+        devotional_fri: data.devotional_fri || prev.devotional_fri,
+        devotional_sat: data.devotional_sat || prev.devotional_sat,
+        lesson_title: data.lesson_title || prev.lesson_title,
+        lesson_number: data.lesson_number || prev.lesson_number,
+        lesson_key_verse_ref: data.lesson_key_verse_ref || prev.lesson_key_verse_ref,
+        lesson_key_verse_text: data.lesson_key_verse_text || prev.lesson_key_verse_text,
+        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : prev.title
+      }));
+
+      toast.success("Plano processado com sucesso!");
+      setAiImportOpen(false);
+      setAiText("");
+      setQuizDialog(true);
+    } catch (err: any) {
+      toast.error("Falha ao processar com IA: " + err.message);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const toggleActive = async (q: Quiz) => {
@@ -395,40 +472,131 @@ export default function AdminQuizzes() {
     return "aberto";
   };
 
+  const filteredQuizzes = quizzes.filter((q) => {
+    const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesClass = classFilter === "all" || q.class_id === classFilter;
+    const matchesTrimester = trimesterFilter === "all" || String(q.trimester) === trimesterFilter;
+    return matchesSearch && matchesClass && matchesTrimester;
+  });
+
   return (
     <AdminPage
-      title="Quizzes"
-      description="Crie quizzes semanais com janela de abertura/fechamento."
+      title="Quizzes e Planos"
+      description="Gerencie lições, planos de leitura e quizzes."
       Icon={Sparkles}
       variant="primary"
       actions={
-        <Button
-          onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}
-          className="bg-white text-foreground hover:bg-white/90 shadow"
-        >
-          <Plus className="w-4 h-4 mr-1" /> Novo Quiz
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={deleteSelected}
+              className="shadow-sm"
+            >
+              <Trash2 className="w-4 h-4 mr-1" /> Apagar ({selectedIds.size})
+            </Button>
+          )}
+          <Button
+            onClick={() => setAiImportOpen(true)}
+            variant="outline"
+            className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+          >
+            <Sparkles className="w-4 h-4 mr-1" /> Importar com IA
+          </Button>
+          <Button
+            onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}
+            className="bg-white text-foreground hover:bg-white/90 shadow"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Novo Quiz
+          </Button>
+        </div>
       }
     >
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            className="pl-9" 
+            placeholder="Buscar por título…" 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+          />
+        </div>
+        <Select value={classFilter} onValueChange={setClassFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Todas as turmas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as turmas</SelectItem>
+            {classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={trimesterFilter} onValueChange={setTrimesterFilter}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Trimestre" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos trim.</SelectItem>
+            <SelectItem value="1">1º Trimestre</SelectItem>
+            <SelectItem value="2">2º Trimestre</SelectItem>
+            <SelectItem value="3">3º Trimestre</SelectItem>
+            <SelectItem value="4">4º Trimestre</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Título</TableHead><TableHead>Turma</TableHead>
-              <TableHead>Sem.</TableHead><TableHead>Janela</TableHead>
-              <TableHead>Status</TableHead><TableHead>Ativo</TableHead>
+              <TableHead className="w-[40px]">
+                <button 
+                  onClick={() => toggleSelectAll(filteredQuizzes.map(q => q.id))}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {selectedIds.size > 0 && selectedIds.size === filteredQuizzes.length ? (
+                    <CheckSquare className="w-4 h-4 text-primary" />
+                  ) : (
+                    <Square className="w-4 h-4" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Turma</TableHead>
+              <TableHead>Tri.</TableHead>
+              <TableHead>Sem.</TableHead>
+              <TableHead>Janela</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ativo</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
-            ) : quizzes.map((q) => {
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+            ) : filteredQuizzes.length === 0 ? (
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-10">Nenhum quiz encontrado.</TableCell></TableRow>
+            ) : filteredQuizzes.map((q) => {
               const status = isOpen(q);
+              const isSelected = selectedIds.has(q.id);
               return (
-                <TableRow key={q.id}>
+                <TableRow key={q.id} className={isSelected ? "bg-primary/5" : ""}>
+                  <TableCell>
+                    <button 
+                      onClick={() => toggleSelect(q.id)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </TableCell>
                   <TableCell className="font-medium">{q.title}</TableCell>
                   <TableCell>{classes.find((c) => c.id === q.class_id)?.name ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-normal">{q.trimester}º</Badge>
+                  </TableCell>
                   <TableCell>{q.week_number ?? "—"}</TableCell>
                   <TableCell className="text-xs">
                     {q.opens_at || q.closes_at ? (
@@ -690,6 +858,38 @@ export default function AdminQuizzes() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setQuizDialog(false)}>Cancelar</Button>
             <Button onClick={saveQuiz}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={aiImportOpen} onOpenChange={setAiImportOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Importar Plano de Leitura com IA
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Cole abaixo o texto da sua lição ou plano de leitura. Nossa IA identificará 
+              automaticamente a leitura bíblica, os devocionais diários, versículo-chave e título.
+            </p>
+            <Textarea 
+              placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
+              className="min-h-[200px]"
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAiImport} disabled={aiLoading || !aiText.trim()}>
+              {aiLoading ? (
+                <>Processando...</>
+              ) : (
+                <>Identificar e Configurar</>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
