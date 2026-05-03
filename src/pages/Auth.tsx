@@ -14,7 +14,7 @@ import churchLogo from "@/assets/church-logo.webp";
 
 const ADD_CHURCH = "ADICIONAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
-const AREAS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+// AREAS is no longer used, replaced by classes from DB
 
 type Mode = "login" | "signup";
 
@@ -44,7 +44,7 @@ const signupSchema = z
   .object({
     firstName: z.string().trim().min(1, "Digite seu nome").max(50),
     lastName: z.string().trim().min(1, "Digite seu sobrenome").max(50),
-    area: z.string().min(1, "Selecione sua área"),
+    class_id: z.string().min(1, "Selecione sua classe"),
     church: z.string().min(1, "Selecione sua igreja"),
     phone: z.string().trim().min(14, "Telefone inválido"),
     email: z.string().trim().email("Digite um email válido").max(255).or(z.literal("")),
@@ -75,7 +75,8 @@ const Auth = () => {
   // Signup fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [area, setArea] = useState("");
+  const [classId, setClassId] = useState("");
+  const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
   const [church, setChurch] = useState("");
   const [churchModalOpen, setChurchModalOpen] = useState(false);
   const [churchRequested, setChurchRequested] = useState(false);
@@ -104,6 +105,10 @@ const Auth = () => {
 
   useEffect(() => {
     if (!authLoading && user) navigate("/", { replace: true });
+    
+    // Fetch classes
+    supabase.from("classes").select("id, name").eq("active", true).order("name")
+      .then(({ data }) => setClasses(data || []));
   }, [user, authLoading, navigate]);
 
   const handleGoogle = async () => {
@@ -143,7 +148,7 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     const parsed = signupSchema.safeParse({
-      firstName, lastName, area, church, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
+      firstName, lastName, class_id: classId, church, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
     });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
@@ -159,7 +164,7 @@ const Auth = () => {
         emailRedirectTo: window.location.origin,
         data: {
           first_name: firstName.trim(), last_name: lastName.trim(),
-          phone: phone.replace(/\D/g, ""), area, church,
+          phone: phone.replace(/\D/g, ""), class_id: classId, church,
         },
       },
     });
@@ -173,7 +178,7 @@ const Auth = () => {
 
   const pwdStrength = passwordStrength(password);
   const signupValid =
-    firstName && lastName && area && church && phone.length >= 14 && password.length >= 8 &&
+    firstName && lastName && classId && church && phone.length >= 14 && password.length >= 8 &&
     password === confirmPassword && acceptTerms && acceptUpdates;
 
   return (
@@ -275,9 +280,9 @@ const Auth = () => {
                   <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
                 </div>
                 <Select
-                  label="Qual sua área?" value={area} onChange={setArea}
-                  placeholder="Selecione sua área" error={errors.area}
-                  options={AREAS.map((a) => ({ value: a, label: `Área ${a}` }))}
+                  label="Qual sua classe?" value={classId} onChange={setClassId}
+                  placeholder="Selecione sua classe" error={errors.class_id}
+                  options={classes.map((c) => ({ value: c.id, label: c.name }))}
                 />
                 <SearchableSelect
                   label="Qual o nome da sua igreja?" value={church} onChange={handleChurchChange}

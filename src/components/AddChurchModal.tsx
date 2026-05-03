@@ -13,7 +13,7 @@ const phoneMask = (v: string) => {
 const schema = z.object({
   pastorName: z.string().trim().min(1, "Digite o nome do Pastor"),
   pastorPhone: z.string().trim().min(14, "Telefone inválido"),
-  pastorArea: z.string().min(1, "Selecione a área"),
+  // pastorArea is no longer used
 });
 
 export type ChurchRequest = z.infer<typeof schema>;
@@ -27,13 +27,13 @@ interface Props {
 export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
   const [pastorName, setPastorName] = useState("");
   const [pastorPhone, setPastorPhone] = useState("");
-  const [pastorArea, setPastorArea] = useState("");
+  // pastorArea state removed
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse({ pastorName, pastorPhone, pastorArea });
+    const parsed = schema.safeParse({ pastorName, pastorPhone });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
       parsed.error.issues.forEach((i) => (fe[i.path[0] as string] = i.message));
@@ -43,7 +43,7 @@ export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
     setSubmitting(true);
     setTimeout(() => {
       onSubmit(parsed.data);
-      setPastorName(""); setPastorPhone(""); setPastorArea(""); setErrors({});
+      setPastorName(""); setPastorPhone(""); setErrors({});
       setSubmitting(false);
     }, 300);
   };
@@ -100,17 +100,7 @@ export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
                 placeholder="(11) 99999-9999"
                 error={errors.pastorPhone}
               />
-              <ModalSelect
-                label="Área"
-                value={pastorArea}
-                onChange={setPastorArea}
-                placeholder="Selecione a área"
-                options={Array.from({ length: 12 }, (_, i) => ({
-                  value: String(i + 1),
-                  label: `Área ${i + 1}`,
-                }))}
-                error={errors.pastorArea}
-              />
+              {/* Field Area removed as per requirements */}
 
               <div className="grid grid-cols-2 gap-2 pt-3">
                 <button
