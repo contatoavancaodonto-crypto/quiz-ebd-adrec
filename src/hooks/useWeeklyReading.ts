@@ -123,7 +123,7 @@ const processQuiz = (quiz: any, day: number): WeeklyReading => {
   
   return {
     type: content ? "verse" : "bible_reading",
-    title: content ? "Versículo da Semana" : "Leitura Bíblica",
+    title: content ? "Versículo do Dia" : "Leitura Bíblica",
     content,
     weeklyBibleReading,
     dayName,
