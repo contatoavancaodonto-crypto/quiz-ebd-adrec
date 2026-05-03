@@ -256,7 +256,6 @@ export default function AdminVerses() {
               </TableHead>
               <TableHead>Referência</TableHead>
               <TableHead>Classe/Trim</TableHead>
-              <TableHead>Tema</TableHead>
               <TableHead>Texto</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
