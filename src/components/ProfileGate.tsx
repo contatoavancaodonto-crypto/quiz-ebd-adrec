@@ -17,7 +17,7 @@ export const ProfileGate = () => {
   if (!user || loading || profileLoading) return null;
   if (location.pathname === "/auth") return null;
 
-  const incomplete = !profile || !profile.phone || !profile.area || !profile.church_id;
+  const incomplete = !profile || !profile.phone || !profile.class_id || !profile.church_id;
   if (!incomplete) return null;
 
   return (

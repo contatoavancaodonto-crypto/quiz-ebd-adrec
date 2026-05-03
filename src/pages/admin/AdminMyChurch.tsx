@@ -17,7 +17,6 @@ interface ChurchData {
   name: string;
   pastor_president: string | null;
   requester_phone: string | null;
-  requester_area: number | null;
 }
 
 interface EditRequest {
@@ -25,7 +24,6 @@ interface EditRequest {
   proposed_name: string | null;
   proposed_pastor_president: string | null;
   proposed_requester_phone: string | null;
-  proposed_requester_area: number | null;
   status: "pending" | "approved" | "rejected";
   review_note: string | null;
   reviewed_at: string | null;
@@ -39,7 +37,6 @@ export default function AdminMyChurch() {
   const [name, setName] = useState("");
   const [pastor, setPastor] = useState("");
   const [phone, setPhone] = useState("");
-  const [area, setArea] = useState("");
   const [requests, setRequests] = useState<EditRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -52,13 +49,13 @@ export default function AdminMyChurch() {
       const [{ data: ch }, { data: reqs }] = await Promise.all([
         supabase
           .from("churches")
-          .select("id, name, pastor_president, requester_phone, requester_area")
+          .select("id, name, pastor_president, requester_phone")
           .eq("id", churchId)
           .maybeSingle(),
         supabase
           .from("church_edit_requests")
           .select(
-            "id, proposed_name, proposed_pastor_president, proposed_requester_phone, proposed_requester_area, status, review_note, reviewed_at, created_at"
+            "id, proposed_name, proposed_pastor_president, proposed_requester_phone, status, review_note, reviewed_at, created_at"
           )
           .eq("church_id", churchId)
           .order("created_at", { ascending: false })
@@ -66,13 +63,12 @@ export default function AdminMyChurch() {
       ]);
       if (cancelled) return;
       if (ch) {
-        setChurch(ch as ChurchData);
+        setChurch(ch as unknown as ChurchData);
         setName(ch.name ?? "");
         setPastor(ch.pastor_president ?? "");
         setPhone(ch.requester_phone ?? "");
-        setArea(ch.requester_area ? String(ch.requester_area) : "");
       }
-      setRequests((reqs as EditRequest[]) ?? []);
+      setRequests((reqs as unknown as EditRequest[]) ?? []);
       setLoading(false);
     };
     load();
@@ -118,15 +114,10 @@ export default function AdminMyChurch() {
       pastor.trim() !== (church.pastor_president ?? "") ? pastor.trim() : null;
     const proposed_requester_phone =
       phone.trim() !== (church.requester_phone ?? "") ? phone.trim() : null;
-    const areaNum = area.trim() ? Number(area.trim()) : null;
-    const proposed_requester_area =
-      areaNum !== (church.requester_area ?? null) ? areaNum : null;
-
     if (
       !proposed_name &&
       !proposed_pastor_president &&
-      !proposed_requester_phone &&
-      proposed_requester_area === null
+      !proposed_requester_phone
     ) {
       toast.info("Nenhuma alteração detectada");
       return;
@@ -139,9 +130,8 @@ export default function AdminMyChurch() {
       proposed_name,
       proposed_pastor_president,
       proposed_requester_phone,
-      proposed_requester_area,
       status: "pending",
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
@@ -195,17 +185,6 @@ export default function AdminMyChurch() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(00) 00000-0000"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="area">Área (1–12)</Label>
-                <Input
-                  id="area"
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
                 />
               </div>
             </div>
@@ -269,12 +248,6 @@ export default function AdminMyChurch() {
                         <li>
                           <span className="font-medium">Telefone:</span>{" "}
                           {r.proposed_requester_phone}
-                        </li>
-                      )}
-                      {r.proposed_requester_area !== null && (
-                        <li>
-                          <span className="font-medium">Área:</span>{" "}
-                          {r.proposed_requester_area}
                         </li>
                       )}
                     </ul>

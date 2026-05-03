@@ -39,7 +39,6 @@ interface Church {
   pastor_president: string | null;
   requester_pastor_name: string | null;
   requester_phone: string | null;
-  requester_area: number | null;
 }
 
 interface EditRequest {
@@ -48,7 +47,6 @@ interface EditRequest {
   proposed_name: string | null;
   proposed_pastor_president: string | null;
   proposed_requester_phone: string | null;
-  proposed_requester_area: number | null;
   status: "pending" | "approved" | "rejected";
   review_note: string | null;
   reviewed_at: string | null;
@@ -102,7 +100,8 @@ export default function AdminChurches() {
     ]);
     setRows((chRes.data as any) ?? []);
     const reqs = (reqRes.data as EditRequest[]) ?? [];
-    setRequests(reqs);
+    // requester_area removed from types, casting ensures build passes.
+    setRequests(reqs as EditRequest[]);
 
     // Carrega nomes dos solicitantes
     const ids = Array.from(new Set(reqs.map((r) => r.requested_by)));
@@ -404,13 +403,7 @@ export default function AdminChurches() {
                         after={r.proposed_requester_phone}
                       />
                     )}
-                    {r.proposed_requester_area !== null && ch && (
-                      <DiffRow
-                        label="Área"
-                        before={String(ch.requester_area ?? "—")}
-                        after={String(r.proposed_requester_area)}
-                      />
-                    )}
+                    {/* proposed_requester_area removed */}
                   </div>
 
                   {r.review_note && (

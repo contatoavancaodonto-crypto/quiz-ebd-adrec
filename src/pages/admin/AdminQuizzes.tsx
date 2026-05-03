@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Validation added successfully
 
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -108,9 +107,9 @@ export default function AdminQuizzes() {
       supabase.from("classes").select("id, name").order("name"),
       supabase.from("seasons").select("id, name, status").order("created_at", { ascending: false }),
     ]);
-    setQuizzes((qz.data as any) ?? []);
-    setClasses((cl.data as any) ?? []);
-    setSeasons((ss.data as any) ?? []);
+    setQuizzes((qz.data as Quiz[]) ?? []);
+    setClasses((cl.data as Cls[]) ?? []);
+    setSeasons((ss.data as Season[]) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);

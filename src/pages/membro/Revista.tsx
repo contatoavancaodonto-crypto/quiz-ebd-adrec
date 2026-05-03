@@ -18,6 +18,8 @@ import revistaJuvenis from "@/assets/revista-juvenis.png";
 
 
 
+import { useFullProfile } from "@/hooks/useFullProfile";
+
 type RevistaItem = {
   id: string;
   title: string;
@@ -220,12 +222,17 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
 export default function Revista() {
   const [tab, setTab] = useState("alunos");
 
+  const { data: profile } = useFullProfile();
+  const userClassId = profile?.class_id;
+
   const { data: dbMaterials, isLoading } = useQuery({
-    queryKey: ["all-class-materials"],
+    queryKey: ["class-materials", userClassId],
+    enabled: !!userClassId,
     queryFn: async () => {
       const { data } = await supabase
         .from("class_materials")
         .select("*, classes(name, cover_url)")
+        .eq("class_id", userClassId!)
         .order("year", { ascending: false })
         .order("trimester", { ascending: false });
       return data ?? [];
@@ -233,7 +240,7 @@ export default function Revista() {
   });
 
   const studentsMaterials = useMemo(() => {
-    const list = [...STATIC_ALUNOS];
+    const list: RevistaItem[] = []; // Inicia vazio para filtrar apenas a classe do usuário
     if (dbMaterials) {
       dbMaterials.forEach(m => {
         if (!m.title.toLowerCase().includes("professor")) {
@@ -251,7 +258,7 @@ export default function Revista() {
   }, [dbMaterials]);
 
   const professorsMaterials = useMemo(() => {
-    const list = [...STATIC_PROFESSORES];
+    const list: RevistaItem[] = []; // Inicia vazio
     if (dbMaterials) {
       dbMaterials.forEach(m => {
         if (m.title.toLowerCase().includes("professor")) {
