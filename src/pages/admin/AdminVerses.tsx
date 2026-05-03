@@ -147,44 +147,32 @@ export default function AdminVerses() {
         closes_at = sunday.toISOString();
       }
 
-      const payload: any = {
-        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : "Nova Lição",
+      const versesToInsert = (data.verses || []).map((v: any) => ({
+        book: v.book || "Desconhecido",
+        chapter: v.chapter || 1,
+        verse: v.verse || 1,
+        text: v.text || "",
+        theme: data.lesson_title || "Lição",
         class_id: aiClassId || null,
         trimester: aiTrimester || 1,
-        opens_at,
-        closes_at,
-        lesson_title: data.lesson_title || null,
-        lesson_number: data.lesson_number || null,
-        weekly_bible_reading: data.weekly_bible_reading || null,
-        devotional_mon: data.verses?.find((v: any) => v.day.toLowerCase().includes("segunda"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("mon"))?.text || null,
-        devotional_tue: data.verses?.find((v: any) => v.day.toLowerCase().includes("terca") || v.day.toLowerCase().includes("terça"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("tue"))?.text || null,
-        devotional_wed: data.verses?.find((v: any) => v.day.toLowerCase().includes("quarta"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("wed"))?.text || null,
-        devotional_thu: data.verses?.find((v: any) => v.day.toLowerCase().includes("quinta"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("thu"))?.text || null,
-        devotional_fri: data.verses?.find((v: any) => v.day.toLowerCase().includes("sexta"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("fri"))?.text || null,
-        devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado") || v.day.toLowerCase().includes("sábado"))?.text || 
-                        data.verses?.find((v: any) => v.day.toLowerCase().includes("sat"))?.text || null,
-        quiz_kind: "weekly",
-        active: true,
-        total_questions: data.questions?.length || 0
-      };
+        scheduled_date: aiDate || null,
+        active: true
+      }));
 
-      const { data: insertedQuiz, error: insertError } = await supabase
-        .from("quizzes")
-        .insert(payload)
-        .select()
-        .single();
+      if (versesToInsert.length === 0) {
+        throw new Error("Nenhum versículo encontrado no texto processado.");
+      }
+
+      const { error: insertError } = await supabase
+        .from("verses")
+        .insert(versesToInsert);
 
       if (insertError) throw insertError;
 
       // Removida a inserção automática de questões para cumprir o requisito de não gerar perguntas automaticamente no upload.
       // O usuário deve gerenciar as questões manualmente ou via ação explícita após a criação da lição.
       
-      toast.success("Lição criada com sucesso! (Sem perguntas automáticas)");
+      toast.success("Versículos importados com sucesso!");
       setAiImportOpen(false);
       setAiText("");
       setAiDate("");
