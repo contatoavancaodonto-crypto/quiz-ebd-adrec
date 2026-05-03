@@ -131,41 +131,72 @@ export default function AdminVerses() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "parse_verses", text: aiText },
+        body: { mode: "parse_weekly_lesson", text: aiText },
       });
 
       if (error) throw error;
       
-      if (data.verses && Array.from(data.verses).length > 0) {
-        let currentBatchDate = aiDate ? new Date(aiDate + "T12:00:00") : null;
-        
-        const versesToInsert = data.verses.map((v: any, index: number) => {
-          let scheduled_date = null;
-          if (currentBatchDate) {
-            const dateObj = new Date(currentBatchDate);
-            dateObj.setDate(dateObj.getDate() + index);
-            scheduled_date = dateObj.toISOString().split('T')[0];
-          }
-
-          return {
-            ...v,
-            class_id: classFilter !== "all" ? classFilter : null,
-            trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1,
-            scheduled_date
-          };
-        });
-
-        const { error: insertError } = await supabase.from("verses").insert(versesToInsert);
-        if (insertError) throw insertError;
-
-        toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
-        setAiImportOpen(false);
-        setAiText("");
-        setAiDate("");
-        load();
-      } else {
-        toast.error("Nenhum versículo identificado no texto.");
+      let opens_at = null;
+      let closes_at = null;
+      if (aiDate) {
+        const monday = new Date(aiDate + "T00:00:00");
+        opens_at = monday.toISOString();
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+        closes_at = sunday.toISOString();
       }
+
+      const payload: any = {
+        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : "Nova Lição",
+        class_id: aiClassId || null,
+        trimester: aiTrimester || 1,
+        opens_at,
+        closes_at,
+        lesson_title: data.lesson_title || null,
+        lesson_number: data.lesson_number || null,
+        weekly_bible_reading: data.weekly_bible_reading || null,
+        devotional_mon: data.verses?.find((v: any) => v.day.toLowerCase().includes("segunda"))?.text || null,
+        devotional_tue: data.verses?.find((v: any) => v.day.toLowerCase().includes("terca"))?.text || null,
+        devotional_wed: data.verses?.find((v: any) => v.day.toLowerCase().includes("quarta"))?.text || null,
+        devotional_thu: data.verses?.find((v: any) => v.day.toLowerCase().includes("quinta"))?.text || null,
+        devotional_fri: data.verses?.find((v: any) => v.day.toLowerCase().includes("sexta"))?.text || null,
+        devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado"))?.text || null,
+        quiz_kind: "weekly",
+        active: true,
+        total_questions: data.questions?.length || 0
+      };
+
+      const { data: insertedQuiz, error: insertError } = await supabase
+        .from("quizzes")
+        .insert(payload)
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      if (data.questions && data.questions.length > 0) {
+        const questionsToInsert = data.questions.map((q: any, i: number) => ({
+          quiz_id: insertedQuiz.id,
+          question_text: q.question_text,
+          option_a: q.option_a,
+          option_b: q.option_b,
+          option_c: q.option_c,
+          option_d: q.option_d,
+          correct_option: q.correct_option,
+          order_index: i + 1,
+          active: true
+        }));
+
+        const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
+        if (qError) toast.error("Erro ao inserir questões, mas a lição foi criada.");
+      }
+
+      toast.success("Lição completa importada com sucesso!");
+      setAiImportOpen(false);
+      setAiText("");
+      setAiDate("");
+      load();
     } catch (err: any) {
       toast.error("Falha ao processar com IA: " + err.message);
     } finally {
