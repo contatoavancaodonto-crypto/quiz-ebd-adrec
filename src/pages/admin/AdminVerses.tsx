@@ -256,7 +256,6 @@ export default function AdminVerses() {
               </TableHead>
               <TableHead>Referência</TableHead>
               <TableHead>Classe/Trim</TableHead>
-              <TableHead>Tema</TableHead>
               <TableHead>Texto</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -264,9 +263,9 @@ export default function AdminVerses() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
             ) : filtered.map((v) => (
               <TableRow key={v.id} className={selectedIds.has(v.id) ? "bg-muted/50" : ""}>
                 <TableCell>
@@ -299,8 +298,7 @@ export default function AdminVerses() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell><Badge variant="outline">{v.theme}</Badge></TableCell>
-                <TableCell className="max-w-md truncate">{v.text}</TableCell>
+                 <TableCell className="max-w-md truncate">{v.text}</TableCell>
                 <TableCell>{v.active ? <Badge>Ativo</Badge> : <Badge variant="outline">Inativo</Badge>}</TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button size="sm" variant="outline" onClick={() => {
@@ -379,7 +377,6 @@ export default function AdminVerses() {
               <div><Label>Cap.</Label><Input type="number" value={form.chapter} onChange={(e) => setForm({ ...form, chapter: Number(e.target.value) })} /></div>
               <div><Label>Vers.</Label><Input type="number" value={form.verse} onChange={(e) => setForm({ ...form, verse: Number(e.target.value) })} /></div>
             </div>
-            <div><Label>Tema</Label><Input value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} /></div>
             <div><Label>Texto</Label><Textarea rows={4} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} /></div>
           </div>
           <DialogFooter>
