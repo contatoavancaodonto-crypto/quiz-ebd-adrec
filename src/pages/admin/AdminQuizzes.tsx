@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen } from "lucide-react";
+import { Plus, ListChecks, Trash2, FileUp, Eraser, Sparkles, BookOpen, Search, CheckSquare, Square } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { useRoles } from "@/hooks/useRoles";
 import { BulkQuestionImportDialog } from "@/components/admin/BulkQuestionImportDialog";
