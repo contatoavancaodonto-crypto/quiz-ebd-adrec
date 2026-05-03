@@ -123,6 +123,8 @@ const Auth = () => {
     if (result.error) {
       toast.error("Erro ao entrar com Google");
       setSubmitting(false);
+    } else {
+      localStorage.setItem("last_login_method", "google");
     }
   };
 
@@ -138,7 +140,8 @@ const Auth = () => {
     }
     setSubmitting(true);
     localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
-    const isEmail = detectIdentifier(identifier) === "email";
+    const loginType = detectIdentifier(identifier);
+    const isEmail = loginType === "email";
     const { error } = isEmail
       ? await supabase.auth.signInWithPassword({ email: identifier.trim(), password: loginPwd })
       : await supabase.auth.signInWithPassword({ phone: identifier.replace(/\D/g, ""), password: loginPwd });
@@ -147,6 +150,7 @@ const Auth = () => {
       toast.error(error.message.includes("Invalid") ? "Email/telefone ou senha incorretos" : error.message);
       return;
     }
+    localStorage.setItem("last_login_method", loginType);
     toast.success("Bem-vindo de volta!");
   };
 
