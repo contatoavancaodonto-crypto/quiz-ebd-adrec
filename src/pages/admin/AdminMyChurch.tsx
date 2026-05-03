@@ -17,7 +17,6 @@ interface ChurchData {
   name: string;
   pastor_president: string | null;
   requester_phone: string | null;
-  // requester_area removed
 }
 
 interface EditRequest {
@@ -25,7 +24,6 @@ interface EditRequest {
   proposed_name: string | null;
   proposed_pastor_president: string | null;
   proposed_requester_phone: string | null;
-  // proposed_requester_area removed
   status: "pending" | "approved" | "rejected";
   review_note: string | null;
   reviewed_at: string | null;
@@ -70,7 +68,6 @@ export default function AdminMyChurch() {
         setName(ch.name ?? "");
         setPastor(ch.pastor_president ?? "");
         setPhone(ch.requester_phone ?? "");
-        // area removed
       }
       setRequests((reqs as EditRequest[]) ?? []);
       setLoading(false);
@@ -134,7 +131,6 @@ export default function AdminMyChurch() {
       proposed_name,
       proposed_pastor_president,
       proposed_requester_phone,
-      // area removed
       status: "pending",
     });
     setSubmitting(false);
@@ -192,7 +188,6 @@ export default function AdminMyChurch() {
                   placeholder="(00) 00000-0000"
                 />
               </div>
-              {/* Area removed */}
             </div>
 
             <div className="flex justify-end">
@@ -256,7 +251,6 @@ export default function AdminMyChurch() {
                           {r.proposed_requester_phone}
                         </li>
                       )}
-                      {/* Area removed */}
                     </ul>
                     {r.review_note && (
                       <div className="text-xs italic text-muted-foreground border-t pt-1.5">
