@@ -472,21 +472,78 @@ export default function AdminQuizzes() {
     return "aberto";
   };
 
+  const filteredQuizzes = quizzes.filter((q) => {
+    const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesClass = classFilter === "all" || q.class_id === classFilter;
+    const matchesTrimester = trimesterFilter === "all" || String(q.trimester) === trimesterFilter;
+    return matchesSearch && matchesClass && matchesTrimester;
+  });
+
   return (
     <AdminPage
-      title="Quizzes"
-      description="Crie quizzes semanais com janela de abertura/fechamento."
+      title="Quizzes e Planos"
+      description="Gerencie lições, planos de leitura e quizzes."
       Icon={Sparkles}
       variant="primary"
       actions={
-        <Button
-          onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}
-          className="bg-white text-foreground hover:bg-white/90 shadow"
-        >
-          <Plus className="w-4 h-4 mr-1" /> Novo Quiz
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={deleteSelected}
+              className="shadow-sm"
+            >
+              <Trash2 className="w-4 h-4 mr-1" /> Apagar ({selectedIds.size})
+            </Button>
+          )}
+          <Button
+            onClick={() => setAiImportOpen(true)}
+            variant="outline"
+            className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+          >
+            <Sparkles className="w-4 h-4 mr-1" /> Importar com IA
+          </Button>
+          <Button
+            onClick={() => { setEditingQuiz(null); setQForm(emptyForm); setQuizDialog(true); }}
+            className="bg-white text-foreground hover:bg-white/90 shadow"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Novo Quiz
+          </Button>
+        </div>
       }
     >
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            className="pl-9" 
+            placeholder="Buscar por título…" 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+          />
+        </div>
+        <Select value={classFilter} onValueChange={setClassFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Todas as turmas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as turmas</SelectItem>
+            {classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={trimesterFilter} onValueChange={setTrimesterFilter}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Trimestre" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos trim.</SelectItem>
+            <SelectItem value="1">1º Trimestre</SelectItem>
+            <SelectItem value="2">2º Trimestre</SelectItem>
+            <SelectItem value="3">3º Trimestre</SelectItem>
+            <SelectItem value="4">4º Trimestre</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <Card>
         <Table>
           <TableHeader>
