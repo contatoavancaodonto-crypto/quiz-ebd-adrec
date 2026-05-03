@@ -242,10 +242,23 @@ export default function AdminQuizzes() {
 
       if (error) throw error;
       
+      let opens_at = null;
+      let closes_at = null;
+      if (aiDate) {
+        const monday = new Date(aiDate + "T00:00:00");
+        opens_at = monday.toISOString();
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+        closes_at = sunday.toISOString();
+      }
+
       const payload: any = {
         title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : "Nova Lição",
         class_id: aiClassId || null,
         trimester: aiTrimester || 1,
+        opens_at,
+        closes_at,
         lesson_title: data.lesson_title || null,
         lesson_number: data.lesson_number || null,
         weekly_bible_reading: data.weekly_bible_reading || null,
