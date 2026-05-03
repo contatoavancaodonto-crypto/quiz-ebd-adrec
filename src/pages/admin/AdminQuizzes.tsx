@@ -85,6 +85,7 @@ export default function AdminQuizzes() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiClassId, setAiClassId] = useState("");
   const [aiTrimester, setAiTrimester] = useState(1);
+  const [aiDate, setAiDate] = useState("");
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
