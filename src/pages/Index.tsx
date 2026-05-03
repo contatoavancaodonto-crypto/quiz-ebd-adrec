@@ -38,6 +38,7 @@ import {
   useParticipantStreak,
   useTrimestralProvao,
 } from "@/hooks/useWeeklyQuiz";
+import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { toast } from "sonner";
 
 const pad = (n: number) => String(n).padStart(2, "0");
