@@ -916,7 +916,7 @@ export default function AdminQuizzes() {
                 onChange={(e) => setAiText(e.target.value)}
               />
               <p className="text-[10px] text-muted-foreground">
-                Dica: A IA identificará automaticamente leitura bíblica, devocionais diários, versículo-chave e título.
+                Dica: A IA identificará automaticamente leitura bíblica, versículos diários, versículo-chave e título.
               </p>
             </div>
           </div>
