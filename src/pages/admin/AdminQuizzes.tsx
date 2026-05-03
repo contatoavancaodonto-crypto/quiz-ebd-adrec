@@ -751,7 +751,7 @@ export default function AdminQuizzes() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold">6 Versículos (Devocionais)</Label>
+                    <Label className="text-xs font-semibold">6 Versículos (Leitura Diária)</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label className="text-[10px] text-muted-foreground ml-1">Segunda</Label>
