@@ -83,6 +83,8 @@ export default function AdminQuizzes() {
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiClassId, setAiClassId] = useState("");
+  const [aiTrimester, setAiTrimester] = useState(1);
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -241,6 +243,8 @@ export default function AdminQuizzes() {
       
       setQForm((prev) => ({
         ...prev,
+        class_id: aiClassId || prev.class_id,
+        trimester: aiTrimester || prev.trimester,
         weekly_bible_reading: data.weekly_bible_reading || prev.weekly_bible_reading,
         devotional_mon: data.devotional_mon || prev.devotional_mon,
         devotional_tue: data.devotional_tue || prev.devotional_tue,
@@ -497,7 +501,11 @@ export default function AdminQuizzes() {
             </Button>
           )}
           <Button
-            onClick={() => setAiImportOpen(true)}
+            onClick={() => {
+              setAiClassId(classFilter === "all" ? "" : classFilter);
+              setAiTrimester(trimesterFilter === "all" ? 1 : Number(trimesterFilter));
+              setAiImportOpen(true);
+            }}
             variant="outline"
             className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
           >
@@ -870,16 +878,47 @@ export default function AdminQuizzes() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Cole abaixo o texto da sua lição ou plano de leitura. Nossa IA identificará 
-              automaticamente a leitura bíblica, os devocionais diários, versículo-chave e título.
-            </p>
-            <Textarea 
-              placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
-              className="min-h-[200px]"
-              value={aiText}
-              onChange={(e) => setAiText(e.target.value)}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Classe destino</Label>
+                <Select value={aiClassId} onValueChange={setAiClassId}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Trimestre</Label>
+                <Select value={aiTrimester.toString()} onValueChange={(v) => setAiTrimester(Number(v))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4].map(t => (
+                      <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Texto do plano / lição</Label>
+              <Textarea 
+                placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
+                className="min-h-[150px]"
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Dica: A IA identificará automaticamente leitura bíblica, devocionais diários, versículo-chave e título.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
