@@ -247,6 +247,18 @@ export default function AdminVerses() {
             </SelectContent>
           </Select>
         </div>
+        
+        <div className="w-full md:w-40 space-y-1">
+          <Label>Data</Label>
+          <div className="flex gap-1">
+            <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="h-10" />
+            {dateFilter && (
+              <Button variant="ghost" size="icon" onClick={() => setDateFilter("")} className="h-10 w-10">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
 
         {selectedIds.size > 0 && (
           <Button variant="destructive" onClick={deleteSelected} className="gap-2">
