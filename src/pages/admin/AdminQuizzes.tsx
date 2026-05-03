@@ -548,21 +548,55 @@ export default function AdminQuizzes() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Título</TableHead><TableHead>Turma</TableHead>
-              <TableHead>Sem.</TableHead><TableHead>Janela</TableHead>
-              <TableHead>Status</TableHead><TableHead>Ativo</TableHead>
+              <TableHead className="w-[40px]">
+                <button 
+                  onClick={() => toggleSelectAll(filteredQuizzes.map(q => q.id))}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {selectedIds.size > 0 && selectedIds.size === filteredQuizzes.length ? (
+                    <CheckSquare className="w-4 h-4 text-primary" />
+                  ) : (
+                    <Square className="w-4 h-4" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Turma</TableHead>
+              <TableHead>Tri.</TableHead>
+              <TableHead>Sem.</TableHead>
+              <TableHead>Janela</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ativo</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
-            ) : quizzes.map((q) => {
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+            ) : filteredQuizzes.length === 0 ? (
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-10">Nenhum quiz encontrado.</TableCell></TableRow>
+            ) : filteredQuizzes.map((q) => {
               const status = isOpen(q);
+              const isSelected = selectedIds.has(q.id);
               return (
-                <TableRow key={q.id}>
+                <TableRow key={q.id} className={isSelected ? "bg-primary/5" : ""}>
+                  <TableCell>
+                    <button 
+                      onClick={() => toggleSelect(q.id)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </TableCell>
                   <TableCell className="font-medium">{q.title}</TableCell>
                   <TableCell>{classes.find((c) => c.id === q.class_id)?.name ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-normal">{q.trimester}º</Badge>
+                  </TableCell>
                   <TableCell>{q.week_number ?? "—"}</TableCell>
                   <TableCell className="text-xs">
                     {q.opens_at || q.closes_at ? (
