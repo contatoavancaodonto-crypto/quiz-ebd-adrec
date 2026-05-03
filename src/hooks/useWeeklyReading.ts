@@ -49,7 +49,7 @@ export const useWeeklyReading = () => {
       if (scheduledVerse) {
         return {
           type: "verse",
-          title: "Versículo da Lição",
+          title: "Versículo do Dia",
           content: scheduledVerse.text,
           weeklyBibleReading: null,
           dayName: days[day],
