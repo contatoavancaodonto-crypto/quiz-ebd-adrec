@@ -192,7 +192,7 @@ export default function AdminVerses() {
           </Button>
           <Button
             onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1 }); setOpen(true); }}
-            className="bg-white text-foreground hover:bg-white/90 shadow"
+            className="text-foreground shadow bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-1" /> Novo Versículo
           </Button>
