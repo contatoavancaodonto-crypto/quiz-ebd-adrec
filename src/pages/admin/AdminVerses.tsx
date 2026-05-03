@@ -77,7 +77,8 @@ export default function AdminVerses() {
     const payload = {
       ...form,
       class_id: form.class_id || null,
-      trimester: form.trimester || null
+      trimester: form.trimester || null,
+      scheduled_date: form.scheduled_date || null
     };
 
     if (editing) {
@@ -90,7 +91,7 @@ export default function AdminVerses() {
     toast.success("Salvo");
     setOpen(false); 
     setEditing(null); 
-    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1 }); 
+    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1, scheduled_date: "" }); 
     load();
   };
 
