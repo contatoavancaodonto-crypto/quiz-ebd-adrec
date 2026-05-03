@@ -270,11 +270,10 @@ const Index = () => {
             </div>
           </motion.div>
 
-          {/* ===== CONTINUAR LEITURA: VERSÍCULO DO DIA ===== */}
+          {/* ===== PLANO DE LEITURA POR LIÇÃO ===== */}
           <section className="space-y-4">
-            <SectionLabel color="primary" label="Plano de Leitura" />
-            <WeeklyReadingCard />
-            <WeeklyVersesGrid />
+            <SectionLabel color="primary" label="Plano de Leitura por Lição" />
+            <WeeklyLessonsList />
           </section>
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
