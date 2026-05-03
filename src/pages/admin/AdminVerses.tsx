@@ -475,35 +475,59 @@ export default function AdminVerses() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Importar Versículos com IA
+              Importar Lição Completa com IA
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label>Data de Início</Label>
+                <Label className="text-xs">Classe destino</Label>
+                <Select value={aiClassId} onValueChange={setAiClassId}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Trimestre</Label>
+                <Select value={aiTrimester.toString()} onValueChange={(v) => setAiTrimester(Number(v))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4].map(t => (
+                      <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Segunda-feira Ref.</Label>
                 <Input 
                   type="date" 
                   value={aiDate} 
-                  onChange={(e) => setAiDate(e.target.value)}
+                  onChange={(e) => setAiDate(e.target.value)} 
+                  className="h-9"
                 />
-                <p className="text-[10px] text-muted-foreground">
-                  Opcional: Se preenchida, os versículos serão agendados em sequência a partir desta data.
-                </p>
               </div>
             </div>
+            
             <div className="space-y-1">
-              <Label>Texto dos Versículos</Label>
+              <Label>Conteúdo da Lição (IA)</Label>
               <Textarea
-                placeholder="Ex: João 3:16 - Porque Deus amou o mundo...
-Salmos 23:1 - O Senhor é meu pastor..."
-                className="min-h-[200px] font-mono text-sm"
+                placeholder="Cole aqui o texto completo da lição: título, leitura semanal, versículos diários e questões do quiz..."
+                className="min-h-[250px] font-mono text-sm"
                 value={aiText}
                 onChange={(e) => setAiText(e.target.value)}
               />
-            </div>
-            <div className="flex justify-between items-center text-xs text-muted-foreground bg-muted p-2 rounded">
-              <span>Os versículos serão importados para a <strong>{classFilter === 'all' ? 'Geral' : classes.find(c => c.id === classFilter)?.name}</strong> e <strong>{trimesterFilter === 'all' ? '1º Trimestre' : `${trimesterFilter}º Trimestre`}</strong>.</span>
+              <p className="text-[10px] text-muted-foreground">
+                A IA irá extrair o tema, o plano de leitura e criar o quiz automaticamente.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -511,7 +535,7 @@ Salmos 23:1 - O Senhor é meu pastor..."
               Cancelar
             </Button>
             <Button onClick={handleAiImport} disabled={aiLoading || !aiText.trim()}>
-              {aiLoading ? "Processando..." : "Processar e Importar"}
+              {aiLoading ? "Processando..." : "Processar e Importar Tudo"}
             </Button>
           </DialogFooter>
         </DialogContent>
