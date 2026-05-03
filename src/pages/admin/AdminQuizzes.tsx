@@ -53,6 +53,14 @@ export default function AdminQuizzes() {
   const { isSuperadmin } = useRoles();
   const navigate = useNavigate();
 
+  // Filtros
+  const [classFilter, setClassFilter] = useState<string>("all");
+  const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Seleção em lote
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const [quizDialog, setQuizDialog] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
   const [qForm, setQForm] = useState({
@@ -71,6 +79,10 @@ export default function AdminQuizzes() {
     devotional_fri: "",
     devotional_sat: "",
   });
+
+  const [aiImportOpen, setAiImportOpen] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const [questionsOf, setQuestionsOf] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
