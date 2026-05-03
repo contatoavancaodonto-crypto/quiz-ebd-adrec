@@ -39,6 +39,9 @@ import {
   useTrimestralProvao,
 } from "@/hooks/useWeeklyQuiz";
 import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
+import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
+import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
+
 import { toast } from "sonner";
 
 const pad = (n: number) => String(n).padStart(2, "0");
