@@ -113,6 +113,47 @@ serve(async (req) => {
       });
     }
 
+    if (mode === "parse_reading_plan") {
+      const messages = [
+        {
+          role: "system",
+          content: `Você é um assistente que extrai informações de planos de leitura bíblica.
+          O usuário enviará um texto que contém uma leitura semanal (geralmente capítulos de um livro) e devocionais diários (de segunda a sábado).
+          Extraia os campos: 
+          - weekly_bible_reading: a leitura principal da semana.
+          - devotional_mon, devotional_tue, devotional_wed, devotional_thu, devotional_fri, devotional_sat: referências ou textos dos devocionais.
+          - lesson_title: título da lição (se houver).
+          - lesson_number: número da lição (se houver).
+          - lesson_key_verse_ref: referência do versículo chave (se houver).
+          - lesson_key_verse_text: texto do versículo chave (se houver).
+          
+          Responda em formato JSON: { "weekly_bible_reading": "...", "devotional_mon": "...", "devotional_tue": "...", "devotional_wed": "...", "devotional_thu": "...", "devotional_fri": "...", "devotional_sat": "...", "lesson_title": "...", "lesson_number": ..., "lesson_key_verse_ref": "...", "lesson_key_verse_text": "..." }
+          Se não encontrar algum campo, retorne null para ele.`,
+        },
+        { role: "user", content: text },
+      ];
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages,
+          response_format: { type: "json_object" },
+          temperature: 0,
+        }),
+      });
+
+      const data = await response.json();
+      const result = JSON.parse(data.choices[0].message.content);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Invalid mode" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
