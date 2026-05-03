@@ -236,33 +236,60 @@ export default function AdminQuizzes() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "parse_reading_plan", text: aiText },
+        body: { mode: "parse_weekly_lesson", text: aiText },
       });
 
       if (error) throw error;
       
-      setQForm((prev) => ({
-        ...prev,
-        class_id: aiClassId || prev.class_id,
-        trimester: aiTrimester || prev.trimester,
-        weekly_bible_reading: data.weekly_bible_reading || prev.weekly_bible_reading,
-        devotional_mon: data.devotional_mon || prev.devotional_mon,
-        devotional_tue: data.devotional_tue || prev.devotional_tue,
-        devotional_wed: data.devotional_wed || prev.devotional_wed,
-        devotional_thu: data.devotional_thu || prev.devotional_thu,
-        devotional_fri: data.devotional_fri || prev.devotional_fri,
-        devotional_sat: data.devotional_sat || prev.devotional_sat,
-        lesson_title: data.lesson_title || prev.lesson_title,
-        lesson_number: data.lesson_number || prev.lesson_number,
-        lesson_key_verse_ref: data.lesson_key_verse_ref || prev.lesson_key_verse_ref,
-        lesson_key_verse_text: data.lesson_key_verse_text || prev.lesson_key_verse_text,
-        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : prev.title
-      }));
+      const payload: any = {
+        title: data.lesson_title ? `Lição ${data.lesson_number || ""}: ${data.lesson_title}` : "Nova Lição",
+        class_id: aiClassId || null,
+        trimester: aiTrimester || 1,
+        lesson_title: data.lesson_title || null,
+        lesson_number: data.lesson_number || null,
+        weekly_bible_reading: data.weekly_bible_reading || null,
+        devotional_mon: data.verses?.find((v: any) => v.day.toLowerCase().includes("segunda"))?.text || null,
+        devotional_tue: data.verses?.find((v: any) => v.day.toLowerCase().includes("terca"))?.text || null,
+        devotional_wed: data.verses?.find((v: any) => v.day.toLowerCase().includes("quarta"))?.text || null,
+        devotional_thu: data.verses?.find((v: any) => v.day.toLowerCase().includes("quinta"))?.text || null,
+        devotional_fri: data.verses?.find((v: any) => v.day.toLowerCase().includes("sexta"))?.text || null,
+        devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado"))?.text || null,
+        quiz_kind: "weekly",
+        active: true,
+        total_questions: data.questions?.length || 0
+      };
 
-      toast.success("Plano processado com sucesso!");
+      // Inserir o quiz
+      const { data: insertedQuiz, error: insertError } = await supabase
+        .from("quizzes")
+        .insert(payload)
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Inserir as questões
+      if (data.questions && data.questions.length > 0) {
+        const questionsToInsert = data.questions.map((q: any, i: number) => ({
+          quiz_id: insertedQuiz.id,
+          question_text: q.question_text,
+          option_a: q.option_a,
+          option_b: q.option_b,
+          option_c: q.option_c,
+          option_d: q.option_d,
+          correct_option: q.correct_option,
+          order_index: i + 1,
+          active: true
+        }));
+
+        const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
+        if (qError) toast.error("Erro ao inserir questões, mas o quiz foi criado.");
+      }
+
+      toast.success("Lição completa importada com sucesso!");
       setAiImportOpen(false);
       setAiText("");
-      setQuizDialog(true);
+      load();
     } catch (err: any) {
       toast.error("Falha ao processar com IA: " + err.message);
     } finally {
