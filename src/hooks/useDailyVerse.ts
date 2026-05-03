@@ -20,7 +20,9 @@ export const useDailyVerse = () => {
 
   const fetchVerse = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_or_create_daily_verse");
+    const { data, error } = await supabase.rpc("get_or_create_daily_verse", { 
+      p_class_id: user?.class_id || null 
+    });
     if (!error && data && data.length > 0) {
       setVerse(data[0] as DailyVerse);
     }
