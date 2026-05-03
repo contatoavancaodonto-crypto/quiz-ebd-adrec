@@ -372,7 +372,15 @@ export default function AdminVerses() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} Versículo</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label>Data de Exibição</Label>
+                <Input 
+                  type="date" 
+                  value={form.scheduled_date || ""} 
+                  onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })}
+                />
+              </div>
               <div className="space-y-1">
                 <Label>Classe (Opcional)</Label>
                 <Select 
