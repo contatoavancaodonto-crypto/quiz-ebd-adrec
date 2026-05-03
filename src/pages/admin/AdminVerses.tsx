@@ -39,6 +39,7 @@ export default function AdminVerses() {
   const [q, setQ] = useState("");
   const [classFilter, setClassFilter] = useState<string>("all");
   const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const [open, setOpen] = useState(false);
