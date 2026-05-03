@@ -204,7 +204,66 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid mode" }), {
+    if (mode === "parse_weekly_lesson") {
+      const messages = [
+        {
+          role: "system",
+          content: `Você é um assistente que extrai uma Lição Semanal completa para uma EBD.
+          A lição deve conter:
+          - Título da lição (Tema)
+          - Leitura bíblica principal da semana
+          - 6 versículos diários (Segunda a Sábado)
+          - Um Quiz com até 5 questões (cada questão com 4 opções: A, B, C, D e a letra da opção correta)
+          
+          Responda estritamente em formato JSON:
+          {
+            "lesson_title": "...",
+            "lesson_number": ...,
+            "weekly_bible_reading": "...",
+            "verses": [
+              { "day": "segunda", "text": "...", "reference": "..." },
+              { "day": "terca", "text": "...", "reference": "..." },
+              { "day": "quarta", "text": "...", "reference": "..." },
+              { "day": "quinta", "text": "...", "reference": "..." },
+              { "day": "sexta", "text": "...", "reference": "..." },
+              { "day": "sabado", "text": "...", "reference": "..." }
+            ],
+            "questions": [
+              {
+                "question_text": "...",
+                "option_a": "...",
+                "option_b": "...",
+                "option_c": "...",
+                "option_d": "...",
+                "correct_option": "A"
+              }
+            ]
+          }`,
+        },
+        { role: "user", content: text },
+      ];
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages,
+          response_format: { type: "json_object" },
+          temperature: 0,
+        }),
+      });
+
+      const data = await response.json();
+      const result = JSON.parse(data.choices[0].message.content);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
