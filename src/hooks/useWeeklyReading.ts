@@ -93,16 +93,6 @@ export const useWeeklyReading = () => {
 };
 
 const processQuiz = (quiz: any, day: number): WeeklyReading => {
-  const days = [
-    "Domingo",
-    "Segunda-feira",
-    "Terça-feira",
-    "Quarta-feira",
-    "Quinta-feira",
-    "Sexta-feira",
-    "Sábado",
-  ];
-
   const dayName = days[day];
   const weeklyBibleReading = quiz.weekly_bible_reading || null;
 
