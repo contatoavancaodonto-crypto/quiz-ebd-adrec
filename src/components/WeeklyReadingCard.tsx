@@ -79,7 +79,7 @@ export const WeeklyReadingCard = () => {
                       "{reading.content}"
                     </p>
                     <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">
-                      <Sparkles className="h-3 w-3" /> Devocional de hoje
+                      <Sparkles className="h-3 w-3" /> Versículo de hoje
                     </div>
                   </div>
                 )}
