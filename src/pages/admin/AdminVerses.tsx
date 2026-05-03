@@ -59,6 +59,8 @@ export default function AdminVerses() {
   const [aiText, setAiText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDate, setAiDate] = useState("");
+  const [aiClassId, setAiClassId] = useState("");
+  const [aiTrimester, setAiTrimester] = useState(1);
 
   const load = async () => {
     setLoading(true);
