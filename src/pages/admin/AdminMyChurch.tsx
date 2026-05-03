@@ -37,7 +37,6 @@ export default function AdminMyChurch() {
   const [name, setName] = useState("");
   const [pastor, setPastor] = useState("");
   const [phone, setPhone] = useState("");
-  // area removed
   const [requests, setRequests] = useState<EditRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
