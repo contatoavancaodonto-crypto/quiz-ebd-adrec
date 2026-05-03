@@ -501,7 +501,11 @@ export default function AdminQuizzes() {
             </Button>
           )}
           <Button
-            onClick={() => setAiImportOpen(true)}
+            onClick={() => {
+              setAiClassId(classFilter === "all" ? "" : classFilter);
+              setAiTrimester(trimesterFilter === "all" ? 1 : Number(trimesterFilter));
+              setAiImportOpen(true);
+            }}
             variant="outline"
             className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
           >
