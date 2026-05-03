@@ -134,11 +134,23 @@ export default function AdminVerses() {
       if (error) throw error;
       
       if (data.verses && Array.from(data.verses).length > 0) {
-        const versesToInsert = data.verses.map((v: any) => ({
-          ...v,
-          class_id: classFilter !== "all" ? classFilter : null,
-          trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1
-        }));
+        let currentBatchDate = aiDate ? new Date(aiDate + "T12:00:00") : null;
+        
+        const versesToInsert = data.verses.map((v: any, index: number) => {
+          let scheduled_date = null;
+          if (currentBatchDate) {
+            const dateObj = new Date(currentBatchDate);
+            dateObj.setDate(dateObj.getDate() + index);
+            scheduled_date = dateObj.toISOString().split('T')[0];
+          }
+
+          return {
+            ...v,
+            class_id: classFilter !== "all" ? classFilter : null,
+            trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1,
+            scheduled_date
+          };
+        });
 
         const { error: insertError } = await supabase.from("verses").insert(versesToInsert);
         if (insertError) throw insertError;
@@ -146,6 +158,7 @@ export default function AdminVerses() {
         toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
         setAiImportOpen(false);
         setAiText("");
+        setAiDate("");
         load();
       } else {
         toast.error("Nenhum versículo identificado no texto.");
