@@ -919,7 +919,7 @@ export default function AdminQuizzes() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Classe destino</Label>
                 <Select value={aiClassId} onValueChange={setAiClassId}>
@@ -945,6 +945,15 @@ export default function AdminQuizzes() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Segunda-feira Ref.</Label>
+                <Input 
+                  type="date" 
+                  value={aiDate} 
+                  onChange={(e) => setAiDate(e.target.value)} 
+                  className="h-9"
+                />
               </div>
             </div>
 
