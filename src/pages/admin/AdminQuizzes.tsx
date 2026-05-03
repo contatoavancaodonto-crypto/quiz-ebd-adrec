@@ -243,6 +243,8 @@ export default function AdminQuizzes() {
       
       setQForm((prev) => ({
         ...prev,
+        class_id: aiClassId || prev.class_id,
+        trimester: aiTrimester || prev.trimester,
         weekly_bible_reading: data.weekly_bible_reading || prev.weekly_bible_reading,
         devotional_mon: data.devotional_mon || prev.devotional_mon,
         devotional_tue: data.devotional_tue || prev.devotional_tue,
