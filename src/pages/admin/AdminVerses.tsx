@@ -432,16 +432,29 @@ export default function AdminVerses() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Cole abaixo uma lista de versículos ou um texto corrido. A IA identificará automaticamente a referência (Livro, Cap, Vers), o texto completo e sugerirá um tema.
-            </p>
-            <Textarea
-              placeholder="Ex: João 3:16 - Porque Deus amou o mundo...
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Data de Início</Label>
+                <Input 
+                  type="date" 
+                  value={aiDate} 
+                  onChange={(e) => setAiDate(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Opcional: Se preenchida, os versículos serão agendados em sequência a partir desta data.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Texto dos Versículos</Label>
+              <Textarea
+                placeholder="Ex: João 3:16 - Porque Deus amou o mundo...
 Salmos 23:1 - O Senhor é meu pastor..."
-              className="min-h-[300px] font-mono text-sm"
-              value={aiText}
-              onChange={(e) => setAiText(e.target.value)}
-            />
+                className="min-h-[200px] font-mono text-sm"
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+              />
+            </div>
             <div className="flex justify-between items-center text-xs text-muted-foreground bg-muted p-2 rounded">
               <span>Os versículos serão importados para a <strong>{classFilter === 'all' ? 'Geral' : classes.find(c => c.id === classFilter)?.name}</strong> e <strong>{trimesterFilter === 'all' ? '1º Trimestre' : `${trimesterFilter}º Trimestre`}</strong>.</span>
             </div>
