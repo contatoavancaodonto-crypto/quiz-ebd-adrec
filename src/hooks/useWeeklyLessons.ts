@@ -28,6 +28,7 @@ export const useWeeklyLessons = () => {
     queryKey: ["weekly-lessons", classId],
     enabled: !!classId,
     queryFn: async (): Promise<WeeklyLesson[]> => {
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from("quizzes")
         .select(`
@@ -47,6 +48,8 @@ export const useWeeklyLessons = () => {
         `)
         .eq("class_id", classId!)
         .eq("quiz_kind", "weekly")
+        .eq("active", true)
+        .lte("opens_at", now)
         .order("lesson_number", { ascending: false })
         .limit(4);
 
