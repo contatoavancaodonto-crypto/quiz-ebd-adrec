@@ -9,7 +9,7 @@ export interface FullProfile {
   display_name: string | null;
   email: string | null;
   phone: string | null;
-  area: number | null;
+  class_name: string | null;
   church_id: string | null;
   church_name: string | null;
   class_id: string | null;
@@ -34,7 +34,7 @@ export function useFullProfile() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "id, first_name, last_name, display_name, email, phone, area, church_id, class_id, avatar_url, show_avatar_in_ranking, churches(name)"
+          "id, first_name, last_name, display_name, email, phone, church_id, class_id, avatar_url, show_avatar_in_ranking, churches(name), classes(name)"
         )
         .eq("id", user!.id)
         .maybeSingle();
@@ -46,7 +46,7 @@ export function useFullProfile() {
         display_name: (data as any).display_name ?? null,
         email: data.email,
         phone: data.phone,
-        area: data.area,
+        class_name: (data as any).classes?.name ?? null,
         church_id: data.church_id,
         class_id: (data as any).class_id ?? null,
         avatar_url: (data as any).avatar_url ?? null,
