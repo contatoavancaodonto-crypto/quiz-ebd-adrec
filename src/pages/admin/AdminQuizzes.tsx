@@ -861,6 +861,38 @@ export default function AdminQuizzes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={aiImportOpen} onOpenChange={setAiImportOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Importar Plano de Leitura com IA
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Cole abaixo o texto da sua lição ou plano de leitura. Nossa IA identificará 
+              automaticamente a leitura bíblica, os devocionais diários, versículo-chave e título.
+            </p>
+            <Textarea 
+              placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
+              className="min-h-[200px]"
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAiImport} disabled={aiLoading || !aiText.trim()}>
+              {aiLoading ? (
+                <>Processando...</>
+              ) : (
+                <>Identificar e Configurar</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminPage>
   );
 }
