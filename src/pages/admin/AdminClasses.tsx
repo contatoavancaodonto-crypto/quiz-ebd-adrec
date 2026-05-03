@@ -32,7 +32,7 @@ export default function AdminClasses() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("classes").select("*").order("name");
-    setRows((data as any) ?? []);
+    setRows((data as Cls[]) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
