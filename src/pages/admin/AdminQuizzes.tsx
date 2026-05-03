@@ -874,16 +874,47 @@ export default function AdminQuizzes() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Cole abaixo o texto da sua lição ou plano de leitura. Nossa IA identificará 
-              automaticamente a leitura bíblica, os devocionais diários, versículo-chave e título.
-            </p>
-            <Textarea 
-              placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
-              className="min-h-[200px]"
-              value={aiText}
-              onChange={(e) => setAiText(e.target.value)}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Classe destino</Label>
+                <Select value={aiClassId} onValueChange={setAiClassId}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Trimestre</Label>
+                <Select value={aiTrimester.toString()} onValueChange={(v) => setAiTrimester(Number(v))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4].map(t => (
+                      <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Texto do plano / lição</Label>
+              <Textarea 
+                placeholder="Cole aqui... Ex: Lição 05 - O Fruto do Espírito. Leitura Semanal: Gl 5.22-26. Seg: Jo 15.1-8; Ter: Ef 4.1-3..." 
+                className="min-h-[150px]"
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Dica: A IA identificará automaticamente leitura bíblica, devocionais diários, versículo-chave e título.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
