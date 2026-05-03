@@ -181,24 +181,10 @@ export default function AdminVerses() {
 
       if (insertError) throw insertError;
 
-      if (data.questions && data.questions.length > 0) {
-        const questionsToInsert = data.questions.map((q: any, i: number) => ({
-          quiz_id: insertedQuiz.id,
-          question_text: q.question_text,
-          option_a: q.option_a,
-          option_b: q.option_b,
-          option_c: q.option_c,
-          option_d: q.option_d,
-          correct_option: q.correct_option,
-          order_index: i + 1,
-          active: true
-        }));
-
-        const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
-        if (qError) toast.error("Erro ao inserir questões, mas a lição foi criada.");
-      }
-
-      toast.success("Lição completa importada com sucesso!");
+      // Removida a inserção automática de questões para cumprir o requisito de não gerar perguntas automaticamente no upload.
+      // O usuário deve gerenciar as questões manualmente ou via ação explícita após a criação da lição.
+      
+      toast.success("Lição criada com sucesso! (Sem perguntas automáticas)");
       setAiImportOpen(false);
       setAiText("");
       setAiDate("");
