@@ -154,6 +154,40 @@ serve(async (req) => {
       });
     }
 
+    if (mode === "parse_verses") {
+      const messages = [
+        {
+          role: "system",
+          content: `Você é um assistente que extrai versículos bíblicos de um texto.
+          O usuário enviará um texto contendo um ou mais versículos.
+          Para cada versículo encontrado, identifique: livro, capítulo, número do versículo, o texto do versículo e um tema curto (ex: Fé, Amor, Esperança).
+          
+          Responda em formato JSON com uma lista de objetos: { "verses": [ { "book": "...", "chapter": ..., "verse": ..., "text": "...", "theme": "..." }, ... ] }`,
+        },
+        { role: "user", content: text },
+      ];
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages,
+          response_format: { type: "json_object" },
+          temperature: 0,
+        }),
+      });
+
+      const data = await response.json();
+      const result = JSON.parse(data.choices[0].message.content);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Invalid mode" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
