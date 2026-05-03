@@ -26,6 +26,7 @@ interface Verse {
   active: boolean; 
   class_id?: string | null;
   trimester?: number | null;
+  scheduled_date?: string | null;
 }
 
 interface Cls { id: string; name: string; }
