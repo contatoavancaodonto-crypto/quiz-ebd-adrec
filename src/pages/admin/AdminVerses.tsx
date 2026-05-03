@@ -298,8 +298,7 @@ export default function AdminVerses() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell><Badge variant="outline">{v.theme}</Badge></TableCell>
-                <TableCell className="max-w-md truncate">{v.text}</TableCell>
+                 <TableCell className="max-w-md truncate">{v.text}</TableCell>
                 <TableCell>{v.active ? <Badge>Ativo</Badge> : <Badge variant="outline">Inativo</Badge>}</TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button size="sm" variant="outline" onClick={() => {
