@@ -272,6 +272,7 @@ export default function AdminVerses() {
                 </Button>
               </TableHead>
               <TableHead>Referência</TableHead>
+              <TableHead>Agendado</TableHead>
               <TableHead>Classe/Trim</TableHead>
               <TableHead>Texto</TableHead>
               <TableHead>Status</TableHead>
