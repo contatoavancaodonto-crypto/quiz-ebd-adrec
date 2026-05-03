@@ -281,9 +281,9 @@ export default function AdminVerses() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
             ) : filtered.map((v) => (
               <TableRow key={v.id} className={selectedIds.has(v.id) ? "bg-muted/50" : ""}>
                 <TableCell>
@@ -300,6 +300,15 @@ export default function AdminVerses() {
                   </Button>
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap">{v.book} {v.chapter}:{v.verse}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {v.scheduled_date ? (
+                    <span className="text-sm font-medium">
+                      {new Date(v.scheduled_date + "T12:00:00").toLocaleDateString('pt-BR')}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">Não agendado</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     {v.class_id ? (
