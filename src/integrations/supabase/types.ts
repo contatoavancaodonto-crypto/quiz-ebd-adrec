@@ -117,7 +117,6 @@ export type Database = {
           id: string
           proposed_name: string | null
           proposed_pastor_president: string | null
-          proposed_requester_area: number | null
           proposed_requester_phone: string | null
           requested_by: string
           review_note: string | null
@@ -132,7 +131,6 @@ export type Database = {
           id?: string
           proposed_name?: string | null
           proposed_pastor_president?: string | null
-          proposed_requester_area?: number | null
           proposed_requester_phone?: string | null
           requested_by: string
           review_note?: string | null
@@ -147,7 +145,6 @@ export type Database = {
           id?: string
           proposed_name?: string | null
           proposed_pastor_president?: string | null
-          proposed_requester_area?: number | null
           proposed_requester_phone?: string | null
           requested_by?: string
           review_note?: string | null
@@ -167,7 +164,6 @@ export type Database = {
           name: string
           pastor_president: string | null
           requested: boolean
-          requester_area: number | null
           requester_pastor_name: string | null
           requester_phone: string | null
         }
@@ -179,7 +175,6 @@ export type Database = {
           name: string
           pastor_president?: string | null
           requested?: boolean
-          requester_area?: number | null
           requester_pastor_name?: string | null
           requester_phone?: string | null
         }
@@ -191,7 +186,6 @@ export type Database = {
           name?: string
           pastor_president?: string | null
           requested?: boolean
-          requester_area?: number | null
           requester_pastor_name?: string | null
           requester_phone?: string | null
         }
@@ -275,6 +269,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          slug: string
         }
         Insert: {
           active?: boolean
@@ -282,6 +277,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          slug: string
         }
         Update: {
           active?: boolean
@@ -289,6 +285,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -711,7 +708,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          area: number | null
           avatar_url: string | null
           church_id: string | null
           class_id: string | null
@@ -727,7 +723,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          area?: number | null
           avatar_url?: string | null
           church_id?: string | null
           class_id?: string | null
@@ -743,7 +738,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          area?: number | null
           avatar_url?: string | null
           church_id?: string | null
           class_id?: string | null
