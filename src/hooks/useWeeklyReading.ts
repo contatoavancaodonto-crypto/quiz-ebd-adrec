@@ -48,8 +48,8 @@ export const useWeeklyReading = () => {
 
       if (scheduledVerse) {
         return {
-          type: "devotional",
-          title: "Devocional de Hoje",
+          type: "verse",
+          title: "Versículo da Lição",
           content: scheduledVerse.text,
           weeklyBibleReading: null,
           dayName: days[day],
@@ -108,8 +108,8 @@ const processQuiz = (quiz: any, day: number): WeeklyReading => {
     };
   }
 
-  // Mapeamento automático dos campos devocionais de Segunda (1) a Sábado (6)
-  const devotionalKeys = [
+  // Mapeamento automático dos campos de Segunda (1) a Sábado (6)
+  const readingKeys = [
     "", // 0 (Sun)
     "devotional_mon",
     "devotional_tue",
@@ -119,11 +119,11 @@ const processQuiz = (quiz: any, day: number): WeeklyReading => {
     "devotional_sat", // 6 (Sat)
   ];
   
-  const content = quiz[devotionalKeys[day]] as string | null;
+  const content = quiz[readingKeys[day]] as string | null;
   
   return {
-    type: content ? "devotional" : "bible_reading",
-    title: content ? "Devocional de Hoje" : "Leitura Bíblica",
+    type: content ? "verse" : "bible_reading",
+    title: content ? "Versículo da Semana" : "Leitura Bíblica",
     content,
     weeklyBibleReading,
     dayName,
