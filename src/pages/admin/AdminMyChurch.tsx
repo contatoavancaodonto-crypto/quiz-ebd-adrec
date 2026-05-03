@@ -17,7 +17,7 @@ interface ChurchData {
   name: string;
   pastor_president: string | null;
   requester_phone: string | null;
-  requester_area: number | null;
+  // requester_area removed
 }
 
 interface EditRequest {
@@ -25,7 +25,7 @@ interface EditRequest {
   proposed_name: string | null;
   proposed_pastor_president: string | null;
   proposed_requester_phone: string | null;
-  proposed_requester_area: number | null;
+  // proposed_requester_area removed
   status: "pending" | "approved" | "rejected";
   review_note: string | null;
   reviewed_at: string | null;
@@ -39,7 +39,7 @@ export default function AdminMyChurch() {
   const [name, setName] = useState("");
   const [pastor, setPastor] = useState("");
   const [phone, setPhone] = useState("");
-  const [area, setArea] = useState("");
+  // area removed
   const [requests, setRequests] = useState<EditRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -52,13 +52,13 @@ export default function AdminMyChurch() {
       const [{ data: ch }, { data: reqs }] = await Promise.all([
         supabase
           .from("churches")
-          .select("id, name, pastor_president, requester_phone, requester_area")
+          .select("id, name, pastor_president, requester_phone")
           .eq("id", churchId)
           .maybeSingle(),
         supabase
           .from("church_edit_requests")
           .select(
-            "id, proposed_name, proposed_pastor_president, proposed_requester_phone, proposed_requester_area, status, review_note, reviewed_at, created_at"
+            "id, proposed_name, proposed_pastor_president, proposed_requester_phone, status, review_note, reviewed_at, created_at"
           )
           .eq("church_id", churchId)
           .order("created_at", { ascending: false })
@@ -70,7 +70,7 @@ export default function AdminMyChurch() {
         setName(ch.name ?? "");
         setPastor(ch.pastor_president ?? "");
         setPhone(ch.requester_phone ?? "");
-        setArea(ch.requester_area ? String(ch.requester_area) : "");
+        // area removed
       }
       setRequests((reqs as EditRequest[]) ?? []);
       setLoading(false);
@@ -118,15 +118,10 @@ export default function AdminMyChurch() {
       pastor.trim() !== (church.pastor_president ?? "") ? pastor.trim() : null;
     const proposed_requester_phone =
       phone.trim() !== (church.requester_phone ?? "") ? phone.trim() : null;
-    const areaNum = area.trim() ? Number(area.trim()) : null;
-    const proposed_requester_area =
-      areaNum !== (church.requester_area ?? null) ? areaNum : null;
-
     if (
       !proposed_name &&
       !proposed_pastor_president &&
-      !proposed_requester_phone &&
-      proposed_requester_area === null
+      !proposed_requester_phone
     ) {
       toast.info("Nenhuma alteração detectada");
       return;
@@ -139,7 +134,7 @@ export default function AdminMyChurch() {
       proposed_name,
       proposed_pastor_president,
       proposed_requester_phone,
-      proposed_requester_area,
+      // area removed
       status: "pending",
     });
     setSubmitting(false);
@@ -197,17 +192,7 @@ export default function AdminMyChurch() {
                   placeholder="(00) 00000-0000"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="area">Área (1–12)</Label>
-                <Input
-                  id="area"
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                />
-              </div>
+              {/* Area removed */}
             </div>
 
             <div className="flex justify-end">
@@ -271,12 +256,7 @@ export default function AdminMyChurch() {
                           {r.proposed_requester_phone}
                         </li>
                       )}
-                      {r.proposed_requester_area !== null && (
-                        <li>
-                          <span className="font-medium">Área:</span>{" "}
-                          {r.proposed_requester_area}
-                        </li>
-                      )}
+                      {/* Area removed */}
                     </ul>
                     {r.review_note && (
                       <div className="text-xs italic text-muted-foreground border-t pt-1.5">

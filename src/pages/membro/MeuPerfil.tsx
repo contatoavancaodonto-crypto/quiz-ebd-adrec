@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, MapPin, Mail, Phone, Eye } from "lucide-react";
+import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, GraduationCap, Mail, Phone, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
@@ -201,7 +201,7 @@ export default function MeuPerfil() {
           </div>
           <div className="rounded-2xl bg-card border border-border divide-y divide-border overflow-hidden">
             <InfoRow icon={Building2} label="Igreja" value={profile?.church_name ?? "—"} />
-            <InfoRow icon={MapPin} label="Área" value={profile?.area ? `Área ${profile.area}` : "—"} />
+            <InfoRow icon={GraduationCap} label="Classe" value={profile?.class_name ?? "—"} />
           </div>
         </section>
 

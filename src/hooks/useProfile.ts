@@ -9,7 +9,7 @@ export interface UserProfile {
   phone: string | null;
   church_id: string | null;
   church_name: string | null;
-  area: number | null;
+  class_name: string | null;
   class_id: string | null;
 }
 
@@ -30,7 +30,7 @@ export function useProfile() {
         phone: data.phone,
         church_id: data.church_id,
         church_name: data.church_name,
-        area: data.area,
+        class_name: data.class_name,
         class_id: data.class_id,
       }
     : null;

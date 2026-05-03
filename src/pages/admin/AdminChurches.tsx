@@ -39,7 +39,7 @@ interface Church {
   pastor_president: string | null;
   requester_pastor_name: string | null;
   requester_phone: string | null;
-  requester_area: number | null;
+  // requester_area removed
 }
 
 interface EditRequest {
@@ -48,7 +48,7 @@ interface EditRequest {
   proposed_name: string | null;
   proposed_pastor_president: string | null;
   proposed_requester_phone: string | null;
-  proposed_requester_area: number | null;
+  // proposed_requester_area removed
   status: "pending" | "approved" | "rejected";
   review_note: string | null;
   reviewed_at: string | null;
@@ -404,13 +404,7 @@ export default function AdminChurches() {
                         after={r.proposed_requester_phone}
                       />
                     )}
-                    {r.proposed_requester_area !== null && ch && (
-                      <DiffRow
-                        label="Área"
-                        before={String(ch.requester_area ?? "—")}
-                        after={String(r.proposed_requester_area)}
-                      />
-                    )}
+                    {/* Area removed */}
                   </div>
 
                   {r.review_note && (

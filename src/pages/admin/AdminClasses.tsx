@@ -15,6 +15,7 @@ import { smartDelete } from "@/lib/admin-delete";
 interface Cls {
   id: string;
   name: string;
+  slug: string;
   active: boolean;
   cover_url?: string;
   created_at: string;
@@ -39,10 +40,10 @@ export default function AdminClasses() {
   const save = async () => {
     if (!name.trim()) return toast.error("Nome obrigatório");
     if (editing) {
-      const { error } = await supabase.from("classes").update({ name, cover_url: coverUrl || null }).eq("id", editing.id);
+      const { error } = await supabase.from("classes").update({ name, slug: name.toLowerCase(), cover_url: coverUrl || null }).eq("id", editing.id);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from("classes").insert({ name, cover_url: coverUrl || null });
+      const { error } = await supabase.from("classes").insert({ name, slug: name.toLowerCase(), cover_url: coverUrl || null });
       if (error) return toast.error(error.message);
     }
     toast.success("Salvo");
