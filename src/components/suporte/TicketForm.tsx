@@ -75,16 +75,22 @@ export function TicketForm({ onSubmitted }: Props) {
 
     const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || null;
 
+    const ticketId = crypto.randomUUID();
+    const pageUrl = category === "bug" ? window.location.href : null;
+    const trimmedSubject = subject.trim();
+    const trimmedMessage = message.trim();
+
     const { error } = await (supabase as any).from("support_tickets").insert({
+      id: ticketId,
       user_id: user.id,
       user_name: fullName,
       user_email: user.email ?? null,
       church_id: (profile as any)?.church_id ?? null,
       category,
-      subject: subject.trim(),
-      message: message.trim(),
+      subject: trimmedSubject,
+      message: trimmedMessage,
       screenshot_url,
-      page_url: category === "bug" ? window.location.href : null,
+      page_url: pageUrl,
       user_agent: category === "bug" ? navigator.userAgent : null,
     });
 
@@ -94,6 +100,37 @@ export function TicketForm({ onSubmitted }: Props) {
       toast.error("Falha ao enviar chamado: " + error.message);
       return;
     }
+
+    // Dispara emails (best-effort, não bloqueia o usuário)
+    if (user.email) {
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "support-ticket-created",
+          recipientEmail: user.email,
+          idempotencyKey: `ticket-user-${ticketId}`,
+          templateData: {
+            name: profile?.first_name ?? fullName ?? null,
+            category,
+            subject: trimmedSubject,
+            message: trimmedMessage,
+          },
+        },
+      }).catch(() => {});
+    }
+    supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "support-ticket-admin-notification",
+        idempotencyKey: `ticket-admin-${ticketId}`,
+        templateData: {
+          userName: fullName,
+          userEmail: user.email,
+          category,
+          subject: trimmedSubject,
+          message: trimmedMessage,
+          pageUrl,
+        },
+      },
+    }).catch(() => {});
 
     toast.success("Chamado enviado! Você receberá uma notificação quando for respondido.");
     setSubject("");

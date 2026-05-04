@@ -19,6 +19,7 @@ import RankingPage from "./pages/Ranking";
 import GabaritoPage from "./pages/Gabarito";
 import PreviewTelas from "./pages/PreviewTelas";
 import NotFound from "./pages/NotFound";
+import Unsubscribe from "./pages/Unsubscribe";
 
 // Membro
 import MeuPerfil from "./pages/membro/MeuPerfil";
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/membro/harpa" element={<Harpa />} />
               <Route path="/membro/configuracoes" element={<Configuracoes />} />
               <Route path="/membro/suporte" element={<Suporte />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
