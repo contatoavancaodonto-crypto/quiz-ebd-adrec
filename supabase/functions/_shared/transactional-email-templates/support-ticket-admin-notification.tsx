@@ -104,7 +104,7 @@ export const template = {
   component: SupportTicketAdminEmail,
   subject: (data: Record<string, any>) =>
     `🎫 Novo chamado: ${data?.subject ?? "Suporte"}`,
-  to: "mateusnbatista@gmail.com",
+  to: "marcosmmarques77@gmail.com",
   displayName: "Notificação admin · novo chamado",
   previewData: {
     userName: "Maicon Silva",
