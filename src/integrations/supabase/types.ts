@@ -349,6 +349,36 @@ export type Database = {
           },
         ]
       }
+      email_queue: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          processed_at: string | null
+          status: string | null
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          status?: string | null
+          subject: string
+          to_email: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          status?: string | null
+          subject?: string
+          to_email?: string
+        }
+        Relationships: []
+      }
       moderation_logs: {
         Row: {
           content_id: string
