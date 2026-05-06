@@ -103,7 +103,8 @@ export default function AdminVerses() {
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
-      status: 'incompleto'
+      status: 'incompleto',
+      class_id: undefined,
     });
     setOpen(true);
   };
