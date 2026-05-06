@@ -307,7 +307,7 @@ const QuizPage = () => {
   }
 
   if (showCountdown) {
-    return <QuizCountdown onComplete={handleCountdownComplete} />;
+    return <QuizCountdown onComplete={handleCountdownComplete} totalQuestions={questions.length} />;
   }
 
   if (!currentQ) return null;

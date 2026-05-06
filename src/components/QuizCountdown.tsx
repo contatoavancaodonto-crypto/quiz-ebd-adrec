@@ -4,15 +4,17 @@ import churchLogo from "@/assets/church-logo.webp";
 
 interface QuizCountdownProps {
   onComplete: () => void;
+  totalQuestions?: number;
 }
 
-const rules = [
-  "📝 O quiz contém 13 perguntas aleatórias",
+const getRules = (total: number) => [
+  `📝 O quiz contém ${total} perguntas aleatórias`,
   "🏆 Haverá 2 rankings: da sua Classe e Geral",
   "💡 Não basta acertar tudo — responda rápido!",
 ];
 
-export function QuizCountdown({ onComplete }: QuizCountdownProps) {
+export function QuizCountdown({ onComplete, totalQuestions = 13 }: QuizCountdownProps) {
+  const rules = getRules(totalQuestions);
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -124,7 +124,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -142,7 +142,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_weekly")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_time_seconds, total_time_ms, accuracy_percentage, week_number")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, week_number")
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -527,7 +527,7 @@ const RankingPage = () => {
                         ) : (
                           <>
                             <div className="font-display font-bold text-primary">
-                              {mainScore}{isWeekly ? "" : `/13`}
+                              {mainScore}/{entry.total_questions || 13}
                             </div>
                             {bonus > 0 && (
                               <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>

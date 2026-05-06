@@ -1717,11 +1717,14 @@ export type Database = {
           church_name: string | null
           class_id: string | null
           class_name: string | null
+          final_score: number | null
           finished_at: string | null
           is_retry: boolean | null
           participant_name: string | null
           position: number | null
           score: number | null
+          streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
@@ -1843,6 +1846,7 @@ export type Database = {
           position: number | null
           score: number | null
           streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
@@ -2010,6 +2014,7 @@ export type Database = {
           score: number | null
           season_id: string | null
           streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           week_number: number | null
