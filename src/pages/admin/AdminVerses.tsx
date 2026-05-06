@@ -70,6 +70,8 @@ export default function AdminVerses() {
     trimester: "1",
     lesson_number: 1,
     theme: "",
+    reading_theme: "",
+    scheduled_date: "",
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
