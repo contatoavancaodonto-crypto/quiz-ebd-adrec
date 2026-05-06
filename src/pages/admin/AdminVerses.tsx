@@ -94,6 +94,8 @@ export default function AdminVerses() {
       trimester: "1",
       lesson_number: (lessons[lessons.length - 1]?.lesson_number || 0) + 1,
       theme: "",
+      reading_theme: "",
+      scheduled_date: "",
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
