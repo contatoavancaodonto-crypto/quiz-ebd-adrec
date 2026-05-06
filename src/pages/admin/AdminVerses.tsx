@@ -1,517 +1,166 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogScrollArea } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Power, Search, BookText, Trash2, Sparkles, Square, CheckSquare } from "lucide-react";
+import { Plus, Sparkles, BookOpen, Trash2 } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { DeleteButton } from "@/components/admin/DeleteButton";
-import { smartDelete } from "@/lib/admin-delete";
 
-interface Verse { 
-  id: string; 
-  book: string; 
-  chapter: number; 
-  verse: number; 
-  text: string; 
-  theme: string; 
-  active: boolean; 
-  class_id?: string | null;
-  trimester?: number | null;
-  scheduled_date?: string | null;
+type Pergunta = {
+  id: string
+  pergunta: string
+  tipo: 'multipla_escolha' | 'discursiva'
+  alternativas?: { a: string; b: string; c: string; d: string }
+  respostaCorreta?: string
+  comentario?: string
 }
 
-interface Cls { id: string; name: string; }
+type LicaoSemanal = {
+  id: string
+  trimester: string
+  lesson_number: number
+  theme: string
+  description?: string
+  verses: {
+    segunda: { referencia: string; texto: string; observacao?: string }
+    terca: { referencia: string; texto: string; observacao?: string }
+    quarta: { referencia: string; texto: string; observacao?: string }
+    quinta: { referencia: string; texto: string; observacao?: string }
+    sexta: { referencia: string; texto: string; observacao?: string }
+    sabado: { referencia: string; texto: string; observacao?: string }
+    domingo: { referencia: string; texto: string; observacao?: string }
+  }
+  questions: Pergunta[]
+  status: 'completo' | 'incompleto'
+}
 
-export default function AdminVerses() {
-  const navigate = useNavigate();
-  const [rows, setRows] = useState<Verse[]>([]);
-  const [classes, setClasses] = useState<Cls[]>([]);
+export default function AdminLessons() {
+  const [lessons, setLessons] = useState<LicaoSemanal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState("");
-  const [classFilter, setClassFilter] = useState<string>("all");
-  const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Verse | null>(null);
-  const [form, setForm] = useState({ 
-    book: "", 
-    chapter: 1, 
-    verse: 1, 
-    text: "", 
-    theme: "fé", 
-    class_id: "" as string | null, 
-    trimester: 1,
-    scheduled_date: "" as string | null
+  const [editing, setEditing] = useState<LicaoSemanal | null>(null);
+  const [form, setForm] = useState<LicaoSemanal>({
+    id: "", trimester: "1", lesson_number: 1, theme: "", verses: {
+      segunda: { referencia: "", texto: "" }, terca: { referencia: "", texto: "" },
+      quarta: { referencia: "", texto: "" }, quinta: { referencia: "", texto: "" },
+      sexta: { referencia: "", texto: "" }, sabado: { referencia: "", texto: "" },
+      domingo: { referencia: "", texto: "" }
+    }, questions: [], status: 'incompleto'
   });
-
-  const [aiImportOpen, setAiImportOpen] = useState(false);
-  const [aiText, setAiText] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiDate, setAiDate] = useState("");
-  const [aiClassId, setAiClassId] = useState("");
-  const [aiTrimester, setAiTrimester] = useState(1);
 
   const load = async () => {
     setLoading(true);
-    const [vs, cl] = await Promise.all([
-      supabase.from("verses").select("*").order("book").limit(1000),
-      supabase.from("classes").select("id, name").order("name")
-    ]);
-    setRows((vs.data as any) ?? []);
-    setClasses((cl.data as Cls[]) ?? []);
+    const { data, error } = await supabase.from("lessons").select("*").order("lesson_number");
+    if (error) toast.error(error.message);
+    else setLessons((data as any) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
   const save = async () => {
-    if (!form.book || !form.text) return toast.error("Livro e texto obrigatórios");
-    
-    const payload = {
-      ...form,
-      class_id: form.class_id || null,
-      trimester: form.trimester || null,
-      scheduled_date: form.scheduled_date || null
-    };
+    // Validate
+    const hasVerses = Object.values(form.verses).every(v => v.referencia && v.texto);
+    const hasQuestions = form.questions.length > 0;
+    const status = (form.theme && hasVerses && hasQuestions) ? 'completo' : 'incompleto';
 
+    const payload = { ...form, status };
     if (editing) {
-      const { error } = await supabase.from("verses").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("lessons").update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from("verses").insert(payload);
+      const { error } = await supabase.from("lessons").insert(payload);
       if (error) return toast.error(error.message);
     }
-    toast.success("Salvo");
-    setOpen(false); 
-    setEditing(null); 
-    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1, scheduled_date: "" }); 
+    toast.success("Lição salva!");
+    setOpen(false);
     load();
   };
 
-  const deleteSelected = async () => {
-    if (selectedIds.size === 0) return;
-    if (!confirm(`Tem certeza que deseja apagar os ${selectedIds.size} versículos selecionados?`)) return;
-
+  const handleAiImport = async (text: string) => {
     setLoading(true);
-    for (const id of Array.from(selectedIds)) {
-      await smartDelete({ table: "verses", id });
-    }
-    toast.success(`${selectedIds.size} itens removidos`);
-    setSelectedIds(new Set());
-    load();
-  };
-
-  const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedIds(next);
-  };
-
-  const toggleSelectAll = (ids: string[]) => {
-    if (selectedIds.size === ids.length && ids.length > 0) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(ids));
-    }
-  };
-
-  const handleAiImport = async () => {
-    if (!aiText.trim()) return toast.error("Cole o texto para processar");
-    if (!aiDate) return toast.error("Selecione a data de referência (segunda-feira)");
-    
-    setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "parse_weekly_lesson", text: aiText },
-      });
-
-      if (error) throw error;
-      
-      const monday = new Date(aiDate + "T12:00:00");
-      
-      const versesToInsert = (data.verses || []).map((v: any, index: number) => {
-        const scheduledDate = new Date(monday);
-        scheduledDate.setDate(monday.getDate() + index);
-        
-        return {
-          book: v.book || "Desconhecido",
-          chapter: v.chapter || 1,
-          verse: v.verse || 1,
-          text: v.text || "",
-          theme: data.lesson_title || "Lição",
-          class_id: aiClassId || null,
-          trimester: aiTrimester || 1,
-          scheduled_date: scheduledDate.toISOString().split('T')[0],
-          active: true
-        };
-      });
-
-      if (versesToInsert.length === 0) {
-        throw new Error("Nenhum versículo encontrado no texto processado.");
-      }
-
-      const { error: insertError } = await supabase
-        .from("verses")
-        .insert(versesToInsert);
-
-      if (insertError) throw insertError;
-
-      toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
-      setAiImportOpen(false);
-      setAiText("");
-      setAiDate("");
-      load();
+        const { data, error } = await supabase.functions.invoke("community-ai", {
+            body: { mode: "parse_weekly_lesson", text },
+        });
+        if (error) throw error;
+        setForm(prev => ({ ...prev, ...data }));
+        toast.success("Importado via IA");
     } catch (err: any) {
-      toast.error("Falha ao processar com IA: " + err.message);
+        toast.error("Erro na IA: " + err.message);
     } finally {
-      setAiLoading(false);
+        setLoading(false);
     }
   };
-
-  const toggleActive = async (v: Verse) => {
-    const { error } = await supabase.from("verses").update({ active: !v.active }).eq("id", v.id);
-    if (error) return toast.error(error.message);
-    toast.success(v.active ? "Desativado" : "Ativado"); load();
-  };
-
-  const filtered = rows.filter((r) => {
-    const matchesSearch = `${r.book} ${r.text} ${r.theme}`.toLowerCase().includes(q.toLowerCase());
-    const matchesClass = classFilter === "all" || r.class_id === classFilter;
-    const matchesTrimester = trimesterFilter === "all" || r.trimester === Number(trimesterFilter);
-    const matchesDate = !dateFilter || r.scheduled_date === dateFilter;
-    return matchesSearch && matchesClass && matchesTrimester && matchesDate;
-  });
-
-  const filteredIds = filtered.map(f => f.id);
 
   return (
     <AdminPage
-      title="Plano de Leitura (Versículos)"
-      description="Pool do versículo do dia (até 1000 mostrados)."
-      Icon={BookText}
-      variant="secondary"
+      title="Gerenciador de Lições"
+      description="Gerencie as lições semanais."
+      Icon={BookOpen}
       actions={
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setAiImportOpen(true)}
-            variant="outline"
-            className="bg-white text-primary hover:bg-white/90 shadow border-primary/20"
-          >
-            <Sparkles className="w-4 h-4 mr-1 text-primary" /> Importar com IA
-          </Button>
-          <Button
-            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1, scheduled_date: "" }); setOpen(true); }}
-            className="text-foreground shadow bg-primary hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4 mr-1" /> Novo Versículo
-          </Button>
-        </div>
+        <Button onClick={() => { setEditing(null); setOpen(true); }}>
+          <Plus className="w-4 h-4 mr-2" /> Nova Lição
+        </Button>
       }
     >
-      <div className="flex flex-col md:flex-row gap-4 items-end mb-4">
-        <div className="flex-1 space-y-1 w-full">
-          <Label>Buscar</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} />
-          </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1,2,3].map(i => <Skeleton key={i} className="h-40" />)}
         </div>
-        
-        <div className="w-full md:w-48 space-y-1">
-          <Label>Classe</Label>
-          <Select value={classFilter} onValueChange={setClassFilter}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as classes</SelectItem>
-              {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {lessons.map(l => (
+            <Card key={l.id} className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-[0_0_10px_rgba(var(--primary),0.2)]" onClick={() => { setEditing(l); setForm(l); setOpen(true); }}>
+              <CardHeader>
+                <CardTitle className="text-lg">Lição {l.lesson_number} • {l.trimester}º TRI</CardTitle>
+                <CardDescription>{l.theme}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{Object.keys(l.verses).length} versículos, {l.questions.length} perguntas.</p>
+              </CardContent>
+              <CardFooter>
+                <Badge variant={l.status === 'completo' ? 'default' : 'outline'}>{l.status}</Badge>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
+      )}
 
-        <div className="w-full md:w-32 space-y-1">
-          <Label>Trimestre</Label>
-          <Select value={trimesterFilter} onValueChange={setTrimesterFilter}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trim</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="w-full md:w-40 space-y-1">
-          <Label>Data</Label>
-          <div className="flex gap-1">
-            <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="h-10" />
-            {dateFilter && (
-              <Button variant="ghost" size="icon" onClick={() => setDateFilter("")} className="h-10 w-10">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {selectedIds.size > 0 && (
-          <Button variant="destructive" onClick={deleteSelected} className="gap-2">
-            <Trash2 className="w-4 h-4" /> Apagar ({selectedIds.size})
-          </Button>
-        )}
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleSelectAll(filteredIds)}
-                >
-                  {selectedIds.size === filteredIds.length && filteredIds.length > 0 ? (
-                    <CheckSquare className="w-4 h-4" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
-                </Button>
-              </TableHead>
-              <TableHead>Referência</TableHead>
-              <TableHead>Agendado</TableHead>
-              <TableHead>Classe/Trim</TableHead>
-              <TableHead>Texto</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
-            ) : filtered.map((v) => (
-              <TableRow key={v.id} className={selectedIds.has(v.id) ? "bg-muted/50" : ""}>
-                <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => toggleSelect(v.id)}
-                  >
-                    {selectedIds.has(v.id) ? (
-                      <CheckSquare className="w-4 h-4 text-primary" />
-                    ) : (
-                      <Square className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </TableCell>
-                <TableCell className="font-medium whitespace-nowrap">{v.book} {v.chapter}:{v.verse}</TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {v.scheduled_date ? (
-                    <span className="text-sm font-medium">
-                      {new Date(v.scheduled_date + "T12:00:00").toLocaleDateString('pt-BR')}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground italic">Não agendado</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    {v.class_id ? (
-                      <Badge variant="secondary" className="text-[10px] py-0">
-                        {classes.find(c => c.id === v.class_id)?.name || "Classe"}
-                      </Badge>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground italic">Geral</span>
-                    )}
-                    {v.trimester && (
-                      <span className="text-[10px] text-muted-foreground font-semibold">
-                        {v.trimester}º Trimestre
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-md">
-                  <div className="text-sm font-semibold text-primary mb-1">
-                    {v.book} {v.chapter}:{v.verse}
-                  </div>
-                  <div className="text-sm line-clamp-3">
-                    {v.text}
-                  </div>
-                </TableCell>
-                <TableCell>{v.active ? <Badge>Ativo</Badge> : <Badge variant="outline">Inativo</Badge>}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button size="sm" variant="outline" onClick={() => {
-                    setEditing(v); 
-                    setForm({ 
-                      book: v.book, 
-                      chapter: v.chapter, 
-                      verse: v.verse, 
-                      text: v.text, 
-                      theme: v.theme,
-                      class_id: v.class_id || "",
-                      trimester: v.trimester || 1,
-                      scheduled_date: v.scheduled_date || ""
-                    }); 
-                    setOpen(true);
-                  }}>Editar</Button>
-                  <Button size="sm" variant="ghost" onClick={() => toggleActive(v)}>
-                    <Power className="w-4 h-4" />
-                  </Button>
-                  <DeleteButton
-                    iconOnly
-                    itemLabel={`o versículo ${v.book} ${v.chapter}:${v.verse}`}
-                    consequences={[
-                      "O versículo deixa de aparecer no pool do versículo do dia",
-                      "Históricos de versículos do dia continuam preservados",
-                    ]}
-                    onConfirm={async () => {
-                      const r = await smartDelete({ table: "verses", id: v.id });
-                      if (!r.ok) return r.error;
-                      load();
-                      return true;
-                    }}
-                    successMessage="Versículo removido"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-
-      {/* Dialog para Novo/Editar */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} Versículo</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <Label>Data de Exibição</Label>
-                <Input 
-                  type="date" 
-                  value={form.scheduled_date || ""} 
-                  onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Classe (Opcional)</Label>
-                <Select 
-                  value={form.class_id || "none"} 
-                  onValueChange={(v) => setForm({ ...form, class_id: v === "none" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Selecione a classe" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Geral (Todas as classes)</SelectItem>
-                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Trimestre</Label>
-                <Select 
-                  value={form.trimester?.toString()} 
-                  onValueChange={(v) => setForm({ ...form, trimester: Number(v) })}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader><DialogTitle>Editar Lição</DialogTitle></DialogHeader>
+          <ScrollArea className="max-h-[60vh] p-4">
+            <div className="space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                    <Input placeholder="Lição #" type="number" value={form.lesson_number} onChange={e => setForm({...form, lesson_number: parseInt(e.target.value)})} />
+                    <Input placeholder="Trimestre" value={form.trimester} onChange={e => setForm({...form, trimester: e.target.value})} />
+                    <Input placeholder="Tema" value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} />
+                </div>
+                <Textarea placeholder="Descrição" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+                
+                <h3 className="font-semibold text-lg">Versículos</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.keys(form.verses).map((day: any) => (
+                        <Card key={day} className="p-3">
+                            <Label className="capitalize">{day}</Label>
+                            <Input placeholder="Referência (ex: João 3:16)" value={form.verses[day].referencia} onChange={e => setForm({...form, verses: {...form.verses, [day]: {...form.verses[day], referencia: e.target.value}}})} />
+                            <Textarea placeholder="Texto" value={form.verses[day].texto} onChange={e => setForm({...form, verses: {...form.verses, [day]: {...form.verses[day], texto: e.target.value}}})} />
+                        </Card>
+                    ))}
+                </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div><Label>Livro</Label><Input value={form.book} onChange={(e) => setForm({ ...form, book: e.target.value })} /></div>
-              <div><Label>Cap.</Label><Input type="number" value={form.chapter} onChange={(e) => setForm({ ...form, chapter: Number(e.target.value) })} /></div>
-              <div><Label>Vers.</Label><Input type="number" value={form.verse} onChange={(e) => setForm({ ...form, verse: Number(e.target.value) })} /></div>
-            </div>
-            <div><Label>Texto</Label><Textarea rows={4} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} /></div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button onClick={save}>Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog para Importação com IA */}
-      <Dialog open={aiImportOpen} onOpenChange={setAiImportOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Importar Lição Completa com IA
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Classe destino</Label>
-                <Select value={aiClassId} onValueChange={setAiClassId}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Trimestre</Label>
-                <Select value={aiTrimester.toString()} onValueChange={(v) => setAiTrimester(Number(v))}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4].map(t => (
-                      <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Segunda-feira Ref.</Label>
-                <Input 
-                  type="date" 
-                  value={aiDate} 
-                  onChange={(e) => setAiDate(e.target.value)} 
-                  className="h-9"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-1">
-              <Label>Conteúdo da Lição (IA)</Label>
-              <Textarea
-                placeholder="Cole aqui o texto completo da lição: título, leitura semanal, versículos diários e questões do quiz..."
-                className="min-h-[250px] font-mono text-sm"
-                value={aiText}
-                onChange={(e) => setAiText(e.target.value)}
-              />
-              <p className="text-[10px] text-muted-foreground">
-                A IA irá extrair o tema, o plano de leitura e criar o quiz automaticamente.
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAiImportOpen(false)} disabled={aiLoading}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAiImport} disabled={aiLoading || !aiText.trim()}>
-              {aiLoading ? "Processando..." : "Processar e Importar Tudo"}
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
