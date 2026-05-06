@@ -32,27 +32,19 @@ export const useWeeklyLessons = () => {
     queryFn: async (): Promise<WeeklyLesson[]> => {
       const now = new Date().toISOString();
       const { data, error } = await supabase
-        .from("quizzes")
+        .from("lessons")
         .select(`
           id, 
-          lesson_title, 
+          theme, 
           lesson_number, 
-          weekly_bible_reading,
-          devotional_mon,
-          devotional_tue,
-          devotional_wed,
-          devotional_thu,
-          devotional_fri,
-          devotional_sat,
-          active,
-          opens_at,
+          reading_theme,
+          scheduled_date,
+          verses,
           questions(id)
         `)
-        .eq("class_id", classId!)
-        .eq("quiz_kind", "weekly")
-        .eq("active", true)
-        .lte("opens_at", now)
-        .order("lesson_number", { ascending: false })
+        .eq("status", "completo")
+        .lte("scheduled_date", now)
+        .order("scheduled_date", { ascending: false })
         .limit(4);
 
       if (error) throw error;
