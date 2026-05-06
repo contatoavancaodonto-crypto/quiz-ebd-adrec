@@ -754,6 +754,29 @@ export default function AdminQuizzes() {
             <div className="space-y-3">
               <div><Label>Título do Quiz</Label><Input value={qForm.title} onChange={(e) => setQForm({ ...qForm, title: e.target.value })} placeholder="Ex: Lição 3 — A fé de Abraão" /></div>
               
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Tipo de Quiz</Label>
+                  <Select value={qForm.quiz_kind} onValueChange={(v) => setQForm({ ...qForm, quiz_kind: v })}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Semanal</SelectItem>
+                      <SelectItem value="trimestral">Trimestral (Provão)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Total de Perguntas</Label>
+                  <Input 
+                    type="number" 
+                    value={qForm.total_questions} 
+                    onChange={(e) => setQForm({ ...qForm, total_questions: e.target.value })} 
+                    placeholder={qForm.quiz_kind === "trimestral" ? "26" : "13"}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
               <div>
                 <Label>Temporada</Label>
                 <Select value={qForm.season_id} onValueChange={(v) => setQForm({ ...qForm, season_id: v })}>
