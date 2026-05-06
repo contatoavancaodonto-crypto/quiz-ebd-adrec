@@ -372,7 +372,7 @@ export default function AdminVerses() {
                   Versículos da Semana
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.keys(form.verses).map((day) => (
+                  {Object.keys(form.verses).filter((day) => day !== "domingo").map((day) => (
                     <Card key={day} className="bg-white/5 border-white/5 p-4 space-y-3">
                       <div className="flex justify-between items-center">
                         <Label className="capitalize font-bold text-primary">{day}</Label>
