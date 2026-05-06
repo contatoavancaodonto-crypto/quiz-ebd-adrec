@@ -30,7 +30,8 @@ const resolveBibleBook = (books: BibliaBook[], rawBook: string) => {
 };
 
 export default function Biblia() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { data: BOOKS, isLoading, isError, refetch } = useBibliaData();
   const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
@@ -65,6 +66,28 @@ export default function Biblia() {
 
     return () => window.clearTimeout(timer);
   }, [selectedBook, selectedChapter, deepLinkVerse]);
+
+  const handleNextChapter = () => {
+    if (selectedBook && selectedChapter !== null && selectedChapter < selectedBook.chapters.length - 1) {
+      setSelectedChapter(selectedChapter + 1);
+      setSearchParams({ 
+        book: selectedBook.abbrev, 
+        chapter: (selectedChapter + 2).toString() 
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrevChapter = () => {
+    if (selectedBook && selectedChapter !== null && selectedChapter > 0) {
+      setSelectedChapter(selectedChapter - 1);
+      setSearchParams({ 
+        book: selectedBook.abbrev, 
+        chapter: (selectedChapter).toString() 
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const highlightedVerse = Number.parseInt(deepLinkVerse || "", 10);
 
