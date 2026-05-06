@@ -130,6 +130,8 @@ const Index = () => {
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
   const weekClose = useCountdown(weeklyQuiz?.closes_at);
   const nextOpen = useCountdown(nextQuiz?.opens_at);
+  const { data: currentLesson } = useCurrentLesson();
+  const { data: nextLesson } = useNextLesson();
 
   const showProvao = useMemo(() => {
     if (!provao || !season?.end_date) return false;
