@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [readDays, setReadDays] = useState<Record<string, boolean>>({});
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const storageKey = `lesson-read-${lesson.id}`;
 
@@ -60,13 +61,22 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   };
 
   const handleReadFullChapter = (reference: string | null) => {
-    if (!reference) return;
-    // Simple parser for "Livro Cap:Ver" or "Livro Cap"
-    // Format expected by /membro/biblia might vary, but usually we pass params
-    // For now, let's navigate to biblia and we could potentially pass state
-    const encodedRef = encodeURIComponent(reference);
-    navigate(`/membro/biblia?ref=${encodedRef}`);
-    setOpenDay(null);
+    if (!reference || isRedirecting) return;
+    
+    setIsRedirecting(true);
+    
+    // Extrai livro e capítulo da referência (ex: "Gênesis 22:7" -> livro="Gênesis", capítulo="22")
+    const parts = reference.trim().split(" ");
+    const chapterPart = parts.pop(); // Pega a última parte (ex: "22:7")
+    const book = parts.join(" "); // O resto é o nome do livro (ex: "Gênesis")
+    const chapter = chapterPart?.split(":")[0]; // Pega o capítulo antes dos dois pontos
+    
+    // Simula um pequeno delay para o feedback visual de loading
+    setTimeout(() => {
+      navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+      setOpenDay(null);
+      setIsRedirecting(false);
+    }, 600);
   };
 
   const today = new Date();
@@ -246,11 +256,18 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    disabled={isRedirecting}
                     onClick={() => handleReadFullChapter(verse?.referencia)}
-                    className="text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-transparent transition-all duration-300 flex items-center justify-center gap-1.5 h-8 group"
+                    className="text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-transparent transition-all duration-300 flex items-center justify-center gap-1.5 h-8 group disabled:opacity-70"
                   >
-                    <BookOpen className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                    <span className="group-hover:tracking-wide transition-all">Ler capítulo completo</span>
+                    {isRedirecting ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                    ) : (
+                      <BookOpen className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                    )}
+                    <span className="group-hover:tracking-wide transition-all">
+                      {isRedirecting ? "Abrindo Bíblia..." : "Ler capítulo completo"}
+                    </span>
                   </Button>
                 </div>
               </>
