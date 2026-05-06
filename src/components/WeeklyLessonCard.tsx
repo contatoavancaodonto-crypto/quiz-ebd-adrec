@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked } from "lucide-react";
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
