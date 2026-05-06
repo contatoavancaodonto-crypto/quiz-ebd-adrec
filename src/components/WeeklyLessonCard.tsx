@@ -67,17 +67,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
               </div>
             )}
             
-            {lesson.weekly_bible_reading && (
-              <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/30 border border-border/50">
-                <BookOpen className="w-4 h-4 text-secondary mt-0.5 shrink-0" />
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Leitura Principal (Dom)</span>
-                  <p className="text-xs font-medium text-foreground leading-snug">
-                    {lesson.weekly_bible_reading}
-                  </p>
-                </div>
-              </div>
-            )}
+            {/* Domingo removido conforme solicitado */}
           </div>
 
           <div className="space-y-3">
