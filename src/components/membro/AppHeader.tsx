@@ -132,9 +132,17 @@ export function AppHeader(props: Props) {
                 onClick={
                   props.onAvatarClick ?? (() => navigate("/membro/perfil"))
                 }
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-transform"
+                className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-transform ring-2 ring-background"
               >
-                {(props.firstName ?? "?").charAt(0).toUpperCase()}
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={props.firstName ?? "Perfil"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  (props.firstName ?? "?").charAt(0).toUpperCase()
+                )}
               </button>
             </div>
           </>
