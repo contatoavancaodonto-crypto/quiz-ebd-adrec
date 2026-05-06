@@ -270,7 +270,7 @@ export default function AdminQuizzes() {
         devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado"))?.text || null,
         quiz_kind: "weekly",
         active: true,
-        total_questions: 0 // Perguntas devem ser adicionadas manualmente pelo admin
+        total_questions: data.questions?.length || 0
       };
 
       // Inserir o quiz
