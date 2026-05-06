@@ -86,7 +86,7 @@ const QuizPage = () => {
           const nowIso = new Date().toISOString();
           const { data: openQuizzes, error: oqErr } = await supabase
             .from("quizzes")
-            .select("id, season_id, week_number, opens_at, closes_at, total_questions")
+            .select("id, season_id, week_number, opens_at, closes_at, total_questions, quiz_kind")
             .eq("class_id", store.classId)
             .eq("active", true)
             .lte("opens_at", nowIso)
@@ -95,13 +95,13 @@ const QuizPage = () => {
             .limit(1);
           if (oqErr) throw oqErr;
 
-          let quiz: { id: string; season_id?: string | null; total_questions?: number | null } | null = openQuizzes?.[0] ?? null;
+          let quiz: { id: string; season_id?: string | null; total_questions?: number | null; quiz_kind?: string | null } | null = openQuizzes?.[0] ?? null;
 
           // Fallback: quiz legado (sem janela) por trimestre
           if (!quiz) {
             const { data: legacyQuiz, error: qErr } = await supabase
               .from("quizzes")
-              .select("id, season_id, total_questions")
+              .select("id, season_id, total_questions, quiz_kind")
               .eq("class_id", store.classId)
               .eq("active", true)
               .eq("trimester", store.trimester)
