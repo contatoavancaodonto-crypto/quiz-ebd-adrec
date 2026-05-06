@@ -14,13 +14,31 @@ interface WeeklyLessonCardProps {
 export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
   
-  const dayNames = {
-    seg: "Segunda",
-    ter: "Terça",
-    qua: "Quarta",
-    qui: "Quinta",
-    sex: "Sexta",
-    sab: "Sábado"
+  const dayNames: Record<string, string> = {
+    segunda: "Segunda",
+    terca: "Terça",
+    quarta: "Quarta",
+    quinta: "Quinta",
+    sexta: "Sexta",
+    sabado: "Sábado"
+  };
+
+  const getDayDate = (baseDateStr: string | undefined, dayKey: string) => {
+    if (!baseDateStr) return null;
+    const baseDate = new Date(baseDateStr + "T12:00:00");
+    const dayOffsets: Record<string, number> = {
+      segunda: 0,
+      terca: 1,
+      quarta: 2,
+      quinta: 3,
+      sexta: 4,
+      sabado: 5
+    };
+    
+    const offset = dayOffsets[dayKey] ?? 0;
+    const date = new Date(baseDate);
+    date.setDate(baseDate.getDate() + offset);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   };
 
   return (
@@ -47,8 +65,8 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
             </div>
             <div className="flex flex-col items-end gap-1">
               {lesson.scheduled_date && (
-                <Badge variant="outline" className="bg-white/5 border-primary/20 text-primary text-[9px] px-2 py-0.5 font-bold">
-                  {new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR')}
+                <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary text-[10px] px-2 py-1 font-bold rounded-lg">
+                  Início: {new Date(lesson.scheduled_date + "T12:00:00").toLocaleDateString('pt-BR')}
                 </Badge>
               )}
               {lesson.has_quiz && (
@@ -66,8 +84,6 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                 <span className="text-xs font-bold text-primary">{lesson.reading_theme}</span>
               </div>
             )}
-            
-            {/* Domingo removido conforme solicitado */}
           </div>
 
           <div className="space-y-3">
@@ -76,17 +92,30 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Plano de Leitura Diária (Seg-Sáb)</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {Object.entries(lesson.verses).map(([day, text]) => (
-                <div key={day} className="p-3 rounded-2xl bg-card border border-primary/5 shadow-sm space-y-1.5 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-8 h-8 bg-primary/5 rounded-bl-2xl -mr-4 -mt-4 transition-all group-hover:bg-primary/10" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-primary/60">
-                    {dayNames[day as keyof typeof dayNames]}
-                  </span>
-                  <p className="text-[11px] leading-relaxed text-foreground/90 line-clamp-2 italic font-medium">
-                    {text || "Não agendado"}
-                  </p>
-                </div>
-              ))}
+              {Object.keys(dayNames).map((dayKey) => {
+                const verseData = (lesson.verses as any)[dayKey];
+                const reference = typeof verseData === 'string' ? verseData : verseData?.referencia;
+                const dateLabel = getDayDate(lesson.scheduled_date, dayKey);
+                
+                return (
+                  <div key={dayKey} className="p-3 rounded-2xl bg-card border border-primary/5 shadow-sm space-y-1 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-8 h-8 bg-primary/5 rounded-bl-2xl -mr-4 -mt-4 transition-all group-hover:bg-primary/10" />
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary/60">
+                        {dayNames[dayKey]}
+                      </span>
+                      {dateLabel && (
+                        <span className="text-[9px] font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md">
+                          {dateLabel}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-foreground/90 line-clamp-2 italic font-medium">
+                      {reference || "Não agendado"}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
               <Sparkles className="w-3 h-3 text-amber-500" />
