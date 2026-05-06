@@ -23,7 +23,7 @@ function formatTimeFallback(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-const TOTAL_QUESTIONS = 13;
+// Removido const TOTAL_QUESTIONS fixo para usar o do store (dinâmico)
 
 interface MiniRankEntry {
   attempt_id: string;
@@ -52,7 +52,8 @@ const ResultPage = () => {
   const [lastWeekCompleted, setLastWeekCompleted] = useState<number | null>(null);
 
   const score = store.score;
-  const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
+  const totalQuestions = store.totalQuestions || 13;
+  const pct = Math.round((score / totalQuestions) * 100);
   const perf = getPerformanceMessage(pct);
   const timeStr = store.totalTimeMs > 0 ? formatTimeMs(store.totalTimeMs) : formatTimeFallback(store.totalTimeSeconds);
   const finalScore = score + streakBonus;
@@ -143,7 +144,7 @@ const ResultPage = () => {
   }
 
   const stats = [
-    { icon: Target, label: "Pontuação", value: `${score}/${TOTAL_QUESTIONS}`, sub: `${pct}%` },
+    { icon: Target, label: "Pontuação", value: `${score}/${totalQuestions}`, sub: `${pct}%` },
     { icon: Clock, label: "Tempo", value: timeStr, sub: "mm:ss:cc" },
     { icon: Trophy, label: "Ranking Turma", value: classRank ? `#${classRank}` : "—", sub: store.className },
     { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "—", sub: "Todas igrejas" },
@@ -174,7 +175,7 @@ const ResultPage = () => {
             variant="primary"
           >
             <div className="flex flex-wrap gap-2">
-              <HeroChip Icon={Sparkles}>{score}/{TOTAL_QUESTIONS} acertos · {pct}%</HeroChip>
+              <HeroChip Icon={Sparkles}>{score}/{totalQuestions} acertos · {pct}%</HeroChip>
               {store.churchName && <HeroChip Icon={Church}>{store.churchName}</HeroChip>}
               {classRank && <HeroChip Icon={Trophy}>Turma #{classRank}</HeroChip>}
               {generalRank && <HeroChip Icon={Medal}>Geral #{generalRank}</HeroChip>}
@@ -200,8 +201,8 @@ const ResultPage = () => {
           ))}
         </div>
 
-        {/* Streak / bônus semanal */}
-        {weekNumber !== null && streakAt > 0 && (
+        {/* Bônus Semanal / Prazo */}
+        {store.quizKind === "weekly" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -210,12 +211,14 @@ const ResultPage = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🔥</span>
+                <span className="text-2xl">{streakBonus > 0 ? "✅" : "⏰"}</span>
                 <div>
                   <div className="text-sm font-semibold text-foreground">
-                    {streakAt} {streakAt === 1 ? "semana" : "semanas"} seguidas
+                    {streakBonus > 0 ? "Aula feita dentro do prazo" : "Fora do prazo semanal"}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">Semana {weekNumber}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {weekNumber ? `Semana ${weekNumber}` : "Quiz Semanal"}
+                  </div>
                 </div>
               </div>
               {streakBonus > 0 && (
@@ -225,22 +228,18 @@ const ResultPage = () => {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
-              <span className="text-muted-foreground">Acertos: <strong className="text-foreground">{score}</strong> + Bônus: <strong className="text-primary">{streakBonus}</strong></span>
-              <span className="font-bold text-foreground">Total: {finalScore} pts</span>
-            </div>
-            <div className="flex items-center justify-between text-[11px] border-t border-border/50 pt-2 mt-2">
-              <span className="text-muted-foreground">
-                Streak atual: <strong className="text-foreground">🔥 {currentStreak} {currentStreak === 1 ? "semana" : "semanas"}</strong>
-              </span>
-              <span className="text-muted-foreground">
-                Última semana: <strong className="text-foreground">{lastWeekCompleted ?? "—"}</strong>
-              </span>
-            </div>
-            {streakAt >= 3 && (
-              <p className="text-[11px] text-primary mt-2 text-center">
-                Continue assim! Sua consistência está fazendo a diferença. 🙌
-              </p>
+            
+            {streakAt > 0 && (
+              <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
+                <span className="text-muted-foreground">Sequência atual: <strong className="text-foreground">🔥 {streakAt} {streakAt === 1 ? "semana" : "semanas"}</strong></span>
+                <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+              </div>
+            )}
+
+            {!streakAt && (
+               <div className="flex items-center justify-end text-xs border-t border-border/50 pt-2 mt-2">
+                 <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+               </div>
             )}
           </motion.div>
         )}

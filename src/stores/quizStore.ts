@@ -8,6 +8,8 @@ export interface QuizState {
   churchId: string;
   churchName: string;
   quizId: string;
+  quizKind: string;
+  totalQuestions: number;
   participantId: string;
   attemptId: string;
   currentQuestionIndex: number;
@@ -21,6 +23,7 @@ export interface QuizState {
   setParticipant: (name: string, classId: string, className: string, trimester: number) => void;
   setChurch: (id: string, name: string) => void;
   setQuizId: (id: string) => void;
+  setQuizMetadata: (kind: string, total: number) => void;
   setParticipantId: (id: string) => void;
   setAttemptId: (id: string) => void;
   setAnswer: (questionId: string, option: string) => void;
@@ -39,6 +42,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   churchId: "",
   churchName: "",
   quizId: "",
+  quizKind: "weekly",
+  totalQuestions: 13,
   participantId: "",
   attemptId: "",
   currentQuestionIndex: 0,
@@ -53,6 +58,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     set({ participantName: name, classId, className, trimester }),
   setChurch: (id, name) => set({ churchId: id, churchName: name }),
   setQuizId: (id) => set({ quizId: id }),
+  setQuizMetadata: (kind, total) => set({ quizKind: kind, totalQuestions: total }),
   setParticipantId: (id) => set({ participantId: id }),
   setAttemptId: (id) => set({ attemptId: id }),
   setAnswer: (questionId, option) =>
@@ -86,6 +92,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       churchId: "",
       churchName: "",
       quizId: "",
+      quizKind: "weekly",
+      totalQuestions: 13,
       participantId: "",
       attemptId: "",
       currentQuestionIndex: 0,
