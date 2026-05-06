@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,508 +8,511 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Power, Search, BookText, Trash2, Sparkles, Square, CheckSquare } from "lucide-react";
+import { Plus, Sparkles, BookOpen, Trash2, CalendarDays, HelpCircle, CheckCircle2, AlertCircle, Pencil, ChevronRight } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { DeleteButton } from "@/components/admin/DeleteButton";
-import { smartDelete } from "@/lib/admin-delete";
+import { cn } from "@/lib/utils";
 
-interface Verse { 
-  id: string; 
-  book: string; 
-  chapter: number; 
-  verse: number; 
-  text: string; 
-  theme: string; 
-  active: boolean; 
-  class_id?: string | null;
-  trimester?: number | null;
-  scheduled_date?: string | null;
+type Pergunta = {
+  id: string
+  pergunta: string
+  tipo: 'multipla_escolha' | 'discursiva'
+  alternativas?: { a: string; b: string; c: string; d: string }
+  respostaCorreta?: string
+  comentario?: string
 }
 
-interface Cls { id: string; name: string; }
+type LicaoSemanal = {
+  id: string
+  trimester: string
+  lesson_number: number
+  theme: string
+  description?: string
+  verses: {
+    segunda: { referencia: string; texto: string; observacao?: string }
+    terca: { referencia: string; texto: string; observacao?: string }
+    quarta: { referencia: string; texto: string; observacao?: string }
+    quinta: { referencia: string; texto: string; observacao?: string }
+    sexta: { referencia: string; texto: string; observacao?: string }
+    sabado: { referencia: string; texto: string; observacao?: string }
+    domingo: { referencia: string; texto: string; observacao?: string }
+  }
+  questions: Pergunta[]
+  status: 'completo' | 'incompleto'
+  class_id?: string
+}
+
+const DEFAULT_VERSES = {
+  segunda: { referencia: "", texto: "" },
+  terca: { referencia: "", texto: "" },
+  quarta: { referencia: "", texto: "" },
+  quinta: { referencia: "", texto: "" },
+  sexta: { referencia: "", texto: "" },
+  sabado: { referencia: "", texto: "" },
+  domingo: { referencia: "", texto: "" }
+};
 
 export default function AdminVerses() {
-  const navigate = useNavigate();
-  const [rows, setRows] = useState<Verse[]>([]);
-  const [classes, setClasses] = useState<Cls[]>([]);
+  const [lessons, setLessons] = useState<LicaoSemanal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState("");
-  const [classFilter, setClassFilter] = useState<string>("all");
-  const [trimesterFilter, setTrimesterFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Verse | null>(null);
-  const [form, setForm] = useState({ 
-    book: "", 
-    chapter: 1, 
-    verse: 1, 
-    text: "", 
-    theme: "fé", 
-    class_id: "" as string | null, 
-    trimester: 1,
-    scheduled_date: "" as string | null
-  });
-
-  const [aiImportOpen, setAiImportOpen] = useState(false);
-  const [aiText, setAiText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiDate, setAiDate] = useState("");
-  const [aiClassId, setAiClassId] = useState("");
-  const [aiTrimester, setAiTrimester] = useState(1);
+  const [aiText, setAiText] = useState("");
+  const [aiImportOpen, setAiImportOpen] = useState(false);
+
+  const [form, setForm] = useState<Omit<LicaoSemanal, 'id'>>({
+    trimester: "1",
+    lesson_number: 1,
+    theme: "",
+    description: "",
+    verses: { ...DEFAULT_VERSES },
+    questions: [],
+    status: 'incompleto'
+  });
 
   const load = async () => {
     setLoading(true);
-    const [vs, cl] = await Promise.all([
-      supabase.from("verses").select("*").order("book").limit(1000),
-      supabase.from("classes").select("id, name").order("name")
-    ]);
-    setRows((vs.data as any) ?? []);
-    setClasses((cl.data as Cls[]) ?? []);
+    const { data, error } = await supabase.from("lessons").select("*").order("lesson_number");
+    if (error) toast.error(error.message);
+    else setLessons((data as any) ?? []);
     setLoading(false);
   };
+
   useEffect(() => { load(); }, []);
 
+  const openNew = () => {
+    setEditingId(null);
+    setForm({
+      trimester: "1",
+      lesson_number: (lessons[lessons.length - 1]?.lesson_number || 0) + 1,
+      theme: "",
+      description: "",
+      verses: { ...DEFAULT_VERSES },
+      questions: [],
+      status: 'incompleto'
+    });
+    setOpen(true);
+  };
+
+  const openEdit = (l: LicaoSemanal) => {
+    setEditingId(l.id);
+    setForm({
+      trimester: l.trimester,
+      lesson_number: l.lesson_number,
+      theme: l.theme,
+      description: l.description || "",
+      verses: { ...DEFAULT_VERSES, ...l.verses },
+      questions: l.questions || [],
+      status: l.status
+    });
+    setOpen(true);
+  };
+
   const save = async () => {
-    if (!form.book || !form.text) return toast.error("Livro e texto obrigatórios");
+    if (!form.theme || !form.lesson_number || !form.trimester) {
+      return toast.error("Preencha número, trimestre e tema.");
+    }
+
+    setSaving(true);
     
-    const payload = {
-      ...form,
-      class_id: form.class_id || null,
-      trimester: form.trimester || null,
-      scheduled_date: form.scheduled_date || null
-    };
+    // Status validation
+    const has7Verses = Object.values(form.verses).every(v => v.referencia.trim() !== "" && v.texto.trim() !== "");
+    const hasQuestions = form.questions.length > 0;
+    const status = (form.theme && has7Verses && hasQuestions) ? 'completo' : 'incompleto';
 
-    if (editing) {
-      const { error } = await supabase.from("verses").update(payload).eq("id", editing.id);
-      if (error) return toast.error(error.message);
-    } else {
-      const { error } = await supabase.from("verses").insert(payload);
-      if (error) return toast.error(error.message);
+    const payload = { ...form, status };
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from("lessons").update(payload).eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("lessons").insert(payload);
+        if (error) throw error;
+      }
+      toast.success("Lição salva com sucesso!");
+      setOpen(false);
+      load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
     }
-    toast.success("Salvo");
-    setOpen(false); 
-    setEditing(null); 
-    setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: "", trimester: 1, scheduled_date: "" }); 
-    load();
   };
 
-  const deleteSelected = async () => {
-    if (selectedIds.size === 0) return;
-    if (!confirm(`Tem certeza que deseja apagar os ${selectedIds.size} versículos selecionados?`)) return;
-
-    setLoading(true);
-    for (const id of Array.from(selectedIds)) {
-      await smartDelete({ table: "verses", id });
-    }
-    toast.success(`${selectedIds.size} itens removidos`);
-    setSelectedIds(new Set());
-    load();
-  };
-
-  const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedIds(next);
-  };
-
-  const toggleSelectAll = (ids: string[]) => {
-    if (selectedIds.size === ids.length && ids.length > 0) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(ids));
+  const deleteLesson = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja apagar esta lição?")) return;
+    const { error } = await supabase.from("lessons").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Lição removida");
+      load();
     }
   };
 
   const handleAiImport = async () => {
-    if (!aiText.trim()) return toast.error("Cole o texto para processar");
-    if (!aiDate) return toast.error("Selecione a data de referência (segunda-feira)");
-    
+    if (!aiText.trim()) return toast.error("Insira o texto para processar.");
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
         body: { mode: "parse_weekly_lesson", text: aiText },
       });
-
       if (error) throw error;
       
-      const monday = new Date(aiDate + "T12:00:00");
-      
-      const versesToInsert = (data.verses || []).map((v: any, index: number) => {
-        const scheduledDate = new Date(monday);
-        scheduledDate.setDate(monday.getDate() + index);
-        
-        return {
-          book: v.book || "Desconhecido",
-          chapter: v.chapter || 1,
-          verse: v.verse || 1,
-          text: v.text || "",
-          theme: data.lesson_title || "Lição",
-          class_id: aiClassId || null,
-          trimester: aiTrimester || 1,
-          scheduled_date: scheduledDate.toISOString().split('T')[0],
-          active: true
-        };
-      });
-
-      if (versesToInsert.length === 0) {
-        throw new Error("Nenhum versículo encontrado no texto processado.");
-      }
-
-      const { error: insertError } = await supabase
-        .from("verses")
-        .insert(versesToInsert);
-
-      if (insertError) throw insertError;
-
-      toast.success(`${versesToInsert.length} versículos importados com sucesso!`);
+      setForm(prev => ({
+        ...prev,
+        ...data,
+        verses: { ...prev.verses, ...data.verses }
+      }));
       setAiImportOpen(false);
       setAiText("");
-      setAiDate("");
-      load();
+      toast.success("Informações extraídas com sucesso!");
     } catch (err: any) {
-      toast.error("Falha ao processar com IA: " + err.message);
+      toast.error("Erro na IA: " + err.message);
     } finally {
       setAiLoading(false);
     }
   };
 
-  const toggleActive = async (v: Verse) => {
-    const { error } = await supabase.from("verses").update({ active: !v.active }).eq("id", v.id);
-    if (error) return toast.error(error.message);
-    toast.success(v.active ? "Desativado" : "Ativado"); load();
+  const addQuestion = () => {
+    const newQ: Pergunta = {
+      id: Math.random().toString(36).substr(2, 9),
+      pergunta: "",
+      tipo: 'multipla_escolha',
+      alternativas: { a: "", b: "", c: "", d: "" },
+      respostaCorreta: "a"
+    };
+    setForm(prev => ({ ...prev, questions: [...prev.questions, newQ] }));
   };
 
-  const filtered = rows.filter((r) => {
-    const matchesSearch = `${r.book} ${r.text} ${r.theme}`.toLowerCase().includes(q.toLowerCase());
-    const matchesClass = classFilter === "all" || r.class_id === classFilter;
-    const matchesTrimester = trimesterFilter === "all" || r.trimester === Number(trimesterFilter);
-    const matchesDate = !dateFilter || r.scheduled_date === dateFilter;
-    return matchesSearch && matchesClass && matchesTrimester && matchesDate;
-  });
+  const updateQuestion = (id: string, updates: Partial<Pergunta>) => {
+    setForm(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => q.id === id ? { ...q, ...updates } : q)
+    }));
+  };
 
-  const filteredIds = filtered.map(f => f.id);
+  const removeQuestion = (id: string) => {
+    setForm(prev => ({
+      ...prev,
+      questions: prev.questions.filter(q => q.id !== id)
+    }));
+  };
 
   return (
     <AdminPage
-      title="Plano de Leitura (Versículos)"
-      description="Pool do versículo do dia (até 1000 mostrados)."
-      Icon={BookText}
+      title="Lições Semanais"
+      description="Gerenciador visual de conteúdo para a EBD."
+      Icon={BookOpen}
       variant="secondary"
       actions={
         <div className="flex gap-2">
-          <Button
-            onClick={() => setAiImportOpen(true)}
-            variant="outline"
-            className="bg-white text-primary hover:bg-white/90 shadow border-primary/20"
-          >
-            <Sparkles className="w-4 h-4 mr-1 text-primary" /> Importar com IA
+          <Button onClick={() => setAiImportOpen(true)} variant="outline" className="bg-white/5 border-primary/20 text-primary hover:bg-white/10">
+            <Sparkles className="w-4 h-4 mr-2" /> Importar com IA
           </Button>
-          <Button
-            onClick={() => { setEditing(null); setForm({ book: "", chapter: 1, verse: 1, text: "", theme: "fé", class_id: classFilter !== "all" ? classFilter : "", trimester: trimesterFilter !== "all" ? Number(trimesterFilter) : 1, scheduled_date: "" }); setOpen(true); }}
-            className="text-foreground shadow bg-primary hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4 mr-1" /> Novo Versículo
+          <Button onClick={openNew} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+            <Plus className="w-4 h-4 mr-2" /> Nova Lição
           </Button>
         </div>
       }
     >
-      <div className="flex flex-col md:flex-row gap-4 items-end mb-4">
-        <div className="flex-1 space-y-1 w-full">
-          <Label>Buscar</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-64 rounded-2xl bg-white/5" />)}
+        </div>
+      ) : lessons.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+          <div className="p-4 bg-primary/10 rounded-full mb-4">
+            <BookOpen className="w-10 h-10 text-primary" />
           </div>
+          <h3 className="text-xl font-semibold mb-2">Nenhuma lição encontrada</h3>
+          <p className="text-muted-foreground mb-6">Comece criando sua primeira lição semanal.</p>
+          <Button onClick={openNew}>Criar Lição</Button>
         </div>
-        
-        <div className="w-full md:w-48 space-y-1">
-          <Label>Classe</Label>
-          <Select value={classFilter} onValueChange={setClassFilter}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as classes</SelectItem>
-              {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-full md:w-32 space-y-1">
-          <Label>Trimestre</Label>
-          <Select value={trimesterFilter} onValueChange={setTrimesterFilter}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trim</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="w-full md:w-40 space-y-1">
-          <Label>Data</Label>
-          <div className="flex gap-1">
-            <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="h-10" />
-            {dateFilter && (
-              <Button variant="ghost" size="icon" onClick={() => setDateFilter("")} className="h-10 w-10">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {selectedIds.size > 0 && (
-          <Button variant="destructive" onClick={deleteSelected} className="gap-2">
-            <Trash2 className="w-4 h-4" /> Apagar ({selectedIds.size})
-          </Button>
-        )}
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleSelectAll(filteredIds)}
-                >
-                  {selectedIds.size === filteredIds.length && filteredIds.length > 0 ? (
-                    <CheckSquare className="w-4 h-4" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {lessons.map(lesson => (
+            <Card 
+              key={lesson.id} 
+              className="group relative cursor-pointer overflow-hidden border-white/10 bg-black/40 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(var(--primary),0.1)] hover:-translate-y-1 rounded-2xl"
+              onClick={() => openEdit(lesson)}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start mb-2">
+                  <Badge variant="outline" className="bg-white/5 border-white/10 text-primary-foreground/70">
+                    Lição {lesson.lesson_number} • {lesson.trimester}º TRI
+                  </Badge>
+                  {lesson.status === 'completo' ? (
+                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Completo
+                    </Badge>
                   ) : (
-                    <Square className="w-4 h-4" />
+                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
+                      <AlertCircle className="w-3 h-3" /> Incompleto
+                    </Badge>
                   )}
+                </div>
+                <CardTitle className="text-xl leading-tight group-hover:text-primary transition-colors">{lesson.theme}</CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-4 pb-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                      <CalendarDays className="w-3 h-3" /> Versículos
+                    </div>
+                    <p className="text-lg font-bold">{Object.values(lesson.verses || {}).filter(v => v.texto).length}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                      <HelpCircle className="w-3 h-3" /> Perguntas
+                    </div>
+                    <p className="text-lg font-bold">{lesson.questions?.length || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter className="pt-0 flex justify-between">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white" onClick={(e) => deleteLesson(lesson.id, e)}>
+                  <Trash2 className="w-4 h-4 mr-2" /> Apagar
                 </Button>
-              </TableHead>
-              <TableHead>Referência</TableHead>
-              <TableHead>Agendado</TableHead>
-              <TableHead>Classe/Trim</TableHead>
-              <TableHead>Texto</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Carregando…</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum versículo encontrado.</TableCell></TableRow>
-            ) : filtered.map((v) => (
-              <TableRow key={v.id} className={selectedIds.has(v.id) ? "bg-muted/50" : ""}>
-                <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => toggleSelect(v.id)}
-                  >
-                    {selectedIds.has(v.id) ? (
-                      <CheckSquare className="w-4 h-4 text-primary" />
-                    ) : (
-                      <Square className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </TableCell>
-                <TableCell className="font-medium whitespace-nowrap">{v.book} {v.chapter}:{v.verse}</TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {v.scheduled_date ? (
-                    <span className="text-sm font-medium">
-                      {new Date(v.scheduled_date + "T12:00:00").toLocaleDateString('pt-BR')}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground italic">Não agendado</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    {v.class_id ? (
-                      <Badge variant="secondary" className="text-[10px] py-0">
-                        {classes.find(c => c.id === v.class_id)?.name || "Classe"}
-                      </Badge>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground italic">Geral</span>
-                    )}
-                    {v.trimester && (
-                      <span className="text-[10px] text-muted-foreground font-semibold">
-                        {v.trimester}º Trimestre
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-md">
-                  <div className="text-sm font-semibold text-primary mb-1">
-                    {v.book} {v.chapter}:{v.verse}
-                  </div>
-                  <div className="text-sm line-clamp-3">
-                    {v.text}
-                  </div>
-                </TableCell>
-                <TableCell>{v.active ? <Badge>Ativo</Badge> : <Badge variant="outline">Inativo</Badge>}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button size="sm" variant="outline" onClick={() => {
-                    setEditing(v); 
-                    setForm({ 
-                      book: v.book, 
-                      chapter: v.chapter, 
-                      verse: v.verse, 
-                      text: v.text, 
-                      theme: v.theme,
-                      class_id: v.class_id || "",
-                      trimester: v.trimester || 1,
-                      scheduled_date: v.scheduled_date || ""
-                    }); 
-                    setOpen(true);
-                  }}>Editar</Button>
-                  <Button size="sm" variant="ghost" onClick={() => toggleActive(v)}>
-                    <Power className="w-4 h-4" />
-                  </Button>
-                  <DeleteButton
-                    iconOnly
-                    itemLabel={`o versículo ${v.book} ${v.chapter}:${v.verse}`}
-                    consequences={[
-                      "O versículo deixa de aparecer no pool do versículo do dia",
-                      "Históricos de versículos do dia continuam preservados",
-                    ]}
-                    onConfirm={async () => {
-                      const r = await smartDelete({ table: "verses", id: v.id });
-                      if (!r.ok) return r.error;
-                      load();
-                      return true;
-                    }}
-                    successMessage="Versículo removido"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+                <div className="flex items-center text-sm font-medium text-primary">
+                  Editar <ChevronRight className="w-4 h-4" />
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Dialog para Novo/Editar */}
+      {/* MODAL DE EDIÇÃO */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} Versículo</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <Label>Data de Exibição</Label>
-                <Input 
-                  type="date" 
-                  value={form.scheduled_date || ""} 
-                  onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Classe (Opcional)</Label>
-                <Select 
-                  value={form.class_id || "none"} 
-                  onValueChange={(v) => setForm({ ...form, class_id: v === "none" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Selecione a classe" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Geral (Todas as classes)</SelectItem>
-                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Trimestre</Label>
-                <Select 
-                  value={form.trimester?.toString()} 
-                  onValueChange={(v) => setForm({ ...form, trimester: Number(v) })}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+        <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden bg-slate-950 border-white/10 flex flex-col">
+          <DialogHeader className="p-6 pb-2 border-b border-white/10">
+            <div className="flex justify-between items-center">
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-primary" /> {editingId ? "Editar Lição" : "Nova Lição"}
+              </DialogTitle>
+              <Button onClick={() => setAiImportOpen(true)} variant="outline" size="sm" className="border-primary/20 text-primary">
+                <Sparkles className="w-4 h-4 mr-2" /> Alimentar com IA
+              </Button>
             </div>
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1 px-6 py-4">
+            <div className="space-y-8 pb-10">
+              {/* Seção 1: Informações Gerais */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">1</span>
+                  Informações Gerais
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <Label>Lição Nº</Label>
+                    <Input type="number" value={form.lesson_number} onChange={e => setForm({...form, lesson_number: parseInt(e.target.value) || 0})} className="bg-white/5" />
+                  </div>
+                  <div className="md:col-span-3 space-y-1.5">
+                    <Label>Trimestre</Label>
+                    <Select value={form.trimester} onValueChange={v => setForm({...form, trimester: v})}>
+                      <SelectTrigger className="bg-white/5"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-7 space-y-1.5">
+                    <Label>Tema da Lição</Label>
+                    <Input value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} className="bg-white/5" placeholder="Ex: A Armadura de Deus" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Descrição (Opcional)</Label>
+                  <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="bg-white/5 min-h-[80px]" placeholder="Breve resumo da semana..." />
+                </div>
+              </section>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div><Label>Livro</Label><Input value={form.book} onChange={(e) => setForm({ ...form, book: e.target.value })} /></div>
-              <div><Label>Cap.</Label><Input type="number" value={form.chapter} onChange={(e) => setForm({ ...form, chapter: Number(e.target.value) })} /></div>
-              <div><Label>Vers.</Label><Input type="number" value={form.verse} onChange={(e) => setForm({ ...form, verse: Number(e.target.value) })} /></div>
+              {/* Seção 2: Versículos */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">2</span>
+                  Versículos da Semana
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.keys(form.verses).map((day) => (
+                    <Card key={day} className="bg-white/5 border-white/5 p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <Label className="capitalize font-bold text-primary">{day}</Label>
+                      </div>
+                      <Input 
+                        placeholder="Referência (Ex: João 3:16)" 
+                        value={form.verses[day as keyof typeof DEFAULT_VERSES].referencia} 
+                        onChange={e => setForm({
+                          ...form, 
+                          verses: {
+                            ...form.verses, 
+                            [day]: {...form.verses[day as keyof typeof DEFAULT_VERSES], referencia: e.target.value}
+                          }
+                        })} 
+                        className="bg-black/20"
+                      />
+                      <Textarea 
+                        placeholder="Texto do versículo..." 
+                        value={form.verses[day as keyof typeof DEFAULT_VERSES].texto} 
+                        onChange={e => setForm({
+                          ...form, 
+                          verses: {
+                            ...form.verses, 
+                            [day]: {...form.verses[day as keyof typeof DEFAULT_VERSES], texto: e.target.value}
+                          }
+                        })} 
+                        className="bg-black/20 text-sm"
+                      />
+                      <Input 
+                        placeholder="Observação (opcional)" 
+                        value={form.verses[day as keyof typeof DEFAULT_VERSES].observacao || ""} 
+                        onChange={e => setForm({
+                          ...form, 
+                          verses: {
+                            ...form.verses, 
+                            [day]: {...form.verses[day as keyof typeof DEFAULT_VERSES], observacao: e.target.value}
+                          }
+                        })} 
+                        className="bg-black/20 text-xs border-transparent h-8"
+                      />
+                    </Card>
+                  ))}
+                </div>
+              </section>
+
+              {/* Seção 3: Perguntas */}
+              <section className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">3</span>
+                    Perguntas da Lição
+                  </div>
+                  <Button onClick={addQuestion} size="sm" variant="outline" className="h-8 border-primary/20 text-primary">
+                    <Plus className="w-3 h-3 mr-1" /> Adicionar Pergunta
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {form.questions.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-10 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                      Nenhuma pergunta adicionada ainda.
+                    </p>
+                  )}
+                  {form.questions.map((q, idx) => (
+                    <Card key={q.id} className="bg-white/5 border-white/5 p-4 relative">
+                      <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-rose-500 hover:bg-rose-500/10 h-8 w-8" onClick={() => removeQuestion(q.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                      
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          <div className="flex-1 space-y-1.5">
+                            <Label>Pergunta {idx + 1}</Label>
+                            <Input value={q.pergunta} onChange={e => updateQuestion(q.id, { pergunta: e.target.value })} className="bg-black/20" />
+                          </div>
+                          <div className="w-48 space-y-1.5">
+                            <Label>Tipo</Label>
+                            <Select value={q.tipo} onValueChange={v => updateQuestion(q.id, { tipo: v as any })}>
+                              <SelectTrigger className="bg-black/20"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="multipla_escolha">Múltipla Escolha</SelectItem>
+                                <SelectItem value="discursiva">Discursiva</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {q.tipo === 'multipla_escolha' ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                            {['a', 'b', 'c', 'd'].map(opt => (
+                              <div key={opt} className="flex items-center gap-2">
+                                <Button 
+                                  variant={q.respostaCorreta === opt ? "default" : "outline"} 
+                                  size="icon" 
+                                  className={cn("h-8 w-8 rounded-full flex-shrink-0 uppercase font-bold", q.respostaCorreta === opt && "bg-emerald-500 hover:bg-emerald-600")}
+                                  onClick={() => updateQuestion(q.id, { respostaCorreta: opt })}
+                                >
+                                  {opt}
+                                </Button>
+                                <Input 
+                                  placeholder={`Alternativa ${opt.toUpperCase()}`} 
+                                  value={(q.alternativas as any)?.[opt] || ""} 
+                                  onChange={e => updateQuestion(q.id, { 
+                                    alternativas: { ...q.alternativas, [opt]: e.target.value } as any 
+                                  })} 
+                                  className="bg-black/20 h-9"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            <Label>Resposta esperada (opcional)</Label>
+                            <Textarea 
+                              value={q.respostaCorreta} 
+                              onChange={e => updateQuestion(q.id, { respostaCorreta: e.target.value })} 
+                              className="bg-black/20 min-h-[60px] text-sm" 
+                              placeholder="Dica ou resposta esperada para correção..."
+                            />
+                          </div>
+                        )}
+
+                        <div className="space-y-1.5">
+                          <Label>Comentário/Explicação (opcional)</Label>
+                          <Input value={q.comentario} onChange={e => updateQuestion(q.id, { comentario: e.target.value })} className="bg-black/20 h-9 text-xs" />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
             </div>
-            <div><Label>Texto</Label><Textarea rows={4} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={save}>Salvar</Button>
+          </ScrollArea>
+          
+          <DialogFooter className="p-6 border-t border-white/10 bg-black/40">
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 min-w-[120px]">
+              {saving ? "Salvando..." : "Salvar Lição"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para Importação com IA */}
+      {/* MODAL IA */}
       <Dialog open={aiImportOpen} onOpenChange={setAiImportOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-xl bg-slate-900 border-white/10">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Importar Lição Completa com IA
+              <Sparkles className="w-5 h-5 text-primary" /> Alimentar com IA
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Classe destino</Label>
-                <Select value={aiClassId} onValueChange={setAiClassId}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Trimestre</Label>
-                <Select value={aiTrimester.toString()} onValueChange={(v) => setAiTrimester(Number(v))}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4].map(t => (
-                      <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Segunda-feira Ref.</Label>
-                <Input 
-                  type="date" 
-                  value={aiDate} 
-                  onChange={(e) => setAiDate(e.target.value)} 
-                  className="h-9"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-1">
-              <Label>Conteúdo da Lição (IA)</Label>
-              <Textarea
-                placeholder="Cole aqui o texto completo da lição: título, leitura semanal, versículos diários e questões do quiz..."
-                className="min-h-[250px] font-mono text-sm"
-                value={aiText}
-                onChange={(e) => setAiText(e.target.value)}
-              />
-              <p className="text-[10px] text-muted-foreground">
-                A IA irá extrair o tema, o plano de leitura e criar o quiz automaticamente.
-              </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Cole abaixo o texto da lição semanal, versículos ou temas. A IA irá processar e preencher automaticamente os campos.
+            </p>
+            <Textarea 
+              placeholder="Ex: Lição 7 - O Fruto do Espírito. Segunda: Gl 5:22... Terça: ..." 
+              value={aiText} 
+              onChange={e => setAiText(e.target.value)} 
+              className="min-h-[200px] bg-white/5 border-white/10"
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAiImportOpen(false)} disabled={aiLoading}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAiImport} disabled={aiLoading || !aiText.trim()}>
-              {aiLoading ? "Processando..." : "Processar e Importar Tudo"}
+            <Button variant="ghost" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAiImport} disabled={aiLoading} className="bg-primary hover:bg-primary/90">
+              {aiLoading ? "Processando..." : "Gerar Lição"}
             </Button>
           </DialogFooter>
         </DialogContent>

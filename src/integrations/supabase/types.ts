@@ -466,6 +466,77 @@ export type Database = {
         }
         Relationships: []
       }
+      lessons: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          lesson_number: number
+          questions: Json
+          status: string
+          theme: string
+          trimester: string
+          updated_at: string
+          verses: Json
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lesson_number: number
+          questions?: Json
+          status?: string
+          theme: string
+          trimester: string
+          updated_at?: string
+          verses?: Json
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lesson_number?: number
+          questions?: Json
+          status?: string
+          theme?: string
+          trimester?: string
+          updated_at?: string
+          verses?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+        ]
+      }
       moderation_logs: {
         Row: {
           content_id: string
