@@ -135,14 +135,15 @@ export function AppHeader(props: Props) {
                 }
                 className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-transform ring-2 ring-background"
               >
-                {profile?.avatar_url ? (
+                {profile?.avatar_url && !avatarError ? (
                   <img
                     src={profile.avatar_url}
                     alt={props.firstName ?? "Perfil"}
                     className="w-full h-full object-cover"
+                    onError={() => setAvatarError(true)}
                   />
                 ) : (
-                  (props.firstName ?? "?").charAt(0).toUpperCase()
+                  (props.firstName ?? profile?.first_name ?? "?").charAt(0).toUpperCase()
                 )}
               </button>
             </div>
