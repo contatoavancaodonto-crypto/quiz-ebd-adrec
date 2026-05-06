@@ -209,36 +209,38 @@ serve(async (req) => {
         {
           role: "system",
           content: `Você é um assistente que extrai uma Lição Semanal completa para uma EBD.
-          A lição deve conter:
-          - Título da lição (Tema)
-          - Leitura bíblica principal da semana
-          - 6 versículos diários (Segunda a Sábado)
-          - Um Quiz com até 5 questões (cada questão com 4 opções: A, B, C, D e a letra da opção correta)
-          
-          Responda estritamente em formato JSON:
+          Extraia as informações do texto seguindo exatamente esta estrutura JSON:
           {
-            "lesson_title": "...",
-            "lesson_number": ...,
-            "weekly_bible_reading": "...",
-            "verses": [
-              { "day": "segunda", "text": "...", "reference": "..." },
-              { "day": "terca", "text": "...", "reference": "..." },
-              { "day": "quarta", "text": "...", "reference": "..." },
-              { "day": "quinta", "text": "...", "reference": "..." },
-              { "day": "sexta", "text": "...", "reference": "..." },
-              { "day": "sabado", "text": "...", "reference": "..." }
-            ],
+            "trimester": "1",
+            "lesson_number": 1,
+            "theme": "Título da Lição",
+            "description": "Breve descrição opcional",
+            "verses": {
+              "segunda": { "referencia": "...", "texto": "...", "observacao": "" },
+              "terca": { "referencia": "...", "texto": "...", "observacao": "" },
+              "quarta": { "referencia": "...", "texto": "...", "observacao": "" },
+              "quinta": { "referencia": "...", "texto": "...", "observacao": "" },
+              "sexta": { "referencia": "...", "texto": "...", "observacao": "" },
+              "sabado": { "referencia": "...", "texto": "...", "observacao": "" },
+              "domingo": { "referencia": "...", "texto": "...", "observacao": "" }
+            },
             "questions": [
               {
-                "question_text": "...",
-                "option_a": "...",
-                "option_b": "...",
-                "option_c": "...",
-                "option_d": "...",
-                "correct_option": "A"
+                "pergunta": "Texto da pergunta",
+                "tipo": "multipla_escolha",
+                "alternativas": { "a": "...", "b": "...", "c": "...", "d": "..." },
+                "respostaCorreta": "a",
+                "comentario": "Explicação opcional"
               }
             ]
-          }`,
+          }
+          
+          Regras:
+          1. Extraia 7 versículos (um para cada dia da semana).
+          2. O tipo de pergunta pode ser "multipla_escolha" ou "discursiva".
+          3. Se for discursiva, "alternativas" deve ser nulo e "respostaCorreta" pode ser um texto exemplificando a resposta esperada.
+          4. "trimester" deve ser uma string (ex: "1", "2").
+          5. "lesson_number" deve ser um número inteiro.`,
         },
         { role: "user", content: text },
       ];
