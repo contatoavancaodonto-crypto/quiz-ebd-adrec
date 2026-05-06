@@ -55,7 +55,7 @@ export const useWeeklyLessons = () => {
         lesson_number: l.lesson_number || 0,
         reading_theme: l.reading_theme,
         scheduled_date: l.scheduled_date,
-        weekly_bible_reading: l.verses?.domingo?.referencia || "",
+        weekly_bible_reading: null,
         verses: {
           seg: l.verses?.segunda?.referencia,
           ter: l.verses?.terca?.referencia,

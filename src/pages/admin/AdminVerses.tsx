@@ -39,7 +39,6 @@ type LicaoSemanal = {
     quinta: { referencia: string; texto: string; observacao?: string }
     sexta: { referencia: string; texto: string; observacao?: string }
     sabado: { referencia: string; texto: string; observacao?: string }
-    domingo: { referencia: string; texto: string; observacao?: string }
   }
   questions: Pergunta[]
   status: 'completo' | 'incompleto'
@@ -52,8 +51,7 @@ const DEFAULT_VERSES = {
   quarta: { referencia: "", texto: "" },
   quinta: { referencia: "", texto: "" },
   sexta: { referencia: "", texto: "" },
-  sabado: { referencia: "", texto: "" },
-  domingo: { referencia: "", texto: "" }
+  sabado: { referencia: "", texto: "" }
 };
 
 export default function AdminVerses() {

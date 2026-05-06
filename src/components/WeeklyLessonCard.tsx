@@ -83,7 +83,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
           <div className="space-y-3">
             <div className="flex items-center gap-2 px-1">
               <Quote className="w-3 h-3 text-primary/40" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Plano de Leitura Diária</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Plano de Leitura Diária (Seg-Sáb)</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(lesson.verses).map(([day, text]) => (
@@ -97,6 +97,10 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                   </p>
                 </div>
               ))}
+            </div>
+            <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Domingo reservado para o Quiz</span>
             </div>
           </div>
 
