@@ -28,6 +28,7 @@ export default function MeuPerfil() {
   const [showAvatar, setShowAvatar] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -80,6 +81,7 @@ export default function MeuPerfil() {
     await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
     qc.invalidateQueries({ queryKey: ["full-profile"] });
     toast.success("Foto atualizada!");
+    setAvatarError(false);
     setUploading(false);
   };
 
@@ -160,8 +162,13 @@ export default function MeuPerfil() {
           <div className="relative flex items-center gap-4">
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-white/15 backdrop-blur border-2 border-white/40 flex items-center justify-center text-2xl font-display font-extrabold overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt={firstName} className="w-full h-full object-cover" />
+                {profile?.avatar_url && !avatarError ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt={firstName} 
+                    className="w-full h-full object-cover" 
+                    onError={() => setAvatarError(true)}
+                  />
                 ) : (
                   initials || <UserIcon className="w-8 h-8" />
                 )}

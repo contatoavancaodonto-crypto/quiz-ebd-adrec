@@ -39,6 +39,7 @@ interface RankEntry {
   total_time_ms?: number;
   accuracy_percentage: number;
   is_retry?: boolean;
+  avatar_url?: string | null;
 }
 
 type Scope = "general" | "church" | "interchurch";
@@ -124,7 +125,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_general")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester, avatar_url")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -142,7 +143,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_weekly")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, week_number")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, week_number, avatar_url")
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -159,7 +160,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_monthly")
-        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
+        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak, avatar_url")
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -485,12 +486,43 @@ const RankingPage = () => {
                       className={`glass-card p-4 flex items-center gap-3 ${i < 3 ? "glow-border" : ""}`}
                     >
                       {i < 3 ? (
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0`}>
-                          <Medal className="w-5 h-5 text-foreground" />
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${medalColors[i]} flex items-center justify-center shrink-0 overflow-hidden border border-white/20 relative group`}>
+                          {entry.avatar_url ? (
+                            <img 
+                              src={entry.avatar_url} 
+                              alt={entry.participant_name} 
+                              className="w-full h-full object-cover transition-opacity group-hover:opacity-30"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const icon = document.createElement('span');
+                                icon.innerHTML = '<svg class="w-5 h-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>';
+                                (e.target as HTMLImageElement).parentElement!.appendChild(icon.firstChild!);
+                              }}
+                            />
+                          ) : (
+                            <Medal className="w-5 h-5 text-foreground" />
+                          )}
+                          {entry.avatar_url && (
+                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                               <Medal className="w-5 h-5 text-white" />
+                             </div>
+                          )}
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                          <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden border border-border/50">
+                          {entry.avatar_url ? (
+                            <img 
+                              src={entry.avatar_url} 
+                              alt={entry.participant_name} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-sm font-bold text-muted-foreground">${entry.position}</span>`;
+                              }}
+                            />
+                          ) : (
+                            <span className="text-sm font-bold text-muted-foreground">{entry.position}</span>
+                          )}
                         </div>
                       )}
 

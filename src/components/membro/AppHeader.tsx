@@ -1,6 +1,6 @@
 import { ArrowLeft, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import churchLogo from "@/assets/church-logo.webp";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -58,6 +58,7 @@ export function AppHeader(props: Props) {
   const navigate = useNavigate();
   const { data: profile } = useFullProfile();
   const { toggleSidebar } = useSidebar();
+  const [avatarError, setAvatarError] = useState(false);
   const userChurch = profile?.church_name?.trim();
 
   const handleBack = () => {
@@ -134,14 +135,15 @@ export function AppHeader(props: Props) {
                 }
                 className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-transform ring-2 ring-background"
               >
-                {profile?.avatar_url ? (
+                {profile?.avatar_url && !avatarError ? (
                   <img
                     src={profile.avatar_url}
                     alt={props.firstName ?? "Perfil"}
                     className="w-full h-full object-cover"
+                    onError={() => setAvatarError(true)}
                   />
                 ) : (
-                  (props.firstName ?? "?").charAt(0).toUpperCase()
+                  (props.firstName ?? profile?.first_name ?? "?").charAt(0).toUpperCase()
                 )}
               </button>
             </div>
