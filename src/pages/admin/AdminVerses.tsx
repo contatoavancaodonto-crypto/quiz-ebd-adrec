@@ -503,7 +503,7 @@ export default function AdminVerses() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              Cole abaixo o texto da lição semanal e os versículos. A IA irá preencher o tema e os versículos automaticamente. <strong>As perguntas devem ser adicionadas manualmente após a importação.</strong>
+              Cole abaixo o texto da lição semanal e os versículos. A IA irá preencher o tema, versículos e perguntas (se houver no texto) automaticamente.
             </p>
             <Textarea 
               placeholder="Ex: Lição 7 - O Fruto do Espírito. Segunda: Gl 5:22... Terça: ..." 
