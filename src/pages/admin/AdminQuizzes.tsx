@@ -270,7 +270,7 @@ export default function AdminQuizzes() {
         devotional_sat: data.verses?.find((v: any) => v.day.toLowerCase().includes("sabado"))?.text || null,
         quiz_kind: "weekly",
         active: true,
-        total_questions: data.questions?.length || 0
+        total_questions: 0 // Perguntas devem ser adicionadas manualmente pelo admin
       };
 
       // Inserir o quiz
@@ -282,25 +282,8 @@ export default function AdminQuizzes() {
 
       if (insertError) throw insertError;
 
-      // Inserir as questões
-      if (data.questions && data.questions.length > 0) {
-        const questionsToInsert = data.questions.map((q: any, i: number) => ({
-          quiz_id: insertedQuiz.id,
-          question_text: q.question_text,
-          option_a: q.option_a,
-          option_b: q.option_b,
-          option_c: q.option_c,
-          option_d: q.option_d,
-          correct_option: q.correct_option,
-          order_index: i + 1,
-          active: true
-        }));
-
-        const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
-        if (qError) toast.error("Erro ao inserir questões, mas o quiz foi criado.");
-      }
-
-      toast.success("Lição completa importada com sucesso!");
+      // As questões não são mais importadas via IA para garantir controle do administrador
+      toast.success("Lição importada com sucesso! Adicione as questões manualmente.");
       setAiImportOpen(false);
       setAiText("");
       load();
