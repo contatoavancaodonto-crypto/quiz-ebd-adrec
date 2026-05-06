@@ -368,6 +368,21 @@ export default function AdminVerses() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
+                  <Label>Turma (Classe)</Label>
+                  <Select
+                    value={form.class_id ?? "all"}
+                    onValueChange={(v) => setForm({ ...form, class_id: v === "all" ? undefined : v })}
+                  >
+                    <SelectTrigger className="bg-white/5"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as turmas</SelectItem>
+                      {classes.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
                   <Label>Descrição (Opcional)</Label>
                   <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="bg-white/5 min-h-[80px]" placeholder="Breve resumo da semana..." />
                 </div>
