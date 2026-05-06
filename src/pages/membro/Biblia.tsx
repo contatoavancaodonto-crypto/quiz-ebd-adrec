@@ -107,20 +107,100 @@ export default function Biblia() {
   const filteredOT = useMemo(() => filterBooks(OLD_TESTAMENT), [search, OLD_TESTAMENT]);
   const filteredNT = useMemo(() => filterBooks(NEW_TESTAMENT), [search, NEW_TESTAMENT]);
 
+  const BibleStickyHeader = ({ 
+    title, 
+    subtitle, 
+    onBack, 
+    onNext, 
+    onPrev,
+    hasNext,
+    hasPrev 
+  }: { 
+    title: string; 
+    subtitle: string; 
+    onBack: () => void;
+    onNext?: () => void;
+    onPrev?: () => void;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+  }) => (
+    <header 
+      className="md:hidden sticky top-0 z-30 bg-background/90 backdrop-blur-xl border-b border-border/50"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <div className="flex items-center justify-between px-4 h-14 gap-2">
+        <button
+          onClick={onBack}
+          aria-label="Voltar"
+          className="w-10 h-10 -ml-2 rounded-full hover:bg-muted flex items-center justify-center text-foreground active:scale-95 transition-transform shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        
+        <div className="flex-1 flex items-center justify-center gap-1 overflow-hidden">
+          {onPrev && (
+            <button
+              onClick={onPrev}
+              disabled={!hasPrev}
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                hasPrev ? "text-primary hover:bg-primary/10" : "text-muted-foreground/30"
+              )}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+
+          <div className="flex-1 min-w-0 text-center px-1">
+            <h1 className="text-base font-bold text-foreground truncate leading-tight">
+              {title}
+            </h1>
+            <p className="text-[10px] text-muted-foreground truncate leading-tight font-medium uppercase tracking-wider">
+              {subtitle}
+            </p>
+          </div>
+
+          {onNext && (
+            <button
+              onClick={onNext}
+              disabled={!hasNext}
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                hasNext ? "text-primary hover:bg-primary/10" : "text-muted-foreground/30"
+              )}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        
+        <div className="w-10 shrink-0" />
+      </div>
+    </header>
+  );
+
   if (selectedBook && selectedChapter !== null) {
     const verses = selectedBook.chapters[selectedChapter];
     return (
       <MemberLayout
         title={`${selectedBook.name} ${selectedChapter + 1}`}
-        mobileHeader={{
-          variant: "back",
-          title: selectedBook.name,
-          subtitle: `Capítulo ${selectedChapter + 1}`,
-          onBack: () => setSelectedChapter(null),
-        }}
+        mobileHeader={{ variant: "none" }}
         bottomNav={false}
       >
-        <div className="space-y-3 pb-8 max-w-prose mx-auto leading-relaxed text-[15px]">
+        <BibleStickyHeader
+          title={selectedBook.name}
+          subtitle={`Capítulo ${selectedChapter + 1}`}
+          onBack={() => {
+            setSelectedChapter(null);
+            setSearchParams({ book: selectedBook.abbrev });
+          }}
+          onNext={handleNextChapter}
+          onPrev={handlePrevChapter}
+          hasNext={selectedChapter < selectedBook.chapters.length - 1}
+          hasPrev={selectedChapter > 0}
+        />
+        
+        <div className="space-y-3 pb-8 px-4 pt-4 max-w-prose mx-auto leading-relaxed text-[15px]">
           {verses.map((verse, i) => {
             const verseNumber = i + 1;
             const isHighlighted = verseNumber === highlightedVerse;
@@ -150,14 +230,18 @@ export default function Biblia() {
     return (
       <MemberLayout
         title={selectedBook.name}
-        mobileHeader={{
-          variant: "back",
-          title: selectedBook.name,
-          subtitle: `${selectedBook.chapters.length} capítulos`,
-          onBack: () => setSelectedBook(null),
-        }}
+        mobileHeader={{ variant: "none" }}
       >
-        <div className="space-y-4">
+        <BibleStickyHeader
+          title={selectedBook.name}
+          subtitle={`${selectedBook.chapters.length} capítulos`}
+          onBack={() => {
+            setSelectedBook(null);
+            setSearchParams({});
+          }}
+        />
+
+        <div className="space-y-4 px-4 pt-4">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
             Selecione o capítulo
           </div>
@@ -166,7 +250,10 @@ export default function Biblia() {
               <motion.button
                 key={i}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedChapter(i)}
+                onClick={() => {
+                  setSelectedChapter(i);
+                  setSearchParams({ book: selectedBook.abbrev, chapter: (i + 1).toString() });
+                }}
                 className="aspect-square rounded-xl bg-card border border-border font-semibold text-sm hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 {i + 1}
