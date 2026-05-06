@@ -6,6 +6,8 @@ export interface WeeklyLesson {
   id: string;
   lesson_title: string;
   lesson_number: number;
+  reading_theme?: string | null;
+  scheduled_date?: string | null;
   weekly_bible_reading: string | null;
   verses: {
     seg: string | null;
@@ -30,47 +32,41 @@ export const useWeeklyLessons = () => {
     queryFn: async (): Promise<WeeklyLesson[]> => {
       const now = new Date().toISOString();
       const { data, error } = await supabase
-        .from("quizzes")
+        .from("lessons")
         .select(`
           id, 
-          lesson_title, 
+          theme, 
           lesson_number, 
-          weekly_bible_reading,
-          devotional_mon,
-          devotional_tue,
-          devotional_wed,
-          devotional_thu,
-          devotional_fri,
-          devotional_sat,
-          active,
-          opens_at,
+          reading_theme,
+          scheduled_date,
+          verses,
           questions(id)
         `)
-        .eq("class_id", classId!)
-        .eq("quiz_kind", "weekly")
-        .eq("active", true)
-        .lte("opens_at", now)
-        .order("lesson_number", { ascending: false })
+        .eq("status", "completo")
+        .lte("scheduled_date", now)
+        .order("scheduled_date", { ascending: false })
         .limit(4);
 
       if (error) throw error;
 
-      return (data || []).map((q: any) => ({
-        id: q.id,
-        lesson_title: q.lesson_title || "Sem título",
-        lesson_number: q.lesson_number || 0,
-        weekly_bible_reading: q.weekly_bible_reading,
+      return (data || []).map((l: any) => ({
+        id: l.id,
+        lesson_title: l.theme || "Sem título",
+        lesson_number: l.lesson_number || 0,
+        reading_theme: l.reading_theme,
+        scheduled_date: l.scheduled_date,
+        weekly_bible_reading: l.verses?.domingo?.referencia || "",
         verses: {
-          seg: q.devotional_mon,
-          ter: q.devotional_tue,
-          qua: q.devotional_wed,
-          qui: q.devotional_thu,
-          sex: q.devotional_fri,
-          sab: q.devotional_sat,
+          seg: l.verses?.segunda?.referencia,
+          ter: l.verses?.terca?.referencia,
+          qua: l.verses?.quarta?.referencia,
+          qui: l.verses?.quinta?.referencia,
+          sex: l.verses?.sexta?.referencia,
+          sab: l.verses?.sabado?.referencia,
         },
-        has_quiz: (q.questions?.length || 0) > 0,
-        active: q.active,
-        opens_at: q.opens_at
+        has_quiz: (l.questions?.length || 0) > 0,
+        active: true,
+        opens_at: l.scheduled_date
       }));
     },
   });

@@ -45,24 +45,40 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                 </h3>
               </div>
             </div>
-            {lesson.has_quiz && (
-              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> Quiz Ativo
-              </Badge>
-            )}
+            <div className="flex flex-col items-end gap-1">
+              {lesson.scheduled_date && (
+                <Badge variant="outline" className="bg-white/5 border-primary/20 text-primary text-[9px] px-2 py-0.5 font-bold">
+                  {new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR')}
+                </Badge>
+              )}
+              {lesson.has_quiz && (
+                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> Quiz Ativo
+                </Badge>
+              )}
+            </div>
           </div>
 
-          {lesson.weekly_bible_reading && (
-            <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/30 border border-border/50">
-              <BookOpen className="w-4 h-4 text-secondary mt-0.5 shrink-0" />
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Leitura Semanal</span>
-                <p className="text-xs font-medium text-foreground leading-snug">
-                  {lesson.weekly_bible_reading}
-                </p>
+          <div className="flex flex-col gap-3">
+            {lesson.reading_theme && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/5 border border-primary/10 w-fit">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-bold text-primary">{lesson.reading_theme}</span>
               </div>
-            </div>
-          )}
+            )}
+            
+            {lesson.weekly_bible_reading && (
+              <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/30 border border-border/50">
+                <BookOpen className="w-4 h-4 text-secondary mt-0.5 shrink-0" />
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Leitura Principal (Dom)</span>
+                  <p className="text-xs font-medium text-foreground leading-snug">
+                    {lesson.weekly_bible_reading}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-3">
             <div className="flex items-center gap-2 px-1">

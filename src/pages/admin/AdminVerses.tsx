@@ -29,6 +29,8 @@ type LicaoSemanal = {
   trimester: string
   lesson_number: number
   theme: string
+  reading_theme?: string
+  scheduled_date?: string
   description?: string
   verses: {
     segunda: { referencia: string; texto: string; observacao?: string }
@@ -68,6 +70,8 @@ export default function AdminVerses() {
     trimester: "1",
     lesson_number: 1,
     theme: "",
+    reading_theme: "",
+    scheduled_date: "",
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
@@ -90,6 +94,8 @@ export default function AdminVerses() {
       trimester: "1",
       lesson_number: (lessons[lessons.length - 1]?.lesson_number || 0) + 1,
       theme: "",
+      reading_theme: "",
+      scheduled_date: "",
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
@@ -104,6 +110,8 @@ export default function AdminVerses() {
       trimester: l.trimester,
       lesson_number: l.lesson_number,
       theme: l.theme,
+      reading_theme: l.reading_theme || "",
+      scheduled_date: l.scheduled_date || "",
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
@@ -266,18 +274,25 @@ export default function AdminVerses() {
               </CardHeader>
               
               <CardContent className="space-y-4 pb-4">
+                {lesson.reading_theme && (
+                  <div className="flex items-center gap-2 text-xs text-primary font-medium bg-primary/10 w-fit px-2 py-1 rounded-md mb-2">
+                    <BookOpen className="w-3 h-3" /> {lesson.reading_theme}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      <CalendarDays className="w-3 h-3" /> Versículos
+                      <CalendarDays className="w-3 h-3" /> Agendamento
                     </div>
-                    <p className="text-lg font-bold">{Object.values(lesson.verses || {}).filter(v => v.texto).length}</p>
+                    <p className="text-sm font-bold">
+                      {lesson.scheduled_date ? new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR') : 'Não definido'}
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                       <HelpCircle className="w-3 h-3" /> Perguntas
                     </div>
-                    <p className="text-lg font-bold">{lesson.questions?.length || 0}</p>
+                    <p className="text-sm font-bold">{lesson.questions?.length || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -334,6 +349,16 @@ export default function AdminVerses() {
                   <div className="md:col-span-7 space-y-1.5">
                     <Label>Tema da Lição</Label>
                     <Input value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} className="bg-white/5" placeholder="Ex: A Armadura de Deus" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Tema da Leitura</Label>
+                    <Input value={form.reading_theme} onChange={e => setForm({...form, reading_theme: e.target.value})} className="bg-white/5" placeholder="Ex: Fé e Obras" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Data de Agendamento</Label>
+                    <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
                   </div>
                 </div>
                 <div className="space-y-1.5">

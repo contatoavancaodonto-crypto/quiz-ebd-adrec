@@ -474,6 +474,8 @@ export type Database = {
           id: string
           lesson_number: number
           questions: Json
+          reading_theme: string | null
+          scheduled_date: string | null
           status: string
           theme: string
           trimester: string
@@ -487,6 +489,8 @@ export type Database = {
           id?: string
           lesson_number: number
           questions?: Json
+          reading_theme?: string | null
+          scheduled_date?: string | null
           status?: string
           theme: string
           trimester: string
@@ -500,6 +504,8 @@ export type Database = {
           id?: string
           lesson_number?: number
           questions?: Json
+          reading_theme?: string | null
+          scheduled_date?: string | null
           status?: string
           theme?: string
           trimester?: string
