@@ -282,8 +282,25 @@ export default function AdminQuizzes() {
 
       if (insertError) throw insertError;
 
-      // As questões não são mais importadas via IA para garantir controle do administrador
-      toast.success("Lição importada com sucesso! Adicione as questões manualmente.");
+      // Inserir as questões se a IA as identificou no texto
+      if (data.questions && data.questions.length > 0) {
+        const questionsToInsert = data.questions.map((q: any, i: number) => ({
+          quiz_id: insertedQuiz.id,
+          question_text: q.pergunta || q.question_text,
+          option_a: q.alternativas?.a || q.option_a,
+          option_b: q.alternativas?.b || q.option_b,
+          option_c: q.alternativas?.c || q.option_c,
+          option_d: q.alternativas?.d || q.option_d,
+          correct_option: (q.respostaCorreta || q.correct_option || "A").toUpperCase(),
+          order_index: i + 1,
+          active: true
+        }));
+
+        const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
+        if (qError) toast.error("Erro ao inserir questões identificadas.");
+      }
+
+      toast.success("Lição importada com sucesso!");
       setAiImportOpen(false);
       setAiText("");
       load();
