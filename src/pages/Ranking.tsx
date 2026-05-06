@@ -39,6 +39,7 @@ interface RankEntry {
   total_time_ms?: number;
   accuracy_percentage: number;
   is_retry?: boolean;
+  avatar_url?: string | null;
 }
 
 type Scope = "general" | "church" | "interchurch";
