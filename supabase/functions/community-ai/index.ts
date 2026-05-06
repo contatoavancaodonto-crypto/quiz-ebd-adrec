@@ -223,14 +223,25 @@ serve(async (req) => {
               "sexta": { "referencia": "...", "texto": "...", "observacao": "" },
               "sabado": { "referencia": "...", "texto": "...", "observacao": "" },
               "domingo": { "referencia": "...", "texto": "...", "observacao": "" }
-            }
+            },
+            "questions": [
+              {
+                "pergunta": "Texto da pergunta",
+                "tipo": "multipla_escolha",
+                "alternativas": { "a": "...", "b": "...", "c": "...", "d": "..." },
+                "respostaCorreta": "a",
+                "comentario": "Explicação opcional"
+              }
+            ]
           }
           
           Regras:
           1. Extraia 7 versículos (um para cada dia da semana).
-          2. NÃO gere perguntas; as perguntas serão inseridas manualmente pelo administrador.
-          3. "trimester" deve ser uma string (ex: "1", "2").
-          4. "lesson_number" deve ser um número inteiro.`,
+          2. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.
+          3. NUNCA invente ou crie perguntas novas que não estejam no texto.
+          4. Se não houver perguntas no texto, retorne "questions": [].
+          5. "trimester" deve ser uma string (ex: "1", "2").
+          6. "lesson_number" deve ser um número inteiro.`,
         },
         { role: "user", content: text },
       ];
