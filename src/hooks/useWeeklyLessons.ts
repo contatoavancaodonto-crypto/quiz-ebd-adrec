@@ -49,22 +49,24 @@ export const useWeeklyLessons = () => {
 
       if (error) throw error;
 
-      return (data || []).map((q: any) => ({
-        id: q.id,
-        lesson_title: q.lesson_title || "Sem título",
-        lesson_number: q.lesson_number || 0,
-        weekly_bible_reading: q.weekly_bible_reading,
+      return (data || []).map((l: any) => ({
+        id: l.id,
+        lesson_title: l.theme || "Sem título",
+        lesson_number: l.lesson_number || 0,
+        reading_theme: l.reading_theme,
+        scheduled_date: l.scheduled_date,
+        weekly_bible_reading: l.verses?.domingo?.referencia || "",
         verses: {
-          seg: q.devotional_mon,
-          ter: q.devotional_tue,
-          qua: q.devotional_wed,
-          qui: q.devotional_thu,
-          sex: q.devotional_fri,
-          sab: q.devotional_sat,
+          seg: l.verses?.segunda?.referencia,
+          ter: l.verses?.terca?.referencia,
+          qua: l.verses?.quarta?.referencia,
+          qui: l.verses?.quinta?.referencia,
+          sex: l.verses?.sexta?.referencia,
+          sab: l.verses?.sabado?.referencia,
         },
-        has_quiz: (q.questions?.length || 0) > 0,
-        active: q.active,
-        opens_at: q.opens_at
+        has_quiz: (l.questions?.length || 0) > 0,
+        active: true,
+        opens_at: l.scheduled_date
       }));
     },
   });
