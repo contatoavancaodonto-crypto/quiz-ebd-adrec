@@ -1,6 +1,6 @@
 import { ArrowLeft, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import churchLogo from "@/assets/church-logo.webp";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useSidebar } from "@/components/ui/sidebar";
