@@ -91,7 +91,16 @@ export function MemberSidebar() {
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
-                      {(!collapsed || isMobile) && <span>{item.title}</span>}
+                      {(!collapsed || isMobile) && (
+                        <div className="flex items-center justify-between flex-1">
+                          <span>{item.title}</span>
+                          {item.comingSoon && (
+                            <Badge variant="secondary" className="text-[8px] h-4 px-1 ml-auto font-bold uppercase tracking-tighter">
+                              Em breve
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
