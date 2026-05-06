@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { BookOpen, Search, Loader2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -11,10 +12,27 @@ import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
 const OT_COUNT = 39;
 
 export default function Biblia() {
+  const [searchParams] = useSearchParams();
   const { data: BOOKS, isLoading, isError, refetch } = useBibliaData();
   const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+
+  // Deep link handling
+  useEffect(() => {
+    if (BOOKS && searchParams.get("book")) {
+      const bookName = decodeURIComponent(searchParams.get("book") || "");
+      const chapterNum = parseInt(searchParams.get("chapter") || "1", 10);
+      
+      const book = BOOKS.find(b => b.name.toLowerCase() === bookName.toLowerCase());
+      if (book) {
+        setSelectedBook(book);
+        if (!isNaN(chapterNum) && chapterNum > 0 && chapterNum <= book.chapters.length) {
+          setSelectedChapter(chapterNum - 1);
+        }
+      }
+    }
+  }, [BOOKS, searchParams]);
 
   const { OLD_TESTAMENT, NEW_TESTAMENT } = useMemo(() => {
     if (!BOOKS) return { OLD_TESTAMENT: [] as BibliaBook[], NEW_TESTAMENT: [] as BibliaBook[] };
