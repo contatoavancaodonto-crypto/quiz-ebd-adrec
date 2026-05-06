@@ -413,14 +413,14 @@ const Index = () => {
                 </div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Próxima lição
-                  {nextQuiz.lesson_number != null
-                    ? ` · #${nextQuiz.lesson_number}`
-                    : nextQuiz.week_number
-                    ? ` · semana #${nextQuiz.week_number}`
+                  {(nextLesson?.lesson_number ?? nextQuiz.lesson_number ?? nextQuiz.week_number) != null
+                    ? ` · #${nextLesson?.lesson_number ?? nextQuiz.lesson_number ?? nextQuiz.week_number}`
                     : ""}
                 </div>
                 <h2 className="text-base font-bold text-foreground mb-3">
-                  {nextQuiz.lesson_title ?? nextQuiz.title}
+                  {(nextLesson?.lesson_number != null && userClass?.name)
+                    ? `Quiz semanal #${nextLesson.lesson_number} - ${userClass.name}`
+                    : nextQuiz.lesson_title ?? nextQuiz.title}
                 </h2>
                 <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 font-mono text-sm text-primary">
                   <Hourglass className="w-4 h-4" />
