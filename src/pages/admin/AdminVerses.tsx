@@ -29,6 +29,8 @@ type LicaoSemanal = {
   trimester: string
   lesson_number: number
   theme: string
+  reading_theme?: string
+  scheduled_date?: string
   description?: string
   verses: {
     segunda: { referencia: string; texto: string; observacao?: string }
