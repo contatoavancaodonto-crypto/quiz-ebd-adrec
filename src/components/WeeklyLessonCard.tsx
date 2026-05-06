@@ -93,8 +93,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               {Object.keys(dayNames).map((dayKey) => {
-                const verseData = (lesson.verses as any)[dayKey];
-                const reference = typeof verseData === 'string' ? verseData : verseData?.referencia;
+                const reference = (lesson.verses as any)[dayKey];
                 const dateLabel = getDayDate(lesson.scheduled_date, dayKey);
                 
                 return (
