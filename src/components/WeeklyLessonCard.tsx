@@ -65,18 +65,37 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
     
     setIsRedirecting(true);
     
-    // Extrai livro e capítulo da referência (ex: "Gênesis 22:7" -> livro="Gênesis", capítulo="22")
-    const parts = reference.trim().split(" ");
-    const chapterPart = parts.pop(); // Pega a última parte (ex: "22:7")
-    const book = parts.join(" "); // O resto é o nome do livro (ex: "Gênesis")
-    const chapter = chapterPart?.split(":")[0]; // Pega o capítulo antes dos dois pontos
+    // Parser robusto para referências bíblicas
+    // Suporta: "João 3:16", "1 João 5:1", "Gênesis 22:7", etc.
+    const ref = reference.trim();
     
-    // Simula um pequeno delay para o feedback visual de loading
-    setTimeout(() => {
-      navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
-      setOpenDay(null);
-      setIsRedirecting(false);
-    }, 600);
+    // Expressão regular para capturar Livro e Capítulo
+    // Captura opcionalmente um número inicial (ex: "1 "), seguido pelo nome do livro,
+    // e para no primeiro número seguido de ":" ou espaço.
+    const match = ref.match(/^((?:\d\s+)?[^\d:]+)\s+(\d+)/);
+    
+    if (match) {
+      const book = match[1].trim();
+      const chapter = match[2];
+      
+      setTimeout(() => {
+        navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+        setOpenDay(null);
+        setIsRedirecting(false);
+      }, 600);
+    } else {
+      // Fallback: tenta separar por espaço se o regex falhar
+      const parts = ref.split(" ");
+      const chapterPart = parts.pop(); 
+      const book = parts.join(" ");
+      const chapter = chapterPart?.split(":")[0];
+      
+      setTimeout(() => {
+        navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+        setOpenDay(null);
+        setIsRedirecting(false);
+      }, 600);
+    }
   };
 
   const today = new Date();
