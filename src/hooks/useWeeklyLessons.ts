@@ -10,12 +10,12 @@ export interface WeeklyLesson {
   scheduled_date?: string | null;
   weekly_bible_reading: string | null;
   verses: {
-    seg: string | null;
-    ter: string | null;
-    qua: string | null;
-    qui: string | null;
-    sex: string | null;
-    sab: string | null;
+    segunda: string | null;
+    terca: string | null;
+    quarta: string | null;
+    quinta: string | null;
+    sexta: string | null;
+    sabado: string | null;
   };
   has_quiz: boolean;
   active: boolean;
@@ -57,12 +57,12 @@ export const useWeeklyLessons = () => {
         scheduled_date: l.scheduled_date,
         weekly_bible_reading: null,
         verses: {
-          seg: l.verses?.segunda?.referencia,
-          ter: l.verses?.terca?.referencia,
-          qua: l.verses?.quarta?.referencia,
-          qui: l.verses?.quinta?.referencia,
-          sex: l.verses?.sexta?.referencia,
-          sab: l.verses?.sabado?.referencia,
+          segunda: l.verses?.segunda?.referencia,
+          terca: l.verses?.terca?.referencia,
+          quarta: l.verses?.quarta?.referencia,
+          quinta: l.verses?.quinta?.referencia,
+          sexta: l.verses?.sexta?.referencia,
+          sabado: l.verses?.sabado?.referencia,
         },
         has_quiz: (l.questions?.length || 0) > 0,
         active: true,
