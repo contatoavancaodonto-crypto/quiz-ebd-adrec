@@ -345,6 +345,7 @@ const Auth = () => {
                   options={[
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
                     ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    { value: INDIVIDUAL, label: INDIVIDUAL },
                     { value: ADD_CHURCH, label: `+ ${ADD_CHURCH}` },
                   ]}
                   hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
