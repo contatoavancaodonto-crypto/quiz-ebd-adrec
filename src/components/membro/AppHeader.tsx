@@ -58,6 +58,7 @@ export function AppHeader(props: Props) {
   const navigate = useNavigate();
   const { data: profile } = useFullProfile();
   const { toggleSidebar } = useSidebar();
+  const [avatarError, setAvatarError] = useState(false);
   const userChurch = profile?.church_name?.trim();
 
   const handleBack = () => {
