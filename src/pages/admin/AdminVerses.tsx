@@ -39,7 +39,6 @@ type LicaoSemanal = {
     quinta: { referencia: string; texto: string; observacao?: string }
     sexta: { referencia: string; texto: string; observacao?: string }
     sabado: { referencia: string; texto: string; observacao?: string }
-    domingo: { referencia: string; texto: string; observacao?: string }
   }
   questions: Pergunta[]
   status: 'completo' | 'incompleto'
