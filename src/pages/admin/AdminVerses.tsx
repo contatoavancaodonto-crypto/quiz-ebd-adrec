@@ -317,7 +317,7 @@ export default function AdminVerses() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                   <div className="md:col-span-2 space-y-1.5">
                     <Label>Lição Nº</Label>
-                    <Input type="number" value={form.lesson_number} onChange={e => setForm({...form, lesson_number: parseInt(e.target.value)})} className="bg-white/5" />
+                    <Input type="number" value={form.lesson_number} onChange={e => setForm({...form, lesson_number: parseInt(e.target.value) || 0})} className="bg-white/5" />
                   </div>
                   <div className="md:col-span-3 space-y-1.5">
                     <Label>Trimestre</Label>
