@@ -247,10 +247,10 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleReadFullChapter(verse?.referencia)}
-                    className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1.5 h-8"
+                    className="text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-transparent transition-all duration-300 flex items-center justify-center gap-1.5 h-8 group"
                   >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    Ler capítulo completo
+                    <BookOpen className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                    <span className="group-hover:tracking-wide transition-all">Ler capítulo completo</span>
                   </Button>
                 </div>
               </>
