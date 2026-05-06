@@ -103,6 +103,7 @@ export default function AdminQuizzes() {
     title: "", class_id: "", trimester: 1, week_number: "" as string | number,
     opens_at: "", closes_at: "", season_id: "",
     quiz_kind: "weekly",
+    total_questions: "" as string | number,
     lesson_number: "" as string | number,
     lesson_title: "",
     lesson_key_verse_ref: "",
