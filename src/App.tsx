@@ -119,6 +119,15 @@ const App = () => (
               <Route path="/membro/harpa" element={<Harpa />} />
               <Route path="/membro/configuracoes" element={<Configuracoes />} />
               <Route path="/membro/suporte" element={<Suporte />} />
+              <Route 
+                path="/membro/apoio-professor" 
+                element={
+                  <EmBreve 
+                    title="Apoio ao Professor" 
+                    description="Em breve teremos conteúdos exclusivos, planos de aula e materiais de apoio para auxiliar os professores da EBD." 
+                  />
+                } 
+              />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
