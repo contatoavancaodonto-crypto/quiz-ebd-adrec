@@ -81,6 +81,7 @@ export default function MeuPerfil() {
     await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
     qc.invalidateQueries({ queryKey: ["full-profile"] });
     toast.success("Foto atualizada!");
+    setAvatarError(false);
     setUploading(false);
   };
 
