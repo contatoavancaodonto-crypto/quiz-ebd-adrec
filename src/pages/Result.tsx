@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles } from "lucide-react";
+import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -201,48 +201,74 @@ const ResultPage = () => {
           ))}
         </div>
 
-        {/* Bônus Semanal / Prazo */}
-        {store.quizKind === "weekly" && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="glass-card glow-border p-4 mb-4"
-          >
-            <div className="flex items-center justify-between mb-2">
+        {/* Detalhamento da Pontuação */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="glass-card glow-border p-5 mb-4 space-y-4"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Composição da Nota</h3>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{streakBonus > 0 ? "✅" : "⏰"}</span>
+                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
                 <div>
-                  <div className="text-sm font-semibold text-foreground">
-                    {streakBonus > 0 ? "Aula feita dentro do prazo" : "Fora do prazo semanal"}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {weekNumber ? `Semana ${weekNumber}` : "Quiz Semanal"}
-                  </div>
+                  <div className="text-sm font-semibold text-foreground">Respostas Corretas</div>
+                  <div className="text-[10px] text-muted-foreground">{score} acertos de {totalQuestions}</div>
                 </div>
               </div>
-              {streakBonus > 0 && (
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Bônus</div>
-                  <div className="text-lg font-bold text-primary">+{streakBonus}</div>
-                </div>
-              )}
+              <div className="text-sm font-bold text-foreground">{score} pts</div>
             </div>
-            
-            {streakAt > 0 && (
-              <div className="flex items-center justify-between text-xs border-t border-border/50 pt-2 mt-2">
-                <span className="text-muted-foreground">Sequência atual: <strong className="text-foreground">🔥 {streakAt} {streakAt === 1 ? "semana" : "semanas"}</strong></span>
-                <span className="font-bold text-foreground">Total: {finalScore} pts</span>
+
+            {store.quizKind === "weekly" && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-lg ${streakBonus > 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"} flex items-center justify-center`}>
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">Aula no Prazo</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {streakBonus > 0 ? "Bônus por pontualidade" : "Realizado fora da janela"}
+                    </div>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground leading-relaxed italic border-t border-border/50 pt-3">
+            * Cada resposta correta vale 1 ponto. Quizzes semanais realizados dentro do prazo (segunda a domingo da lição) garantem +1 ponto extra de bonificação por participação.
+          </p>
+                <div className={`text-sm font-bold ${streakBonus > 0 ? "text-primary" : "text-muted-foreground"}`}>
+                  +{streakBonus} pts
+                </div>
               </div>
             )}
 
-            {!streakAt && (
-               <div className="flex items-center justify-end text-xs border-t border-border/50 pt-2 mt-2">
-                 <span className="font-bold text-foreground">Total: {finalScore} pts</span>
-               </div>
-            )}
-          </motion.div>
-        )}
+            <div className="pt-3 border-t border-border flex items-center justify-between">
+              <div className="text-sm font-bold text-foreground uppercase tracking-wide">Pontuação Final</div>
+              <div className="text-xl font-display font-black text-primary drop-shadow-sm">
+                {finalScore} <span className="text-xs font-bold">PTS</span>
+              </div>
+            </div>
+          </div>
+
+          {streakAt > 0 && (
+            <div className="bg-primary/5 rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🔥</span>
+                <div className="text-[11px] font-medium text-foreground">
+                  Você está em uma sequência de <span className="text-primary font-bold">{streakAt} {streakAt === 1 ? "semana" : "semanas"}</span>!
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
 
         {/* Badges conquistados */}
         <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
