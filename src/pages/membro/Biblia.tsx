@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { BookOpen, Search, Loader2 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { BookOpen, Search, Loader2, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero } from "@/components/ui/page-hero";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const OT_COUNT = 39;
 
