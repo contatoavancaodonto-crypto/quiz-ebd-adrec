@@ -24,7 +24,12 @@ const dayNames: Record<string, string> = {
 };
 
 const dayOffsets: Record<string, number> = {
-  segunda: 0, terca: 1, quarta: 2, quinta: 3, sexta: 4, sabado: 5,
+  segunda: 0,
+  terca: 1,
+  quarta: 2,
+  quinta: 3,
+  sexta: 4,
+  sabado: 5,
 };
 
 const getDayDate = (baseDateStr: string | undefined | null, dayKey: string) => {
@@ -37,6 +42,23 @@ const getDayDate = (baseDateStr: string | undefined | null, dayKey: string) => {
 
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+const parseBibleReference = (reference: string | null) => {
+  if (!reference) return null;
+
+  const ref = reference.trim().replace(/\s+/g, " ");
+  const match = ref.match(/^(.*?)\s+(\d+)(?:[.:](\d+))?$/);
+
+  if (!match) return null;
+
+  const [, book, chapter, verse] = match;
+
+  return {
+    book: book.trim(),
+    chapter,
+    verse: verse ?? null,
+  };
+};
 
 export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
@@ -56,46 +78,35 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const toggleRead = (dayKey: string) => {
     const next = { ...readDays, [dayKey]: !readDays[dayKey] };
     setReadDays(next);
-    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch {}
     setOpenDay(null);
   };
 
   const handleReadFullChapter = (reference: string | null) => {
     if (!reference || isRedirecting) return;
-    
+
+    const parsedReference = parseBibleReference(reference);
+    if (!parsedReference) return;
+
     setIsRedirecting(true);
-    
-    // Parser robusto para referências bíblicas
-    // Suporta: "João 3:16", "1 João 5:1", "Gênesis 22:7", etc.
-    const ref = reference.trim();
-    
-    // Expressão regular para capturar Livro e Capítulo
-    // Captura opcionalmente um número inicial (ex: "1 "), seguido pelo nome do livro,
-    // e para no primeiro número seguido de ":" ou espaço.
-    const match = ref.match(/^((?:\d\s+)?[^\d:]+)\s+(\d+)/);
-    
-    if (match) {
-      const book = match[1].trim();
-      const chapter = match[2];
-      
-      setTimeout(() => {
-        navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
-        setOpenDay(null);
-        setIsRedirecting(false);
-      }, 600);
-    } else {
-      // Fallback: tenta separar por espaço se o regex falhar
-      const parts = ref.split(" ");
-      const chapterPart = parts.pop(); 
-      const book = parts.join(" ");
-      const chapter = chapterPart?.split(":")[0];
-      
-      setTimeout(() => {
-        navigate(`/membro/biblia?book=${encodeURIComponent(book)}&chapter=${chapter}`);
-        setOpenDay(null);
-        setIsRedirecting(false);
-      }, 600);
+
+    const params = new URLSearchParams({
+      book: parsedReference.book,
+      chapter: parsedReference.chapter,
+    });
+
+    if (parsedReference.verse) {
+      params.set("verse", parsedReference.verse);
     }
+
+    navigate(`/membro/biblia?${params.toString()}`);
+    setOpenDay(null);
+
+    window.setTimeout(() => {
+      setIsRedirecting(false);
+    }, 300);
   };
 
   const today = new Date();
@@ -265,13 +276,13 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                       "w-full font-bold rounded-xl h-11 gap-2 transition-all",
                       isRead
                         ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40"
-                        : "gradient-primary text-white shadow-lg shadow-primary/20"
+                        : "gradient-primary text-primary-foreground shadow-lg shadow-primary/20"
                     )}
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     {isRead ? "Marcado como lido" : "Marcar como lido"}
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"

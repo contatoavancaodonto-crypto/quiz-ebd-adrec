@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { BookOpen, Search, Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,8 +8,25 @@ import { PageHero } from "@/components/ui/page-hero";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
+import { cn } from "@/lib/utils";
 
 const OT_COUNT = 39;
+
+const normalizeBibleKey = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase();
+
+const resolveBibleBook = (books: BibliaBook[], rawBook: string) => {
+  const normalizedQuery = normalizeBibleKey(rawBook);
+
+  return (
+    books.find((book) => normalizeBibleKey(book.name) === normalizedQuery) ||
+    books.find((book) => normalizeBibleKey(book.abbrev) === normalizedQuery)
+  );
+};
 
 export default function Biblia() {
   const [searchParams] = useSearchParams();
@@ -17,22 +34,38 @@ export default function Biblia() {
   const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const activeVerseRef = useRef<HTMLParagraphElement | null>(null);
 
-  // Deep link handling
+  const deepLinkBook = searchParams.get("book");
+  const deepLinkChapter = searchParams.get("chapter");
+  const deepLinkVerse = searchParams.get("verse");
+
   useEffect(() => {
-    if (BOOKS && searchParams.get("book")) {
-      const bookName = decodeURIComponent(searchParams.get("book") || "");
-      const chapterNum = parseInt(searchParams.get("chapter") || "1", 10);
-      
-      const book = BOOKS.find(b => b.name.toLowerCase() === bookName.toLowerCase());
-      if (book) {
-        setSelectedBook(book);
-        if (!isNaN(chapterNum) && chapterNum > 0 && chapterNum <= book.chapters.length) {
-          setSelectedChapter(chapterNum - 1);
-        }
-      }
+    if (!BOOKS || !deepLinkBook) return;
+
+    const book = resolveBibleBook(BOOKS, decodeURIComponent(deepLinkBook));
+    const chapterNum = Number.parseInt(deepLinkChapter || "1", 10);
+
+    if (!book) return;
+
+    setSelectedBook(book);
+
+    if (!Number.isNaN(chapterNum) && chapterNum > 0 && chapterNum <= book.chapters.length) {
+      setSelectedChapter(chapterNum - 1);
     }
-  }, [BOOKS, searchParams]);
+  }, [BOOKS, deepLinkBook, deepLinkChapter]);
+
+  useEffect(() => {
+    if (!selectedBook || selectedChapter === null || !deepLinkVerse || !activeVerseRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      activeVerseRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedBook, selectedChapter, deepLinkVerse]);
+
+  const highlightedVerse = Number.parseInt(deepLinkVerse || "", 10);
 
   const { OLD_TESTAMENT, NEW_TESTAMENT } = useMemo(() => {
     if (!BOOKS) return { OLD_TESTAMENT: [] as BibliaBook[], NEW_TESTAMENT: [] as BibliaBook[] };
@@ -50,7 +83,6 @@ export default function Biblia() {
   const filteredOT = useMemo(() => filterBooks(OLD_TESTAMENT), [search, OLD_TESTAMENT]);
   const filteredNT = useMemo(() => filterBooks(NEW_TESTAMENT), [search, NEW_TESTAMENT]);
 
-  // Step 3: verses (drill profundo - sem bottom nav)
   if (selectedBook && selectedChapter !== null) {
     const verses = selectedBook.chapters[selectedChapter];
     return (
@@ -65,20 +97,31 @@ export default function Biblia() {
         bottomNav={false}
       >
         <div className="space-y-3 pb-8 max-w-prose mx-auto leading-relaxed text-[15px]">
-          {verses.map((verse, i) => (
-            <p key={i} className="flex gap-2.5">
-              <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
-                {i + 1}
-              </span>
-              <span className="text-foreground">{verse}</span>
-            </p>
-          ))}
+          {verses.map((verse, i) => {
+            const verseNumber = i + 1;
+            const isHighlighted = verseNumber === highlightedVerse;
+
+            return (
+              <p
+                key={i}
+                ref={isHighlighted ? activeVerseRef : null}
+                className={cn(
+                  "flex gap-2.5 rounded-xl px-3 py-2 transition-all",
+                  isHighlighted && "bg-primary/10 ring-1 ring-primary/30 shadow-sm"
+                )}
+              >
+                <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
+                  {verseNumber}
+                </span>
+                <span className="text-foreground">{verse}</span>
+              </p>
+            );
+          })}
         </div>
       </MemberLayout>
     );
   }
 
-  // Step 2: chapters grid
   if (selectedBook) {
     return (
       <MemberLayout
@@ -111,7 +154,6 @@ export default function Biblia() {
     );
   }
 
-  // Step 1: book list
   const renderBooks = (list: BibliaBook[]) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {list.map((book, i) => (
@@ -136,7 +178,6 @@ export default function Biblia() {
     </div>
   );
 
-  // Skeleton placeholder enquanto carrega o JSON
   const renderSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {Array.from({ length: 12 }).map((_, i) => (
@@ -162,7 +203,6 @@ export default function Biblia() {
           variant="primary"
         />
 
-        {/* Busca */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
