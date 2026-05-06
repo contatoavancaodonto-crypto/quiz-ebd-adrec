@@ -223,8 +223,7 @@ serve(async (req) => {
               "quarta": { "referencia": "...", "texto": "...", "observacao": "" },
               "quinta": { "referencia": "...", "texto": "...", "observacao": "" },
               "sexta": { "referencia": "...", "texto": "...", "observacao": "" },
-              "sabado": { "referencia": "...", "texto": "...", "observacao": "" },
-              "domingo": { "referencia": "...", "texto": "...", "observacao": "" }
+              "sabado": { "referencia": "...", "texto": "...", "observacao": "" }
             },
             "questions": [
               {
@@ -238,7 +237,7 @@ serve(async (req) => {
           }
           
           Regras:
-          1. Extraia 7 versículos (um para cada dia da semana).
+          1. Extraia 6 versículos (de segunda a sábado). O domingo será reservado apenas para o Quiz.
           2. EXTRAIA o tema da leitura (reading_theme) se presente.
           3. EXTRAIA a data de agendamento (scheduled_date) se houver alguma data clara para o início da lição.
           4. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.

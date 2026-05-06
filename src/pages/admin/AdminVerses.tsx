@@ -52,8 +52,7 @@ const DEFAULT_VERSES = {
   quarta: { referencia: "", texto: "" },
   quinta: { referencia: "", texto: "" },
   sexta: { referencia: "", texto: "" },
-  sabado: { referencia: "", texto: "" },
-  domingo: { referencia: "", texto: "" }
+  sabado: { referencia: "", texto: "" }
 };
 
 export default function AdminVerses() {
