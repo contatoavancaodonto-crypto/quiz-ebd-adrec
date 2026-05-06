@@ -30,20 +30,12 @@ export const useWeeklyLessons = () => {
     queryKey: ["weekly-lessons", classId],
     enabled: !!classId,
     queryFn: async (): Promise<WeeklyLesson[]> => {
-      const now = new Date().toISOString();
+      const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from("lessons")
-        .select(`
-          id, 
-          theme, 
-          lesson_number, 
-          reading_theme,
-          scheduled_date,
-          verses,
-          questions(id)
-        `)
-        .in("status", ["completo", "incompleto"])
-        .lte("scheduled_date", now)
+        .select(`id, theme, lesson_number, reading_theme, scheduled_date, verses, questions, class_id`)
+        .lte("scheduled_date", today)
+        .or(`class_id.eq.${classId},class_id.is.null`)
         .order("scheduled_date", { ascending: false })
         .limit(4);
 
@@ -64,7 +56,7 @@ export const useWeeklyLessons = () => {
           sexta: l.verses?.sexta?.referencia,
           sabado: l.verses?.sabado?.referencia,
         },
-        has_quiz: (l.questions?.length || 0) > 0,
+        has_quiz: Array.isArray(l.questions) && l.questions.length > 0,
         active: true,
         opens_at: l.scheduled_date
       }));

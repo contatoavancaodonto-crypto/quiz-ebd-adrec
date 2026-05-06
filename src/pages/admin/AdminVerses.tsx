@@ -56,6 +56,7 @@ const DEFAULT_VERSES = {
 
 export default function AdminVerses() {
   const [lessons, setLessons] = useState<LicaoSemanal[]>([]);
+  const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,14 +74,19 @@ export default function AdminVerses() {
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
-    status: 'incompleto'
+    status: 'incompleto',
+    class_id: undefined,
   });
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("lessons").select("*").order("lesson_number");
-    if (error) toast.error(error.message);
-    else setLessons((data as any) ?? []);
+    const [lessonsRes, classesRes] = await Promise.all([
+      supabase.from("lessons").select("*").order("lesson_number"),
+      supabase.from("classes").select("id, name").eq("active", true).order("name"),
+    ]);
+    if (lessonsRes.error) toast.error(lessonsRes.error.message);
+    else setLessons((lessonsRes.data as any) ?? []);
+    if (classesRes.data) setClasses(classesRes.data);
     setLoading(false);
   };
 
@@ -97,7 +103,8 @@ export default function AdminVerses() {
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
-      status: 'incompleto'
+      status: 'incompleto',
+      class_id: undefined,
     });
     setOpen(true);
   };
@@ -113,7 +120,8 @@ export default function AdminVerses() {
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
-      status: l.status
+      status: l.status,
+      class_id: l.class_id,
     });
     setOpen(true);
   };
@@ -358,6 +366,21 @@ export default function AdminVerses() {
                     <Label>Data de Agendamento</Label>
                     <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
                   </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Turma (Classe)</Label>
+                  <Select
+                    value={form.class_id ?? "all"}
+                    onValueChange={(v) => setForm({ ...form, class_id: v === "all" ? undefined : v })}
+                  >
+                    <SelectTrigger className="bg-white/5"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as turmas</SelectItem>
+                      {classes.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Descrição (Opcional)</Label>
