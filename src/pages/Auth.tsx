@@ -299,6 +299,38 @@ const Auth = () => {
                 className="space-y-3"
               >
                 <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleChurchChange(ADD_CHURCH)}
+                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 group ${
+                      church === ADD_CHURCH || (church === OTHER_CHURCH && churchRequested)
+                        ? "border-primary bg-primary/5 shadow-sm shadow-primary/20"
+                        : "border-primary/30 hover:border-primary/50 bg-background"
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <Plus className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-foreground text-center uppercase tracking-tight">Adicionar Igreja</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleChurchChange(INDIVIDUAL)}
+                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 group ${
+                      church === INDIVIDUAL
+                        ? "border-primary bg-primary/5 shadow-sm shadow-primary/20"
+                        : "border-primary/30 hover:border-primary/50 bg-background"
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-foreground text-center uppercase tracking-tight">Individual</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <Field label="Nome" value={firstName} onChange={setFirstName} placeholder="João" error={errors.firstName} />
                   <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
                 </div>
