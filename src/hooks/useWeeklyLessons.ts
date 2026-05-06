@@ -10,12 +10,12 @@ export interface WeeklyLesson {
   scheduled_date?: string | null;
   weekly_bible_reading: string | null;
   verses: {
-    segunda: string | null;
-    terca: string | null;
-    quarta: string | null;
-    quinta: string | null;
-    sexta: string | null;
-    sabado: string | null;
+    segunda: { referencia: string | null; texto: string | null };
+    terca: { referencia: string | null; texto: string | null };
+    quarta: { referencia: string | null; texto: string | null };
+    quinta: { referencia: string | null; texto: string | null };
+    sexta: { referencia: string | null; texto: string | null };
+    sabado: { referencia: string | null; texto: string | null };
   };
   has_quiz: boolean;
   active: boolean;
@@ -49,12 +49,12 @@ export const useWeeklyLessons = () => {
         scheduled_date: l.scheduled_date,
         weekly_bible_reading: null,
         verses: {
-          segunda: l.verses?.segunda?.referencia,
-          terca: l.verses?.terca?.referencia,
-          quarta: l.verses?.quarta?.referencia,
-          quinta: l.verses?.quinta?.referencia,
-          sexta: l.verses?.sexta?.referencia,
-          sabado: l.verses?.sabado?.referencia,
+          segunda: { referencia: l.verses?.segunda?.referencia ?? null, texto: l.verses?.segunda?.texto ?? null },
+          terca: { referencia: l.verses?.terca?.referencia ?? null, texto: l.verses?.terca?.texto ?? null },
+          quarta: { referencia: l.verses?.quarta?.referencia ?? null, texto: l.verses?.quarta?.texto ?? null },
+          quinta: { referencia: l.verses?.quinta?.referencia ?? null, texto: l.verses?.quinta?.texto ?? null },
+          sexta: { referencia: l.verses?.sexta?.referencia ?? null, texto: l.verses?.sexta?.texto ?? null },
+          sabado: { referencia: l.verses?.sabado?.referencia ?? null, texto: l.verses?.sabado?.texto ?? null },
         },
         has_quiz: Array.isArray(l.questions) && l.questions.length > 0,
         active: true,
