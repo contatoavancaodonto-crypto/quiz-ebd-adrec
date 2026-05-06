@@ -13,7 +13,8 @@ const getRules = (total: number) => [
   "💡 Não basta acertar tudo — responda rápido!",
 ];
 
-export function QuizCountdown({ onComplete }: QuizCountdownProps) {
+export function QuizCountdown({ onComplete, totalQuestions = 13 }: QuizCountdownProps) {
+  const rules = getRules(totalQuestions);
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
