@@ -527,7 +527,7 @@ const RankingPage = () => {
                         ) : (
                           <>
                             <div className="font-display font-bold text-primary">
-                              {mainScore}{isWeekly ? "" : `/13`}
+                              {mainScore}/{entry.total_questions || 13}
                             </div>
                             {bonus > 0 && (
                               <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
