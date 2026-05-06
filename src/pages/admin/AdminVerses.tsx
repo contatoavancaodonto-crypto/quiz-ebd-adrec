@@ -56,6 +56,7 @@ const DEFAULT_VERSES = {
 
 export default function AdminVerses() {
   const [lessons, setLessons] = useState<LicaoSemanal[]>([]);
+  const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,14 +74,19 @@ export default function AdminVerses() {
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
-    status: 'incompleto'
+    status: 'incompleto',
+    class_id: undefined,
   });
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("lessons").select("*").order("lesson_number");
-    if (error) toast.error(error.message);
-    else setLessons((data as any) ?? []);
+    const [lessonsRes, classesRes] = await Promise.all([
+      supabase.from("lessons").select("*").order("lesson_number"),
+      supabase.from("classes").select("id, name").eq("active", true).order("name"),
+    ]);
+    if (lessonsRes.error) toast.error(lessonsRes.error.message);
+    else setLessons((lessonsRes.data as any) ?? []);
+    if (classesRes.data) setClasses(classesRes.data);
     setLoading(false);
   };
 
@@ -113,7 +119,8 @@ export default function AdminVerses() {
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
-      status: l.status
+      status: l.status,
+      class_id: l.class_id,
     });
     setOpen(true);
   };
