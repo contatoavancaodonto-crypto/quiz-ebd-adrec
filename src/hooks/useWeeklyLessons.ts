@@ -6,6 +6,8 @@ export interface WeeklyLesson {
   id: string;
   lesson_title: string;
   lesson_number: number;
+  reading_theme?: string | null;
+  scheduled_date?: string | null;
   weekly_bible_reading: string | null;
   verses: {
     seg: string | null;
