@@ -160,7 +160,7 @@ const RankingPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("ranking_monthly")
-        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak")
+        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak, avatar_url")
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
