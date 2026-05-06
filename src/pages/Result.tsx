@@ -144,7 +144,7 @@ const ResultPage = () => {
   }
 
   const stats = [
-    { icon: Target, label: "Pontuação", value: `${score}/${TOTAL_QUESTIONS}`, sub: `${pct}%` },
+    { icon: Target, label: "Pontuação", value: `${score}/${totalQuestions}`, sub: `${pct}%` },
     { icon: Clock, label: "Tempo", value: timeStr, sub: "mm:ss:cc" },
     { icon: Trophy, label: "Ranking Turma", value: classRank ? `#${classRank}` : "—", sub: store.className },
     { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "—", sub: "Todas igrejas" },
