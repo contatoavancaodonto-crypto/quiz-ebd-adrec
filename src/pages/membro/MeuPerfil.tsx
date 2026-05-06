@@ -162,8 +162,13 @@ export default function MeuPerfil() {
           <div className="relative flex items-center gap-4">
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-white/15 backdrop-blur border-2 border-white/40 flex items-center justify-center text-2xl font-display font-extrabold overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt={firstName} className="w-full h-full object-cover" />
+                {profile?.avatar_url && !avatarError ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt={firstName} 
+                    className="w-full h-full object-cover" 
+                    onError={() => setAvatarError(true)}
+                  />
                 ) : (
                   initials || <UserIcon className="w-8 h-8" />
                 )}
