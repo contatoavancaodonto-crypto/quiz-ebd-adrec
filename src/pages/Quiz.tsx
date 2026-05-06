@@ -124,11 +124,17 @@ const QuizPage = () => {
         // Carrega quiz atual para descobrir quantas perguntas usar
         const { data: quizMeta, error: qmErr } = await supabase
           .from("quizzes")
-          .select("total_questions")
+          .select("total_questions, quiz_kind")
           .eq("id", quizId)
           .maybeSingle();
         if (qmErr) throw qmErr;
-        const questionsPerQuiz = quizMeta?.total_questions ?? DEFAULT_QUESTIONS_PER_QUIZ;
+        
+        const quizKind = quizMeta?.quiz_kind ?? "weekly";
+        // Lógica: trimestral = 26, semanal = 13 (a menos que o DB diga o contrário)
+        const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
+        const questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
+        
+        store.setQuizMetadata(quizKind, questionsPerQuiz);
 
         const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId).eq("active", true);
         if (qsErr) throw qsErr;
