@@ -180,6 +180,7 @@ export default function AdminQuizzes() {
       closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
       season_id: qForm.season_id || null,
       quiz_kind: qForm.quiz_kind || "weekly",
+      total_questions: qForm.total_questions === "" ? null : Number(qForm.total_questions),
       lesson_number: qForm.lesson_number === "" ? null : Number(qForm.lesson_number),
       lesson_title: qForm.lesson_title || null,
       lesson_key_verse_ref: qForm.lesson_key_verse_ref || null,
