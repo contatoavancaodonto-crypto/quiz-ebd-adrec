@@ -164,11 +164,16 @@ export default function AdminVerses() {
       });
       if (error) throw error;
       
-      setForm(prev => ({
-        ...prev,
-        ...data,
-        verses: { ...prev.verses, ...data.verses }
-      }));
+      setForm(prev => {
+        const { questions, ...restOfData } = data;
+        return {
+          ...prev,
+          ...restOfData,
+          verses: { ...prev.verses, ...data.verses },
+          // Mantemos as perguntas atuais, elas nunca são alteradas pela IA
+          questions: prev.questions
+        };
+      });
       setAiImportOpen(false);
       setAiText("");
       toast.success("Informações extraídas com sucesso!");
