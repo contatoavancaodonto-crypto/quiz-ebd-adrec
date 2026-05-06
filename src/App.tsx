@@ -29,6 +29,7 @@ import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Suporte from "./pages/membro/Suporte";
 import Comunidade from "./pages/membro/Comunidade";
+import { EmBreve } from "./pages/membro/EmBreve";
 
 // Admin
 import { AdminLayout } from "./components/admin/AdminLayout";
