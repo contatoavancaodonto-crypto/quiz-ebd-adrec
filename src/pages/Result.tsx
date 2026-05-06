@@ -23,7 +23,7 @@ function formatTimeFallback(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-const TOTAL_QUESTIONS = 13;
+// Removido const TOTAL_QUESTIONS fixo para usar o do store (dinâmico)
 
 interface MiniRankEntry {
   attempt_id: string;
