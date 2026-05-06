@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,18 +18,21 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { prefetchBiblia } from "@/hooks/useBibliaData";
 import { prefetchHarpa } from "@/hooks/useHarpaData";
+import { Badge } from "@/components/ui/badge";
 
 const items: Array<{
   title: string;
   url: string;
   icon: typeof User;
   prefetch?: () => void;
+  comingSoon?: boolean;
 }> = [
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Histórico", url: "/membro/historico", icon: History },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
+  { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, prefetch: prefetchHarpa },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
