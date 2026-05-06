@@ -186,6 +186,7 @@ export default function Biblia() {
         title={`${selectedBook.name} ${selectedChapter + 1}`}
         mobileHeader={{ variant: "none" }}
         bottomNav={false}
+        contentPaddingMobile={false}
       >
         <BibleStickyHeader
           title={selectedBook.name}
