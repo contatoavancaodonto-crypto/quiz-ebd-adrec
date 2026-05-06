@@ -52,7 +52,8 @@ const ResultPage = () => {
   const [lastWeekCompleted, setLastWeekCompleted] = useState<number | null>(null);
 
   const score = store.score;
-  const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
+  const totalQuestions = store.totalQuestions || 13;
+  const pct = Math.round((score / totalQuestions) * 100);
   const perf = getPerformanceMessage(pct);
   const timeStr = store.totalTimeMs > 0 ? formatTimeMs(store.totalTimeMs) : formatTimeFallback(store.totalTimeSeconds);
   const finalScore = score + streakBonus;
