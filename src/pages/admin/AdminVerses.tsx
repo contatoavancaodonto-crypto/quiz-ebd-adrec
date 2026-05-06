@@ -344,6 +344,16 @@ export default function AdminVerses() {
                     <Input value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} className="bg-white/5" placeholder="Ex: A Armadura de Deus" />
                   </div>
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Tema da Leitura</Label>
+                    <Input value={form.reading_theme} onChange={e => setForm({...form, reading_theme: e.target.value})} className="bg-white/5" placeholder="Ex: Fé e Obras" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Data de Agendamento</Label>
+                    <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label>Descrição (Opcional)</Label>
                   <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="bg-white/5 min-h-[80px]" placeholder="Breve resumo da semana..." />
