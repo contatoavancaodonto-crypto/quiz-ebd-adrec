@@ -1724,6 +1724,7 @@ export type Database = {
           position: number | null
           score: number | null
           streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
@@ -1845,6 +1846,7 @@ export type Database = {
           position: number | null
           score: number | null
           streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
@@ -2012,6 +2014,7 @@ export type Database = {
           score: number | null
           season_id: string | null
           streak_bonus: number | null
+          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           week_number: number | null
