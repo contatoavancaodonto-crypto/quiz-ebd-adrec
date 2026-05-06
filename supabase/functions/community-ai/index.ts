@@ -214,7 +214,9 @@ serve(async (req) => {
             "trimester": "1",
             "lesson_number": 1,
             "theme": "Título da Lição",
+            "reading_theme": "Tema da Leitura (ex: Fé e Obras)",
             "description": "Breve descrição opcional",
+            "scheduled_date": "YYYY-MM-DD",
             "verses": {
               "segunda": { "referencia": "...", "texto": "...", "observacao": "" },
               "terca": { "referencia": "...", "texto": "...", "observacao": "" },
@@ -237,11 +239,13 @@ serve(async (req) => {
           
           Regras:
           1. Extraia 7 versículos (um para cada dia da semana).
-          2. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.
-          3. NUNCA invente ou crie perguntas novas que não estejam no texto.
-          4. Se não houver perguntas no texto, retorne "questions": [].
-          5. "trimester" deve ser uma string (ex: "1", "2").
-          6. "lesson_number" deve ser um número inteiro.`,
+          2. EXTRAIA o tema da leitura (reading_theme) se presente.
+          3. EXTRAIA a data de agendamento (scheduled_date) se houver alguma data clara para o início da lição.
+          4. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.
+          5. NUNCA invente ou crie perguntas novas que não estejam no texto.
+          6. Se não houver perguntas no texto, retorne "questions": [].
+          7. "trimester" deve ser uma string (ex: "1", "2").
+          8. "lesson_number" deve ser um número inteiro.`,
         },
         { role: "user", content: text },
       ];
