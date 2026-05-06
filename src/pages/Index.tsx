@@ -341,6 +341,11 @@ const Index = () => {
                     <h3 className="text-base font-bold text-foreground leading-tight">
                       {heroTitle || "Quiz semanal"}
                     </h3>
+                    {heroSubtitle && (
+                      <p className="text-[11px] text-primary/80 mt-0.5 line-clamp-1">
+                        {heroSubtitle}
+                      </p>
+                    )}
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {weeklyQuiz.total_questions ?? 5} perguntas · até{" "}
                       <strong>dom 23h59</strong>
