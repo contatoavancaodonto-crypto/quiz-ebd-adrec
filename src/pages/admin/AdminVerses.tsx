@@ -274,18 +274,25 @@ export default function AdminVerses() {
               </CardHeader>
               
               <CardContent className="space-y-4 pb-4">
+                {lesson.reading_theme && (
+                  <div className="flex items-center gap-2 text-xs text-primary font-medium bg-primary/10 w-fit px-2 py-1 rounded-md mb-2">
+                    <BookOpen className="w-3 h-3" /> {lesson.reading_theme}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      <CalendarDays className="w-3 h-3" /> Versículos
+                      <CalendarDays className="w-3 h-3" /> Agendamento
                     </div>
-                    <p className="text-lg font-bold">{Object.values(lesson.verses || {}).filter(v => v.texto).length}</p>
+                    <p className="text-sm font-bold">
+                      {lesson.scheduled_date ? new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR') : 'Não definido'}
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                       <HelpCircle className="w-3 h-3" /> Perguntas
                     </div>
-                    <p className="text-lg font-bold">{lesson.questions?.length || 0}</p>
+                    <p className="text-sm font-bold">{lesson.questions?.length || 0}</p>
                   </div>
                 </div>
               </CardContent>
