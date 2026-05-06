@@ -204,13 +204,6 @@ export default function AdminVerses() {
       actions={
         <div className="flex gap-2">
           <Button
-            onClick={() => navigate("/painel/quizzes")}
-            variant="outline"
-            className="shadow"
-          >
-            Configurar por Semana
-          </Button>
-          <Button
             onClick={() => setAiImportOpen(true)}
             variant="outline"
             className="bg-white text-primary hover:bg-white/90 shadow border-primary/20"
