@@ -175,7 +175,7 @@ const ResultPage = () => {
             variant="primary"
           >
             <div className="flex flex-wrap gap-2">
-              <HeroChip Icon={Sparkles}>{score}/{TOTAL_QUESTIONS} acertos · {pct}%</HeroChip>
+              <HeroChip Icon={Sparkles}>{score}/{totalQuestions} acertos · {pct}%</HeroChip>
               {store.churchName && <HeroChip Icon={Church}>{store.churchName}</HeroChip>}
               {classRank && <HeroChip Icon={Trophy}>Turma #{classRank}</HeroChip>}
               {generalRank && <HeroChip Icon={Medal}>Geral #{generalRank}</HeroChip>}
