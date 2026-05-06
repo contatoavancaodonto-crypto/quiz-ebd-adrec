@@ -232,14 +232,23 @@ const Index = () => {
 
   if (!user) return null;
 
+  const effectiveLessonNumber =
+    currentLesson?.lesson_number ??
+    weeklyQuiz?.lesson_number ??
+    weeklyQuiz?.week_number ??
+    null;
+
   const lessonLabel =
-    weeklyQuiz?.lesson_number != null
-      ? `Lição ${weeklyQuiz.lesson_number}`
-      : weeklyQuiz?.week_number
-      ? `Semana #${weeklyQuiz.week_number}`
+    effectiveLessonNumber != null
+      ? `Lição ${effectiveLessonNumber}`
       : "Quiz da semana";
 
-  const heroTitle = weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
+  const heroTitle =
+    effectiveLessonNumber != null && userClass?.name
+      ? `Quiz semanal #${effectiveLessonNumber} - ${userClass.name}`
+      : weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
+
+  const heroSubtitle = currentLesson?.theme ?? weeklyQuiz?.lesson_title ?? null;
   const firstName = profile?.first_name ?? "amigo";
 
   // Saudação dinâmica
