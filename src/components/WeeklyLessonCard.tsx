@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked } from "lucide-react";
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,17 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
     const next = { ...readDays, [dayKey]: !readDays[dayKey] };
     setReadDays(next);
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    setOpenDay(null);
+  };
+
+  const handleReadFullChapter = (reference: string | null) => {
+    if (!reference) return;
+    // Simple parser for "Livro Cap:Ver" or "Livro Cap"
+    // Format expected by /membro/biblia might vary, but usually we pass params
+    // For now, let's navigate to biblia and we could potentially pass state
+    const encodedRef = encodeURIComponent(reference);
+    navigate(`/membro/biblia?ref=${encodedRef}`);
+    setOpenDay(null);
   };
 
   const today = new Date();
@@ -218,18 +229,30 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                     {verse?.texto || "Texto do versículo não disponível."}
                   </p>
                 </div>
-                <Button
-                  onClick={() => toggleRead(openDay)}
-                  className={cn(
-                    "w-full font-bold rounded-xl h-11 gap-2 transition-all",
-                    isRead
-                      ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40"
-                      : "gradient-primary text-white shadow-lg shadow-primary/20"
-                  )}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  {isRead ? "Marcado como lido" : "Marcar como lido"}
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={() => toggleRead(openDay)}
+                    className={cn(
+                      "w-full font-bold rounded-xl h-11 gap-2 transition-all",
+                      isRead
+                        ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40"
+                        : "gradient-primary text-white shadow-lg shadow-primary/20"
+                    )}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isRead ? "Marcado como lido" : "Marcar como lido"}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleReadFullChapter(verse?.referencia)}
+                    className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1.5 h-8"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Ler capítulo completo
+                  </Button>
+                </div>
               </>
             );
           })()}
