@@ -677,6 +677,7 @@ export default function AdminQuizzes() {
                         closes_at: fmtLocal(q.closes_at),
                         season_id: q.season_id ?? "",
                         quiz_kind: q.quiz_kind ?? "weekly",
+                        total_questions: q.total_questions ?? "",
                         lesson_number: q.lesson_number ?? "",
                         lesson_title: q.lesson_title ?? "",
                         lesson_key_verse_ref: q.lesson_key_verse_ref ?? "",
