@@ -28,6 +28,7 @@ export default function MeuPerfil() {
   const [showAvatar, setShowAvatar] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
     if (profile) {
