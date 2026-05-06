@@ -100,7 +100,8 @@ const Auth = () => {
       return;
     }
     setChurch(v);
-    if (v !== OTHER_CHURCH) setChurchRequested(false);
+    if (v !== OTHER_CHURCH && v !== INDIVIDUAL) setChurchRequested(false);
+    if (v === INDIVIDUAL) setChurchRequested(false);
   };
 
   const handleChurchRequestSubmit = (_data: ChurchRequest) => {
