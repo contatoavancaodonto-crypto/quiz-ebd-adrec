@@ -110,6 +110,8 @@ export default function AdminVerses() {
       trimester: l.trimester,
       lesson_number: l.lesson_number,
       theme: l.theme,
+      reading_theme: l.reading_theme || "",
+      scheduled_date: l.scheduled_date || "",
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
