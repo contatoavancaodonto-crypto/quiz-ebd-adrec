@@ -232,6 +232,7 @@ export default function Biblia() {
       <MemberLayout
         title={selectedBook.name}
         mobileHeader={{ variant: "none" }}
+        contentPaddingMobile={false}
       >
         <BibleStickyHeader
           title={selectedBook.name}
