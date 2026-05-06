@@ -42,7 +42,7 @@ export const useWeeklyLessons = () => {
           verses,
           questions(id)
         `)
-        .eq("status", "completo")
+        .in("status", ["completo", "incompleto"])
         .lte("scheduled_date", now)
         .order("scheduled_date", { ascending: false })
         .limit(4);
