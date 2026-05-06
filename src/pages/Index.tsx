@@ -41,6 +41,7 @@ import {
 import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
 import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
+import { useCurrentLesson, useNextLesson } from "@/hooks/useCurrentLesson";
 
 import { toast } from "sonner";
 
@@ -129,6 +130,8 @@ const Index = () => {
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
   const weekClose = useCountdown(weeklyQuiz?.closes_at);
   const nextOpen = useCountdown(nextQuiz?.opens_at);
+  const { data: currentLesson } = useCurrentLesson();
+  const { data: nextLesson } = useNextLesson();
 
   const showProvao = useMemo(() => {
     if (!provao || !season?.end_date) return false;
@@ -229,14 +232,23 @@ const Index = () => {
 
   if (!user) return null;
 
+  const effectiveLessonNumber =
+    currentLesson?.lesson_number ??
+    weeklyQuiz?.lesson_number ??
+    weeklyQuiz?.week_number ??
+    null;
+
   const lessonLabel =
-    weeklyQuiz?.lesson_number != null
-      ? `Lição ${weeklyQuiz.lesson_number}`
-      : weeklyQuiz?.week_number
-      ? `Semana #${weeklyQuiz.week_number}`
+    effectiveLessonNumber != null
+      ? `Lição ${effectiveLessonNumber}`
       : "Quiz da semana";
 
-  const heroTitle = weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
+  const heroTitle =
+    effectiveLessonNumber != null && userClass?.name
+      ? `Quiz semanal #${effectiveLessonNumber} - ${userClass.name}`
+      : weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
+
+  const heroSubtitle = currentLesson?.theme ?? weeklyQuiz?.lesson_title ?? null;
   const firstName = profile?.first_name ?? "amigo";
 
   // Saudação dinâmica
@@ -329,6 +341,11 @@ const Index = () => {
                     <h3 className="text-base font-bold text-foreground leading-tight">
                       {heroTitle || "Quiz semanal"}
                     </h3>
+                    {heroSubtitle && (
+                      <p className="text-[11px] text-primary/80 mt-0.5 line-clamp-1">
+                        {heroSubtitle}
+                      </p>
+                    )}
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {weeklyQuiz.total_questions ?? 5} perguntas · até{" "}
                       <strong>dom 23h59</strong>
@@ -396,14 +413,14 @@ const Index = () => {
                 </div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Próxima lição
-                  {nextQuiz.lesson_number != null
-                    ? ` · #${nextQuiz.lesson_number}`
-                    : nextQuiz.week_number
-                    ? ` · semana #${nextQuiz.week_number}`
+                  {(nextLesson?.lesson_number ?? nextQuiz.lesson_number ?? nextQuiz.week_number) != null
+                    ? ` · #${nextLesson?.lesson_number ?? nextQuiz.lesson_number ?? nextQuiz.week_number}`
                     : ""}
                 </div>
                 <h2 className="text-base font-bold text-foreground mb-3">
-                  {nextQuiz.lesson_title ?? nextQuiz.title}
+                  {(nextLesson?.lesson_number != null && userClass?.name)
+                    ? `Quiz semanal #${nextLesson.lesson_number} - ${userClass.name}`
+                    : nextQuiz.lesson_title ?? nextQuiz.title}
                 </h2>
                 <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 font-mono text-sm text-primary">
                   <Hourglass className="w-4 h-4" />
