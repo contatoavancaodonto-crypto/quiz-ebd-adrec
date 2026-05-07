@@ -2,8 +2,8 @@
 // Email body must always be white per Lovable guidelines.
 
 export const BRAND = {
-  name: 'Quiz EBD ADREC',
-  trimester: '1º TRI. 2026 · ADREC',
+  name: 'Quiz EBD',
+  trimester: '',
   church: 'Assembleia de Deus em Recife',
   primary: '#4CC9E0',
   primaryDark: '#2BA8C0',
