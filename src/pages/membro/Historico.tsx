@@ -50,7 +50,7 @@ const formatTime = (ms: number) => {
 export default function Historico() {
   const { data: profile } = useFullProfile();
   const { data: academicData, isLoading } = useAcademicHistory();
-  const [selectedAno, setSelectedAno] = useState("2025");
+  const [selectedAno, setSelectedAno] = useState("2026");
   const [selectedTri, setSelectedTri] = useState("1º TRI");
 
   const currentTri = useMemo(() => {
