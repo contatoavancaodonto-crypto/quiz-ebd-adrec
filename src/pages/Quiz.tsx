@@ -202,7 +202,7 @@ const QuizPage = () => {
 
       let score = 0;
       questions.forEach((q) => {
-        if (allAnswers[q.id] === q.correct_option) score++;
+        if (correctnessByQ[q.id]) score++;
       });
 
       const totalTime = seconds;
