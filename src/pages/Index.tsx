@@ -88,7 +88,7 @@ const WeeklyLessonsList = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2].map((i) => (
-          <div key={i} className="h-48 rounded-3xl bg-muted animate-pulse" />
+          <Skeleton key={i} className="h-48 rounded-3xl" />
         ))}
       </div>
     );
@@ -110,6 +110,27 @@ const WeeklyLessonsList = () => {
     </div>
   );
 };
+
+const WeeklyQuizCardSkeleton = () => (
+  <section className="space-y-2">
+    <SectionLabel color="primary" label="Quiz da semana" />
+    <div className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5 space-y-4">
+      <div className="flex items-start gap-3">
+        <Skeleton className="shrink-0 w-12 h-12 rounded-2xl" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </div>
+      <Skeleton className="h-16 w-full rounded-2xl" />
+      <div className="flex items-center gap-3">
+        <Skeleton className="flex-1 h-12 rounded-xl" />
+        <Skeleton className="w-28 h-12 rounded-xl" />
+      </div>
+    </div>
+  </section>
+);
 
 const Index = () => {
 
