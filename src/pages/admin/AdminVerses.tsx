@@ -587,6 +587,31 @@ export default function AdminVerses() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-slate-950 border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-display font-bold text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-rose-500" /> Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Tem certeza que deseja apagar esta lição? Esta ação é irreversível e removerá permanentemente o conteúdo, versículos e perguntas associadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6">
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white border-none shadow-lg shadow-rose-900/20"
+            >
+              Apagar permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminPage>
   );
 }
