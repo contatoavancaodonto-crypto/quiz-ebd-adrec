@@ -143,8 +143,8 @@ const Index = () => {
   const seasonExpired = !!season && seasonCountdown.expired;
 
   const userClassId = profile?.class_id ?? null;
-  const { data: weeklyQuiz } = useWeeklyQuiz(userClassId);
-  const { data: nextQuiz } = useNextScheduledQuiz(userClassId);
+  const { data: weeklyQuiz, isLoading: isLoadingWeeklyQuiz } = useWeeklyQuiz(userClassId);
+  const { data: nextQuiz, isLoading: isLoadingNextQuiz } = useNextScheduledQuiz(userClassId);
   const { data: provao } = useTrimestralProvao(userClassId, season?.id);
 
   const fullName = profile
@@ -153,8 +153,14 @@ const Index = () => {
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
   const weekClose = useCountdown(weeklyQuiz?.closes_at);
   const nextOpen = useCountdown(nextQuiz?.opens_at);
-  const { data: currentLesson } = useCurrentLesson();
-  const { data: nextLesson } = useNextLesson();
+  const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
+  const { data: nextLesson, isLoading: isLoadingNextLesson } = useNextLesson();
+
+  const isQuizLoading =
+    isLoadingWeeklyQuiz ||
+    isLoadingNextQuiz ||
+    isLoadingCurrentLesson ||
+    isLoadingNextLesson;
 
   const showProvao = useMemo(() => {
     if (!provao || !season?.end_date) return false;
