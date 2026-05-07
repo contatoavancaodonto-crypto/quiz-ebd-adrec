@@ -325,67 +325,178 @@ export default function Historico() {
             </Badge>
           </div>
 
-          <div className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden overflow-x-auto shadow-sm">
-            <Table>
-              <TableHeader className="bg-muted/50">
-                <TableRow className="border-border/50 hover:bg-transparent">
-                  <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Semana</TableHead>
-                  <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Lição</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Tema da Lição</TableHead>
-                  <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-center">Nota</TableHead>
-                  <TableHead className="w-[140px] text-[10px] font-bold uppercase tracking-wider text-center">Status</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Observações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentTri?.semanas.map((s, idx) => (
-                  <TableRow key={idx} className="border-border/50 hover:bg-muted/30 transition-colors">
-                    <TableCell className="font-medium text-xs">Sem. {s.semana}</TableCell>
-                    <TableCell className="text-xs">{s.licao}</TableCell>
-                    <TableCell className="text-xs font-semibold">{s.tema}</TableCell>
-                    <TableCell className="text-center">
-                      {s.nota !== undefined ? (
-                        <span className={cn(
-                          "inline-flex items-center justify-center w-8 h-8 rounded-lg font-bold text-xs",
-                          s.nota >= 7 ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+          <div className="space-y-4">
+            {/* Versão Desktop (Tabela) */}
+            <div className="hidden md:block rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden shadow-sm">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="border-border/50 hover:bg-transparent">
+                    <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Semana</TableHead>
+                    <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Lição</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider">Tema da Lição</TableHead>
+                    <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-center">Nota</TableHead>
+                    <TableHead className="w-[140px] text-[10px] font-bold uppercase tracking-wider text-center">Status</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider">Observações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentTri?.semanas.map((s, idx) => (
+                    <TableRow key={idx} className="border-border/50 hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-medium text-xs">Sem. {s.semana}</TableCell>
+                      <TableCell className="text-xs">{s.licao}</TableCell>
+                      <TableCell className="text-xs font-semibold">{s.tema}</TableCell>
+                      <TableCell className="text-center">
+                        {s.nota !== undefined ? (
+                          <span className={cn(
+                            "inline-flex items-center justify-center w-8 h-8 rounded-lg font-bold text-xs",
+                            s.nota >= 7 ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                          )}>
+                            {s.nota.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-[10px]">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold border", statusMap[s.status].color)}>
+                          {statusMap[s.status].label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                        {s.observacao || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  
+                  {/* Linha do Provão Final Desktop */}
+                  {currentTri?.provaFinal && (
+                    <TableRow className="bg-primary/5 border-t-2 border-primary/20 hover:bg-primary/10 transition-colors">
+                      <TableCell colSpan={3} className="py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <GraduationCap className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-primary uppercase tracking-tight">Provão Final do Trimestre</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.weight * 100) || 40}% na média final</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center font-bold text-sm text-primary">
+                        {currentTri.provaFinal.nota?.toFixed(1) || "—"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-bold border",
+                          currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                         )}>
-                          {s.nota.toFixed(1)}
-                        </span>
+                          {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {currentTri.provaFinal.observation || "Avaliação final acumulativa."}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Versão Mobile (Cards) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {currentTri?.semanas.map((s, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * idx }}
+                >
+                  <Card className="border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 uppercase border-primary/20 text-primary">
+                            Semana {s.semana}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground font-medium">Lição {s.licao}</span>
+                        </div>
+                        <h4 className="text-sm font-bold leading-tight">{s.tema}</h4>
+                      </div>
+                      
+                      {s.nota !== undefined ? (
+                        <div className={cn(
+                          "flex flex-col items-center justify-center min-w-[40px] h-[40px] rounded-xl font-bold border shadow-sm",
+                          s.nota >= 7 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                          <span className="text-[9px] uppercase opacity-60 leading-none mb-0.5">Nota</span>
+                          <span className="text-sm leading-none">{s.nota.toFixed(1)}</span>
+                        </div>
                       ) : (
-                        <span className="text-muted-foreground text-[10px]">—</span>
+                        <div className="w-10 h-10 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-center">
+                          <span className="text-muted-foreground text-xs">—</span>
+                        </div>
                       )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold border", statusMap[s.status].color)}>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-1">
+                      <Badge className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-none", statusMap[s.status].color)}>
                         {statusMap[s.status].label}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                      {s.observacao || "—"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                
-                {/* Linha do Provão Final */}
-                {currentTri?.provaFinal && (
-                  <TableRow className="bg-primary/5 border-t-2 border-primary/20 hover:bg-primary/10 transition-colors">
-                    <TableCell colSpan={3} className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                          <GraduationCap className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-primary uppercase tracking-tight">Provão Final do Trimestre</p>
-                          <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.peso * 100)}% na média final</p>
+                      {s.observacao && (
+                        <p className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">
+                          "{s.observacao}"
+                        </p>
+                      )}
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+
+              {/* Card Provão Final Mobile */}
+              {currentTri?.provaFinal && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-2"
+                >
+                  <Card className="border-primary/30 bg-primary/5 backdrop-blur-md overflow-hidden p-4 relative">
+                    <div className="absolute top-0 right-0 p-2">
+                      <Trophy className="w-10 h-10 text-primary/10" />
+                    </div>
+                    
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Provão Final</h4>
+                        <p className="text-[10px] text-muted-foreground">Avaliação trimestral</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.weight * 100) || 40}% na média</p>
+                        <Badge className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-none",
+                          currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                          {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] text-primary font-bold uppercase mb-1">Média Final</span>
+                        <div className="text-3xl font-display font-bold text-primary">
+                          {currentTri.provaFinal.nota?.toFixed(1) || "—"}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-center font-bold text-sm text-primary">
-                      {currentTri.provaFinal.nota?.toFixed(1) || "—"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border",
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+            </div>
+          </div>
                         currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                       )}>
                         {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
