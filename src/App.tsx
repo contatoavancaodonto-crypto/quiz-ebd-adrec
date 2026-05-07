@@ -20,6 +20,8 @@ import GabaritoPage from "./pages/Gabarito";
 import PreviewTelas from "./pages/PreviewTelas";
 import NotFound from "./pages/NotFound";
 import Unsubscribe from "./pages/Unsubscribe";
+import Oferta from "./pages/Oferta";
+
 
 // Membro
 import MeuPerfil from "./pages/membro/MeuPerfil";
@@ -129,7 +131,9 @@ const App = () => (
                 } 
               />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/oferta" element={<Oferta />} />
               <Route path="*" element={<NotFound />} />
+
             </Routes>
           </Suspense>
         </RolesProvider>
