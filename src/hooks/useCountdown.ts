@@ -36,9 +36,13 @@ export function useCountdown(
 
     const id = setInterval(() => {
       const newValue = compute(target);
-      setValue(newValue);
+      setValue((prev) => {
+        if (!prev.expired && newValue.expired) {
+          onExpire?.();
+        }
+        return newValue;
+      });
       if (newValue.expired) {
-        onExpire?.();
         clearInterval(id);
       }
     }, 1000);
