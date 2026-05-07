@@ -4,8 +4,6 @@ import { Loader2, CheckCircle2, Trophy, BarChart3 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.webp";
 import { useSound } from "@/hooks/useSound";
 
-const WEBHOOK_URL = "https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43";
-
 interface ThankYouScreenProps {
   participantName: string;
   classId: string;
@@ -33,24 +31,8 @@ export function ThankYouScreen({
   const [stepIndex, setStepIndex] = useState(0);
   const { playSound } = useSound();
 
-  const sendWebhook = async (event: string) => {
-    try {
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event,
-          participantName,
-          classId,
-          className,
-          score,
-          totalTimeSeconds,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-    } catch (err) {
-      console.error("Webhook error:", err);
-    }
+  const sendWebhook = async (_event: string) => {
+    // Webhook externo removido por motivos de privacidade.
   };
 
   useEffect(() => {
