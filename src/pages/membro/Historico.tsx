@@ -179,7 +179,7 @@ export default function Historico() {
                 value={`${stats?.participacao || 0}%`} 
                 icon={BookOpen} 
                 color="blue"
-                description={`${stats?.concluidas} de ${stats?.totalSemanas} lições`}
+                description={`Atividade em ${stats?.concluidas} de ${stats?.totalSemanas} eventos`}
                 delay={0.2}
               />
               <StatCard 
@@ -187,7 +187,7 @@ export default function Historico() {
                 value={`${stats?.frequencia || 0}%`} 
                 icon={Clock} 
                 color="purple"
-                description={`Tempo total: ${stats?.tempoTotal || "0m"}`}
+                description="Regularidade de presença nos eventos"
                 delay={0.3}
               />
               <StatCard 
