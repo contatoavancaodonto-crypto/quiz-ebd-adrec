@@ -199,14 +199,22 @@ export default function AdminVerses() {
       });
       if (error) throw error;
       
-      setForm(prev => ({
-        ...prev,
-        ...data,
-        verses: { ...prev.verses, ...data.verses },
-        // Se a IA trouxer perguntas (porque estavam no texto), alimentamos. 
-        // Se não trouxer, mantemos as que já estavam no formulário.
-        questions: data.questions && data.questions.length > 0 ? data.questions : prev.questions
-      }));
+      setForm(prev => {
+        const updatedForm = {
+          ...prev,
+          ...data,
+          trimester: data.trimester ? data.trimester.toString() : prev.trimester,
+          verses: { ...prev.verses, ...data.verses },
+          questions: data.questions && data.questions.length > 0 
+            ? data.questions.map((q: any) => ({
+                ...q,
+                id: q.id || Math.random().toString(36).substr(2, 9)
+              })) 
+            : prev.questions
+        };
+        console.log("IA data applied to form:", updatedForm);
+        return updatedForm;
+      });
       setAiImportOpen(false);
       setAiText("");
       toast.success("Informações extraídas com sucesso!");
