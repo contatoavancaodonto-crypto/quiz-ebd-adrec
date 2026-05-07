@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Loader2, 
   Trophy, 
   Calendar, 
   Clock, 
@@ -9,149 +8,471 @@ import {
   BookOpen, 
   CheckCircle2, 
   AlertCircle,
-  BarChart3
+  BarChart3,
+  User,
+  GraduationCap,
+  MessageSquare,
+  Search,
+  Filter,
+  ArrowRight
 } from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
+import { useFullProfile } from "@/hooks/useFullProfile";
+import { cn } from "@/lib/utils";
 
-// Mock Data structure
-const mockData = {
+// Types
+type Status = 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
+
+interface NotaSemanal {
+  semana: number;
+  licao: number;
+  tema: string;
+  nota?: number;
+  status: Status;
+  observacao?: string;
+}
+
+interface ProvaoFinal {
+  nota?: number;
+  peso: number;
+  status: 'concluido' | 'pendente' | 'nao_realizado';
+  observacao?: string;
+}
+
+interface ComentarioProfessor {
+  id: string;
+  comentario: string;
+  criadoEm: string;
+  professorNome?: string;
+}
+
+interface TrimestreAcademico {
+  trimestre: '1º TRI' | '2º TRI' | '3º TRI' | '4º TRI';
+  semanas: NotaSemanal[];
+  provaFinal?: ProvaoFinal;
+  ranking?: number;
+  comentariosProfessor?: ComentarioProfessor[];
+}
+
+interface AnoAcademico {
+  ano: number;
+  trimestres: TrimestreAcademico[];
+}
+
+interface HistoricoAcademico {
+  membroId: string;
+  membroNome: string;
+  turmaAtual?: string;
+  anos: AnoAcademico[];
+}
+
+// Mock Data
+const ACADEMIC_HISTORY: HistoricoAcademico = {
+  membroId: "user-123",
   membroNome: "João Silva",
-  turmaAtual: "Turma A",
+  turmaAtual: "Turma Alpha - 2025",
   anos: [
     {
       ano: 2025,
       trimestres: [
         {
           trimestre: "1º TRI",
-          mediaSemanal: 8.7,
-          mediaFinal: 8.5,
-          participacao: 92,
-          frequencia: 87,
-          ranking: 5,
+          ranking: 3,
           semanas: [
-            { semana: 1, licao: 1, tema: "Introdução à Fé", nota: 8.5, status: "concluido" },
-            { semana: 2, licao: 2, tema: "O Amor de Deus", nota: 9.0, status: "concluido" },
-            { semana: 3, licao: 3, tema: "A Graça", nota: 8.0, status: "em_analise" },
+            { semana: 1, licao: 1, tema: "Introdução à Teologia", nota: 8.5, status: "concluido", observacao: "Excelente participação." },
+            { semana: 2, licao: 2, tema: "História da Igreja", nota: 7.0, status: "concluido" },
+            { semana: 3, licao: 3, tema: "Doutrinas Bíblicas", nota: 9.5, status: "concluido", observacao: "Nota máxima no quiz!" },
+            { semana: 4, licao: 4, tema: "Epístolas Paulinas", nota: 8.0, status: "concluido" },
+            { semana: 5, licao: 5, tema: "Evangelhos Sinóticos", nota: 8.8, status: "em_analise" },
+            { semana: 6, licao: 6, tema: "Antigo Testamento", status: "pendente" },
           ],
-          provaFinal: { nota: 8.2, peso: 0.3, status: "concluido" },
-          comentariosProfessor: [{ id: "1", comentario: "Excelente evolução nas últimas semanas.", criadoEm: "2025-03-01" }]
+          provaFinal: {
+            nota: 8.2,
+            peso: 0.3,
+            status: "concluido",
+            observacao: "Avaliação final do trimestre."
+          },
+          comentariosProfessor: [
+            { id: "c1", comentario: "O aluno demonstrou grande evolução na compreensão das doutrinas básicas.", criadoEm: "2025-03-15", professorNome: "Prof. Marcos" },
+            { id: "c2", comentario: "Continue focado nas leituras complementares.", criadoEm: "2025-03-20", professorNome: "Prof. Marcos" }
+          ]
         }
       ]
     }
   ]
 };
 
-const chartData = [
-  { name: "Sem 1", nota: 6.5 },
-  { name: "Sem 2", nota: 7.3 },
-  { name: "Sem 3", nota: 8.0 },
-  { name: "Sem 4", nota: 8.8 },
-  { name: "Sem 5", nota: 8.5 },
-];
+const statusMap: Record<Status, { label: string; color: string }> = {
+  concluido: { label: "Concluído", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+  pendente: { label: "Pendente", color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+  nao_enviado: { label: "Não enviado", color: "bg-red-500/10 text-red-500 border-red-500/20" },
+  em_analise: { label: "Em análise", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+};
 
 export default function Historico() {
-  const [ano, setAno] = useState("2025");
-  const [tri, setTri] = useState("1º TRI");
+  const { data: profile } = useFullProfile();
+  const [selectedAno, setSelectedAno] = useState("2025");
+  const [selectedTri, setSelectedTri] = useState("1º TRI");
+
+  const currentAno = ACADEMIC_HISTORY.anos.find(a => a.ano.toString() === selectedAno);
+  const currentTri = currentAno?.trimestres.find(t => t.trimestre === selectedTri);
+
+  const stats = useMemo(() => {
+    if (!currentTri) return null;
+
+    const notas = currentTri.semanas.filter(s => s.nota !== undefined).map(s => s.nota as number);
+    const mediaSemanal = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+    
+    const concluidas = currentTri.semanas.filter(s => s.status === 'concluido').length;
+    const totalSemanas = currentTri.semanas.length;
+    const participacao = totalSemanas > 0 ? (concluidas / totalSemanas) * 100 : 0;
+    
+    // Frequência mock para o exemplo
+    const frequencia = 87; 
+
+    const notaFinal = currentTri.provaFinal?.nota 
+      ? (mediaSemanal * 0.7) + (currentTri.provaFinal.nota * 0.3)
+      : mediaSemanal;
+
+    return {
+      mediaSemanal: mediaSemanal.toFixed(1),
+      mediaFinal: notaFinal.toFixed(1),
+      participacao: Math.round(participacao),
+      concluidas,
+      totalSemanas,
+      frequencia,
+      ranking: currentTri.ranking,
+      provaFinalNota: currentTri.provaFinal?.nota?.toFixed(1) || "—",
+      provaFinalStatus: currentTri.provaFinal?.status || "pendente"
+    };
+  }, [currentTri]);
+
+  const chartData = useMemo(() => {
+    if (!currentTri) return [];
+    return currentTri.semanas
+      .filter(s => s.nota !== undefined)
+      .map(s => ({
+        name: `Sem ${s.semana}`,
+        nota: s.nota
+      }));
+  }, [currentTri]);
 
   return (
-    <MemberLayout title="Boletim Acadêmico" mobileHeader={{ title: "Boletim", backTo: "/" }}>
-      <PageShell contentClassName="pb-12 space-y-8">
-        {/* Header */}
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold">Boletim Acadêmico</h1>
-          <p className="text-muted-foreground">Acompanhe seu desempenho, evolução e histórico de atividades.</p>
+    <MemberLayout 
+      title="Boletim Acadêmico" 
+      mobileHeader={{ variant: "back", title: "Boletim Acadêmico", backTo: "/" }}
+    >
+      <PageShell contentClassName="pb-20 space-y-8 animate-in fade-in duration-700">
+        {/* Cabeçalho Profissional */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Boletim Acadêmico
+            </h1>
+            <p className="text-muted-foreground text-sm max-w-md">
+              Acompanhe seu desempenho, evolução e histórico de atividades de forma detalhada.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-card/40 border border-border/50 backdrop-blur-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-bold leading-none">{profile?.first_name} {profile?.last_name}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 font-medium">
+                {ACADEMIC_HISTORY.turmaAtual}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Média Geral" value="8.7" icon={Trophy} />
-          <StatCard title="Participação" value="92%" subtitle="11 de 12 semanas" icon={BookOpen} />
-          <StatCard title="Frequência" value="87%" icon={Clock} />
-          <StatCard title="Ranking" value="Top 5" icon={Trophy} />
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-4">
-          <Select value={ano} onValueChange={setAno}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent>
+        {/* Filtros */}
+        <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit">
+          <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+            <Filter className="w-3.5 h-3.5" />
+            Filtrar por:
+          </div>
+          <Select value={selectedAno} onValueChange={setSelectedAno}>
+            <SelectTrigger className="w-[110px] h-9 rounded-xl border-none bg-background/50 shadow-none focus:ring-0">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+            </SelectContent>
           </Select>
-          <Select value={tri} onValueChange={setTri}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="1º TRI">1º TRI</SelectItem></SelectContent>
+          <Select value={selectedTri} onValueChange={setSelectedTri}>
+            <SelectTrigger className="w-[120px] h-9 rounded-xl border-none bg-background/50 shadow-none focus:ring-0">
+              <SelectValue placeholder="Trimestre" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1º TRI">1º Trimestre</SelectItem>
+              <SelectItem value="2º TRI">2º Trimestre</SelectItem>
+              <SelectItem value="3º TRI">3º Trimestre</SelectItem>
+              <SelectItem value="4º TRI">4º Trimestre</SelectItem>
+              <SelectItem value="Todos">Todos</SelectItem>
+            </SelectContent>
           </Select>
         </div>
 
-        {/* Performance Chart */}
-        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
-          <CardTitle className="text-sm font-medium mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" /> Evolução de Notas
-          </CardTitle>
-          <div className="h-[200px]">
-            <ChartContainer config={{ nota: { label: "Nota", color: "hsl(var(--primary))" } }}>
+        {/* Cards Superiores de Resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard 
+            label="Média Geral" 
+            value={stats?.mediaFinal || "0.0"} 
+            icon={TrendingUp} 
+            color="emerald"
+            description={`Semanal: ${stats?.mediaSemanal}`}
+          />
+          <StatCard 
+            label="Participação" 
+            value={`${stats?.participacao || 0}%`} 
+            icon={BookOpen} 
+            color="blue"
+            description={`${stats?.concluidas} de ${stats?.totalSemanas} lições`}
+          />
+          <StatCard 
+            label="Frequência" 
+            value={`${stats?.frequencia || 0}%`} 
+            icon={Clock} 
+            color="purple"
+          />
+          <StatCard 
+            label="Provão Final" 
+            value={stats?.provaFinalNota || "—"} 
+            icon={GraduationCap} 
+            color="amber"
+            description={stats?.provaFinalStatus === 'concluido' ? 'Concluído' : 'Pendente'}
+          />
+          <StatCard 
+            label="Ranking" 
+            value={stats?.ranking ? `#${stats.ranking}` : "—"} 
+            icon={Trophy} 
+            color="rose"
+            description="Top da turma"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Gráfico de Evolução */}
+          <Card className="lg:col-span-2 border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden">
+            <div className="p-6 pb-2">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                Evolução de Desempenho
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">Sua trajetória de notas ao longo das semanas.</p>
+            </div>
+            <div className="h-[280px] w-full p-4 pr-8">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                  <XAxis dataKey="name" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="nota" stroke="var(--color-nota)" strokeWidth={2} dot={{ fill: "var(--color-nota)" }} />
+                  <defs>
+                    <linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                    domain={[0, 10]}
+                  />
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-background/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{payload[0].payload.name}</p>
+                            <p className="text-sm font-bold text-primary">Nota: {payload[0].value}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="nota" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={3} 
+                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4, stroke: 'hsl(var(--background))' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
-            </ChartContainer>
-          </div>
-        </Card>
+            </div>
+          </Card>
 
-        {/* Table */}
-        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Semana</TableHead>
-                <TableHead>Lição</TableHead>
-                <TableHead>Tema</TableHead>
-                <TableHead>Nota</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockData.anos[0].trimestres[0].semanas.map((s) => (
-                <TableRow key={s.semana}>
-                  <TableCell>{s.semana}</TableCell>
-                  <TableCell>{s.licao}</TableCell>
-                  <TableCell>{s.tema}</TableCell>
-                  <TableCell>{s.nota}</TableCell>
-                  <TableCell>
-                    <Badge variant={s.status === 'concluido' ? 'default' : 'secondary'}>{s.status}</Badge>
-                  </TableCell>
-                </TableRow>
+          {/* Comentários do Professor */}
+          <Card className="border-border/50 bg-card/30 backdrop-blur-sm">
+            <div className="p-6 pb-2">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                Comentários Pedagógicos
+              </h3>
+            </div>
+            <div className="p-6 space-y-4">
+              {currentTri?.comentariosProfessor?.map((c) => (
+                <div key={c.id} className="relative pl-4 border-l-2 border-primary/20 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-primary uppercase">{c.professorNome || 'Professor'}</span>
+                    <span className="text-[10px] text-muted-foreground">{new Date(c.criadoEm).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-xs text-foreground/80 leading-relaxed italic">
+                    "{c.comentario}"
+                  </p>
+                </div>
               ))}
-            </TableBody>
-          </Table>
-        </Card>
+              {!currentTri?.comentariosProfessor?.length && (
+                <p className="text-xs text-muted-foreground text-center py-8">Nenhum comentário por enquanto.</p>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabela Principal */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Detalhamento por Trimestre
+            </h2>
+            <Badge variant="outline" className="rounded-full px-3 font-bold border-primary/20 text-primary">
+              {selectedTri}
+            </Badge>
+          </div>
+
+          <div className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow className="border-border/50 hover:bg-transparent">
+                  <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Semana</TableHead>
+                  <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider">Lição</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Tema da Lição</TableHead>
+                  <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-center">Nota</TableHead>
+                  <TableHead className="w-[140px] text-[10px] font-bold uppercase tracking-wider text-center">Status</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Observações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentTri?.semanas.map((s, idx) => (
+                  <TableRow key={idx} className="border-border/50 hover:bg-muted/30 transition-colors">
+                    <TableCell className="font-medium text-xs">Sem. {s.semana}</TableCell>
+                    <TableCell className="text-xs">{s.licao}</TableCell>
+                    <TableCell className="text-xs font-semibold">{s.tema}</TableCell>
+                    <TableCell className="text-center">
+                      {s.nota !== undefined ? (
+                        <span className={cn(
+                          "inline-flex items-center justify-center w-8 h-8 rounded-lg font-bold text-xs",
+                          s.nota >= 7 ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                        )}>
+                          {s.nota.toFixed(1)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px]">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold border", statusMap[s.status].color)}>
+                        {statusMap[s.status].label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                      {s.observacao || "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                
+                {/* Linha do Provão Final */}
+                {currentTri?.provaFinal && (
+                  <TableRow className="bg-primary/5 border-t-2 border-primary/20 hover:bg-primary/10 transition-colors">
+                    <TableCell colSpan={3} className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                          <GraduationCap className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-primary uppercase tracking-tight">Provão Final do Trimestre</p>
+                          <p className="text-[10px] text-muted-foreground">Peso: {Math.round(currentTri.provaFinal.peso * 100)}% na média final</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center font-bold text-sm text-primary">
+                      {currentTri.provaFinal.nota?.toFixed(1) || "—"}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border",
+                        currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {currentTri.provaFinal.observacao || "Aguardando realização"}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </PageShell>
     </MemberLayout>
   );
 }
 
-function StatCard({ title, value, subtitle, icon: Icon }: any) {
+function StatCard({ label, value, icon: Icon, color, description }: any) {
+  const colors: any = {
+    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-500 border-emerald-500/20",
+    blue: "from-blue-500/20 to-blue-500/5 text-blue-500 border-blue-500/20",
+    purple: "from-purple-500/20 to-purple-500/5 text-purple-500 border-purple-500/20",
+    amber: "from-amber-500/20 to-amber-500/5 text-amber-500 border-amber-500/20",
+    rose: "from-rose-500/20 to-rose-500/5 text-rose-500 border-rose-500/20",
+  };
+
   return (
-    <Card className="p-4 bg-card/50 border-border/50">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">{title}</p>
-          <h3 className="text-2xl font-bold mt-1">{value}</h3>
-          {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+    <motion.div
+      whileHover={{ y: -4 }}
+      className={cn(
+        "relative group p-5 rounded-3xl bg-gradient-to-br border backdrop-blur-sm overflow-hidden",
+        colors[color]
+      )}
+    >
+      <div className="relative z-10 flex flex-col justify-between h-full">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{label}</p>
+          <div className="p-2 rounded-xl bg-background/20 group-hover:scale-110 transition-transform">
+            <Icon className="w-4 h-4" />
+          </div>
         </div>
-        <Icon className="w-5 h-5 text-primary opacity-70" />
+        <div className="mt-4">
+          <h3 className="text-2xl font-display font-bold text-foreground leading-none">{value}</h3>
+          {description && (
+            <p className="text-[10px] mt-1.5 font-medium text-muted-foreground line-clamp-1">{description}</p>
+          )}
+        </div>
       </div>
-    </Card>
+      
+      {/* Decorative Glow */}
+      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-current opacity-[0.03] blur-2xl group-hover:opacity-10 transition-opacity rounded-full" />
+    </motion.div>
   );
 }
