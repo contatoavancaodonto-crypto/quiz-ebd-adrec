@@ -278,7 +278,11 @@ export default function AdminVerses() {
             <Card 
               key={lesson.id} 
               className="group relative cursor-pointer overflow-hidden border-white/10 bg-black/40 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(var(--primary),0.1)] hover:-translate-y-1 rounded-2xl"
-              onClick={() => openEdit(lesson)}
+              onClick={(e) => {
+                // Previne abrir o card se o clique vier de um botão dentro do footer
+                if ((e.target as HTMLElement).closest('button')) return;
+                openEdit(lesson);
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               
