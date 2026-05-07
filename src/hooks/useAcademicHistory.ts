@@ -48,7 +48,24 @@ export function useAcademicHistory() {
     queryKey: ["academic-history", profile?.id, season?.id],
     enabled: !!profile?.id && !!season?.id,
     queryFn: async (): Promise<HistoricoAcademico> => {
-      // 1. Fetch all quizzes for the class and season
+      // 0. Fetch comments
+      const { data: comments } = await supabase
+        .from("academic_comments")
+        .select(`
+          id,
+          content,
+          created_at,
+          sender:profiles!academic_comments_sender_id_fkey(display_name, first_name, last_name)
+        `)
+        .or(`recipient_id.eq.${profile!.id},type.eq.global_collective,and(type.eq.church_collective,church_id.eq.${profile!.church_id})`)
+        .order("created_at", { ascending: false });
+
+      const formattedComments = (comments ?? []).map((c: any) => ({
+        id: c.id,
+        comentario: c.content,
+        criadoEm: c.created_at,
+        professorNome: c.sender?.display_name || `${c.sender?.first_name ?? ""} ${c.sender?.last_name ?? ""}`.trim() || "Professor"
+      }));
       const { data: quizzes, error: quizzesError } = await supabase
         .from("quizzes")
         .select("*")
@@ -93,7 +110,8 @@ export function useAcademicHistory() {
             mediaFinal: 0,
             participacao: 0,
             frequencia: 0,
-            tempoTotalMs: 0
+            tempoTotalMs: 0,
+            comentariosProfessor: formattedComments
           });
         }
 

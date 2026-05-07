@@ -21,13 +21,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, ShieldOff, Search, Crown, EyeOff, Eye, Pencil } from "lucide-react";
+import { Shield, ShieldOff, Search, Crown, EyeOff, Eye, Pencil, MessageSquare } from "lucide-react";
 import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
 import { useRoles } from "@/hooks/useRoles";
 import { Navigate } from "react-router-dom";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { hideUserProfile, restoreUserProfile } from "@/lib/admin-delete";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { AdminCommentDialog } from "@/components/admin/AdminCommentDialog";
 
 interface ProfileRow {
   id: string;
@@ -61,6 +62,8 @@ export default function AdminUsers() {
   const [newChurchId, setNewChurchId] = useState<string>("");
   const [editTarget, setEditTarget] = useState<EditableMember | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [commentTarget, setCommentTarget] = useState<{ id: string; name: string } | null>(null);
+  const [commentOpen, setCommentOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -207,6 +210,17 @@ export default function AdminUsers() {
             <SelectItem value="superadmin">Superadmin ({counts.superadmin})</SelectItem>
           </SelectContent>
         </Select>
+        <Button 
+          variant="outline" 
+          className="gap-2 shrink-0"
+          onClick={() => {
+            setCommentTarget(null);
+            setCommentOpen(true);
+          }}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Comentário Global
+        </Button>
       </div>
       <Card>
         <Table>
@@ -260,6 +274,18 @@ export default function AdminUsers() {
                         Oculto
                       </Badge>
                     )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      onClick={() => {
+                        setCommentTarget({ id: r.id, name: `${r.first_name} ${r.last_name}` });
+                        setCommentOpen(true);
+                      }}
+                      title="Enviar comentário"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -371,6 +397,13 @@ export default function AdminUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminCommentDialog
+        open={commentOpen}
+        onOpenChange={setCommentOpen}
+        recipientId={commentTarget?.id}
+        recipientName={commentTarget?.name}
+      />
     </AdminPage>
   );
 }
