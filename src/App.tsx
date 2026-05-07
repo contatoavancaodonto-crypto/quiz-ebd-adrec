@@ -122,6 +122,15 @@ const App = () => (
               <Route path="/membro/configuracoes" element={<Configuracoes />} />
               <Route path="/membro/suporte" element={<Suporte />} />
               <Route 
+                path="/membro/loja" 
+                element={
+                  <EmBreve 
+                    title="Loja EBD" 
+                    description="Em breve você poderá adquirir materiais, revistas e outros recursos exclusivos para sua classe diretamente em nossa loja." 
+                  />
+                } 
+              />
+              <Route 
                 path="/membro/apoio-professor" 
                 element={
                   <EmBreve 
