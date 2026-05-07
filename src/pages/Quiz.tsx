@@ -45,6 +45,8 @@ const QuizPage = () => {
   const { playSound } = useSound();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [revealedCorrect, setRevealedCorrect] = useState<Record<string, string>>({});
+  const [correctnessByQ, setCorrectnessByQ] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
