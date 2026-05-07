@@ -74,9 +74,10 @@ const QuizPage = () => {
         let quizId = store.quizId;
 
         if (!store.isRetrying) {
+          const { data: { user } } = await supabase.auth.getUser();
           const { data: participant, error: pErr } = await supabase
             .from("participants")
-            .insert({ name: store.participantName, class_id: store.classId })
+            .insert({ name: store.participantName, class_id: store.classId, user_id: user?.id ?? null })
             .select("id")
             .single();
           if (pErr) throw pErr;
@@ -205,27 +206,14 @@ const QuizPage = () => {
         if (correctnessByQ[q.id]) score++;
       });
 
-      const totalTime = seconds;
       const totalMs = Math.round(ms);
-      const accuracy = (score / questions.length) * 100;
-      const finishedAt = new Date().toISOString();
 
       supabase
-        .from("quiz_attempts")
-        .update({
-          score,
-          accuracy_percentage: accuracy,
-          total_time_seconds: totalTime,
-          total_time_ms: totalMs,
-          finished_at: finishedAt,
+        .rpc("finalize_attempt", {
+          p_attempt_id: store.attemptId,
+          p_total_time_ms: totalMs,
         })
-        .eq("id", store.attemptId)
-        .then(async () => {
-          try {
-          } catch (err) {
-            console.error("Post-finish error:", err);
-          }
-
+        .then(() => {
           store.finishQuiz(score, totalMs);
           navigate("/result");
         });

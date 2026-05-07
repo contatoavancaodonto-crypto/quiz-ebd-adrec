@@ -736,6 +736,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          user_id: string | null
         }
         Insert: {
           active?: boolean
@@ -743,6 +744,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          user_id?: string | null
         }
         Update: {
           active?: boolean
@@ -750,6 +752,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2153,6 +2156,15 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      finalize_attempt: {
+        Args: { p_attempt_id: string; p_total_time_ms: number }
+        Returns: {
+          accuracy_percentage: number
+          score: number
+          total_questions: number
+          total_time_ms: number
+        }[]
       }
       get_attempt_gabarito: {
         Args: { p_attempt_id: string }
