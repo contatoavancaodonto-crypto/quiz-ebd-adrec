@@ -54,6 +54,43 @@ Deno.serve(async (req) => {
     )
   }
 
+  // In-function auth check: identify caller and gate by role.
+  // Service-role callers (server-side triggers) bypass these restrictions.
+  const authHeader = req.headers.get('Authorization') || ''
+  const jwt = authHeader.replace(/^Bearer\s+/i, '')
+  const authClient = createClient(supabaseUrl, supabaseServiceKey)
+  let callerEmail: string | null = null
+  let callerRole: 'service_role' | 'admin' | 'superadmin' | 'authenticated' | 'anon' = 'anon'
+  let callerId: string | null = null
+  if (jwt) {
+    const { data: claimsData } = await authClient.auth.getClaims(jwt)
+    const claims = claimsData?.claims as any
+    if (claims?.role === 'service_role') {
+      callerRole = 'service_role'
+    } else if (claims?.sub) {
+      callerId = claims.sub as string
+      callerEmail = (claims.email as string | undefined) ?? null
+      const { data: roles } = await authClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', callerId)
+      if ((roles ?? []).some((r: { role: string }) => r.role === 'superadmin')) {
+        callerRole = 'superadmin'
+      } else if ((roles ?? []).some((r: { role: string }) => r.role === 'admin')) {
+        callerRole = 'admin'
+      } else {
+        callerRole = 'authenticated'
+      }
+    }
+  }
+
+  if (callerRole === 'anon') {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   // Parse request body
   let templateName: string
   let recipientEmail: string
