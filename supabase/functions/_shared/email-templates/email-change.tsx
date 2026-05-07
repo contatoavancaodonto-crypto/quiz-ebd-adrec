@@ -22,7 +22,6 @@ export const EmailChangeEmail = ({ oldEmail, newEmail, confirmationUrl }: Props)
       <Container style={styles.container}>
         <Section style={styles.header}>
           <Text style={styles.brandTitle}>📖 {BRAND.name}</Text>
-          <span style={styles.brandBadge}>{BRAND.trimester}</span>
         </Section>
 
         <Section style={styles.body}>
