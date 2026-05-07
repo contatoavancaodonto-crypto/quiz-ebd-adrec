@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap, Heart } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,7 @@ const items: Array<{
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, prefetch: prefetchHarpa },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
   { title: "Suporte", url: "/membro/suporte", icon: LifeBuoy },
+  { title: "Apoiar Projeto", url: "/oferta", icon: Heart },
 ];
 
 export function MemberSidebar() {
