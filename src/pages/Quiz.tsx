@@ -217,37 +217,8 @@ const QuizPage = () => {
         .eq("id", store.attemptId)
         .then(async () => {
           try {
-            const { data: classRank } = await supabase
-              .from("ranking_by_class")
-              .select("position")
-              .eq("attempt_id", store.attemptId)
-              .maybeSingle();
-
-            const { data: generalRank } = await supabase
-              .from("ranking_general")
-              .select("position")
-              .eq("attempt_id", store.attemptId)
-              .maybeSingle();
-
-            await fetch("https://webhook.falaminhasmanas.shop/webhook/3b7c7b18-7b0b-4538-9139-6d26e7c47a43", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                event: "quiz_completed",
-                participantName: store.participantName,
-                classId: store.classId,
-                className: store.className,
-                score,
-                totalQuestions: questions.length,
-                accuracyPercentage: accuracy,
-                totalTimeSeconds: totalTime,
-                rankingClass: classRank?.position ?? null,
-                rankingGeneral: generalRank?.position ?? null,
-                timestamp: finishedAt,
-              }),
-            });
           } catch (err) {
-            console.error("Webhook error:", err);
+            console.error("Post-finish error:", err);
           }
 
           store.finishQuiz(score, totalMs);
