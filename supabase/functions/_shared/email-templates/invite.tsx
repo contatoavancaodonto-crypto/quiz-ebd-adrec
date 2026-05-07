@@ -2,50 +2,48 @@
 
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text,
+  Body, Button, Container, Head, Heading, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
+import { BRAND, styles } from './_brand.ts'
 
 interface Props { siteName: string; siteUrl: string; confirmationUrl: string }
 
-export const InviteEmail = ({ siteName, confirmationUrl }: Props) => (
+export const InviteEmail = ({ confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Você foi convidado(a) para o {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <Heading style={h1}>🎉 Você foi convidado(a)!</Heading>
+    <Preview>Você foi convidado(a) para o {BRAND.name}</Preview>
+    <Body style={styles.main}>
+      <Container style={styles.container}>
+        <Section style={styles.header}>
+          <Text style={styles.brandTitle}>📖 {BRAND.name}</Text>
+          <span style={styles.brandBadge}>{BRAND.trimester}</span>
         </Section>
-        <Text style={text}>Paz do Senhor! 🙏</Text>
-        <Text style={text}>
-          Você recebeu um convite para participar do <strong>{siteName}</strong>.
-          Aceite o convite e crie sua conta para começar:
-        </Text>
-        <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-          <Button href={confirmationUrl} style={button}>Aceitar convite</Button>
+
+        <Section style={styles.body}>
+          <Heading style={styles.h1}>🎉 Você foi convidado(a)!</Heading>
+          <Text style={styles.text}>Paz do Senhor! 🙏</Text>
+          <Text style={styles.text}>
+            Você recebeu um convite para participar do{' '}
+            <strong>{BRAND.name}</strong>. Aceite e crie sua conta para começar
+            a responder os quizzes da EBD:
+          </Text>
+          <Section style={{ textAlign: 'center', margin: '28px 0 8px' }}>
+            <Button href={confirmationUrl} style={styles.button}>
+              Aceitar convite
+            </Button>
+          </Section>
+          <Text style={styles.small}>
+            Se você não esperava este convite, pode ignorar este e-mail.
+          </Text>
         </Section>
-        <Hr style={hr} />
-        <Text style={footer}>
-          Se você não esperava este convite, pode ignorar este e-mail.<br />
-          <strong>{siteName}</strong>
-        </Text>
+
+        <Section style={styles.footer}>
+          <Text style={styles.footerText}>Enviado por</Text>
+          <Text style={styles.footerBrand}>{BRAND.name} · {BRAND.church}</Text>
+        </Section>
       </Container>
     </Body>
   </Html>
 )
 
 export default InviteEmail
-
-const PRIMARY = '#4CC9E0'
-const DARK = '#05070D'
-const main = { backgroundColor: '#ffffff', fontFamily: 'Inter, Arial, sans-serif' }
-const container = { padding: '24px', maxWidth: '560px', margin: '0 auto' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: DARK, margin: '0' }
-const text = { fontSize: '15px', color: '#374151', lineHeight: '1.6', margin: '0 0 16px' }
-const button = {
-  backgroundColor: PRIMARY, color: '#ffffff', padding: '14px 32px',
-  borderRadius: '10px', fontSize: '16px', fontWeight: 'bold' as const,
-  textDecoration: 'none', display: 'inline-block',
-}
-const hr = { borderColor: '#E5E7EB', margin: '32px 0 20px' }
-const footer = { fontSize: '12px', color: '#9CA3AF', textAlign: 'center' as const, margin: '0', lineHeight: '1.6' }
