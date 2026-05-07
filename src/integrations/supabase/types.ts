@@ -14,6 +14,61 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_comments: {
+        Row: {
+          church_id: string | null
+          content: string
+          created_at: string
+          id: string
+          recipient_id: string | null
+          sender_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          church_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          recipient_id?: string | null
+          sender_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          recipient_id?: string | null
+          sender_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_comments_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_comments_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_by_class"
+            referencedColumns: ["church_id"]
+          },
+          {
+            foreignKeyName: "academic_comments_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_general"
+            referencedColumns: ["church_id"]
+          },
+        ]
+      }
       answers: {
         Row: {
           answered_at: string
