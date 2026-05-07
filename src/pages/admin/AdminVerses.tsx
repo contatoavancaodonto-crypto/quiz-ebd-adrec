@@ -263,7 +263,7 @@ export default function AdminVerses() {
               
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start mb-2">
-                  <Badge variant="outline" className="bg-white/5 border-white/10 text-primary-foreground/70">
+                  <Badge variant="outline" className="bg-white/5 border-white/10 text-white">
                     Lição {lesson.lesson_number} • {lesson.trimester}º TRI
                   </Badge>
                   {lesson.status === 'completo' ? (
