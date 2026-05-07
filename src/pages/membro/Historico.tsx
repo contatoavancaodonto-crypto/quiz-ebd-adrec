@@ -1,144 +1,157 @@
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { Loader2, FileSearch, Trophy, Calendar, Clock, ChevronRight, History as HistoryIcon } from "lucide-react";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { 
+  Loader2, 
+  Trophy, 
+  Calendar, 
+  Clock, 
+  TrendingUp, 
+  BookOpen, 
+  CheckCircle2, 
+  AlertCircle,
+  BarChart3
+} from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
-import { PageHero } from "@/components/ui/page-hero";
-import { useFullProfile } from "@/hooks/useFullProfile";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+
+// Mock Data structure
+const mockData = {
+  membroNome: "João Silva",
+  turmaAtual: "Turma A",
+  anos: [
+    {
+      ano: 2025,
+      trimestres: [
+        {
+          trimestre: "1º TRI",
+          mediaSemanal: 8.7,
+          mediaFinal: 8.5,
+          participacao: 92,
+          frequencia: 87,
+          ranking: 5,
+          semanas: [
+            { semana: 1, licao: 1, tema: "Introdução à Fé", nota: 8.5, status: "concluido" },
+            { semana: 2, licao: 2, tema: "O Amor de Deus", nota: 9.0, status: "concluido" },
+            { semana: 3, licao: 3, tema: "A Graça", nota: 8.0, status: "em_analise" },
+          ],
+          provaFinal: { nota: 8.2, peso: 0.3, status: "concluido" },
+          comentariosProfessor: [{ id: "1", comentario: "Excelente evolução nas últimas semanas.", criadoEm: "2025-03-01" }]
+        }
+      ]
+    }
+  ]
+};
+
+const chartData = [
+  { name: "Sem 1", nota: 6.5 },
+  { name: "Sem 2", nota: 7.3 },
+  { name: "Sem 3", nota: 8.0 },
+  { name: "Sem 4", nota: 8.8 },
+  { name: "Sem 5", nota: 8.5 },
+];
 
 export default function Historico() {
-  const { data: profile } = useFullProfile();
-  const navigate = useNavigate();
-  const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim().toLowerCase();
-
-  const { data: history, isLoading } = useQuery({
-    queryKey: ["my-history", fullName, profile?.church_id],
-    enabled: !!fullName,
-    queryFn: async () => {
-      const { data: attempts } = await supabase
-        .from("quiz_attempts")
-        .select("id, score, total_time_ms, finished_at, season_id, participant:participants(name), seasons(name, status)")
-        .not("finished_at", "is", null)
-        .order("finished_at", { ascending: false });
-
-      const mine = (attempts ?? []).filter(
-        (a: any) => (a.participant?.name ?? "").toLowerCase() === fullName
-      );
-
-      const enriched = await Promise.all(
-        mine.map(async (a: any) => {
-          const { data: g } = await supabase
-            .from("ranking_general")
-            .select("position")
-            .eq("attempt_id", a.id)
-            .maybeSingle();
-
-          let churchPos: number | null = null;
-          if (profile?.church_id) {
-            const { data: rows } = await supabase
-              .from("ranking_general")
-              .select("position, attempt_id, church_id")
-              .eq("church_id", profile.church_id)
-              .order("position", { ascending: true });
-            const idx = (rows ?? []).findIndex((r: any) => r.attempt_id === a.id);
-            if (idx >= 0) churchPos = idx + 1;
-          }
-
-          return {
-            ...a,
-            generalPosition: g?.position ?? null,
-            churchPosition: churchPos,
-          };
-        })
-      );
-
-      return enriched;
-    },
-  });
+  const [ano, setAno] = useState("2025");
+  const [tri, setTri] = useState("1º TRI");
 
   return (
-    <MemberLayout
-      title="Histórico"
-      mobileHeader={{ variant: "back", title: "Histórico", subtitle: "Suas tentativas concluídas", backTo: "/" }}
-    >
-      <PageShell contentClassName="pb-4">
-        <PageHero
-          eyebrow="Suas tentativas"
-          title={
-            isLoading
-              ? "—"
-              : `${history?.length ?? 0} ${(history?.length ?? 0) === 1 ? "quiz concluído" : "quizzes concluídos"}`
-          }
-          description="Veja seu gabarito e posição em cada tentativa."
-          Icon={HistoryIcon}
-          variant="emerald"
-        />
+    <MemberLayout title="Boletim Acadêmico" mobileHeader={{ title: "Boletim", backTo: "/" }}>
+      <PageShell contentClassName="pb-12 space-y-8">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Boletim Acadêmico</h1>
+          <p className="text-muted-foreground">Acompanhe seu desempenho, evolução e histórico de atividades.</p>
+        </div>
 
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="animate-spin text-primary" />
-          </div>
-        ) : !history || history.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
-              <HistoryIcon className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Nada por aqui ainda</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Complete um quiz pra ele aparecer aqui.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {history.map((h: any, i: number) => (
-              <motion.button
-                key={h.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                onClick={() => navigate(`/gabarito?attempt=${h.id}`)}
-                className="w-full text-left rounded-2xl bg-card border border-border p-4 active:scale-[0.99] transition-all hover:border-primary/40 hover:shadow-md flex items-center gap-3"
-              >
-                <div className="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/15 to-secondary/15 border border-primary/20 flex flex-col items-center justify-center">
-                  <span className="text-lg font-display font-extrabold text-primary leading-none">
-                    {h.score}
-                  </span>
-                  <span className="text-[8px] uppercase tracking-wide text-muted-foreground font-bold">pts</span>
-                </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard title="Média Geral" value="8.7" icon={Trophy} />
+          <StatCard title="Participação" value="92%" subtitle="11 de 12 semanas" icon={BookOpen} />
+          <StatCard title="Frequência" value="87%" icon={Clock} />
+          <StatCard title="Ranking" value="Top 5" icon={Trophy} />
+        </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground truncate">
-                    {h.seasons?.name ?? "Temporada"}
-                  </p>
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(h.finished_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {h.generalPosition && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                        <Trophy className="w-2.5 h-2.5" /> Geral #{h.generalPosition}
-                      </span>
-                    )}
-                    {h.churchPosition && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/20">
-                        Igreja #{h.churchPosition}
-                      </span>
-                    )}
-                  </div>
-                </div>
+        {/* Filters */}
+        <div className="flex gap-4">
+          <Select value={ano} onValueChange={setAno}>
+            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent>
+          </Select>
+          <Select value={tri} onValueChange={setTri}>
+            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="1º TRI">1º TRI</SelectItem></SelectContent>
+          </Select>
+        </div>
 
-                <div className="shrink-0 flex items-center gap-1 text-muted-foreground">
-                  <FileSearch className="w-4 h-4" />
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </motion.button>
-            ))}
+        {/* Performance Chart */}
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <CardTitle className="text-sm font-medium mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" /> Evolução de Notas
+          </CardTitle>
+          <div className="h-[200px]">
+            <ChartContainer config={{ nota: { label: "Nota", color: "hsl(var(--primary))" } }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="nota" stroke="var(--color-nota)" strokeWidth={2} dot={{ fill: "var(--color-nota)" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
-        )}
+        </Card>
+
+        {/* Table */}
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Semana</TableHead>
+                <TableHead>Lição</TableHead>
+                <TableHead>Tema</TableHead>
+                <TableHead>Nota</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockData.anos[0].trimestres[0].semanas.map((s) => (
+                <TableRow key={s.semana}>
+                  <TableCell>{s.semana}</TableCell>
+                  <TableCell>{s.licao}</TableCell>
+                  <TableCell>{s.tema}</TableCell>
+                  <TableCell>{s.nota}</TableCell>
+                  <TableCell>
+                    <Badge variant={s.status === 'concluido' ? 'default' : 'secondary'}>{s.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       </PageShell>
     </MemberLayout>
+  );
+}
+
+function StatCard({ title, value, subtitle, icon: Icon }: any) {
+  return (
+    <Card className="p-4 bg-card/50 border-border/50">
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">{title}</p>
+          <h3 className="text-2xl font-bold mt-1">{value}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        </div>
+        <Icon className="w-5 h-5 text-primary opacity-70" />
+      </div>
+    </Card>
   );
 }
