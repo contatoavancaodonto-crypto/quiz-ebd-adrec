@@ -498,6 +498,45 @@ export default function Historico() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Comentários do Professor */}
+            {currentTri?.comentariosProfessor && currentTri.comentariosProfessor.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-display font-bold">Feedback do Professor</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {currentTri.comentariosProfessor.map((com: any) => (
+                    <Card key={com.id} className="border-primary/10 bg-primary/5 backdrop-blur-sm">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                              {com.professorNome?.charAt(0) || "P"}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold">{com.professorNome}</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {new Date(com.criadoEm).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed italic">
+                          "{com.comentario}"
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </>
         )}
       </PageShell>
