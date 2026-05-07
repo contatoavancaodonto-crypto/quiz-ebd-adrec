@@ -23,7 +23,6 @@ interface Question {
   option_b: string;
   option_c: string;
   option_d: string;
-  correct_option: string;
   order_index: number;
 }
 
