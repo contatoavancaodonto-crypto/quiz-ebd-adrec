@@ -378,7 +378,7 @@ export default function Historico() {
                               </div>
                               <div>
                                 <p className="text-xs font-bold text-primary uppercase tracking-tight">Provão Final do Trimestre</p>
-                                <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.weight * 100) || 40}% na média final</p>
+                                <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round((currentTri.provaFinal as any).weight * 100) || 40}% na média final</p>
                               </div>
                             </div>
                           </TableCell>
@@ -394,7 +394,7 @@ export default function Historico() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
-                            {currentTri.provaFinal.observation || "Avaliação final acumulativa."}
+                            {(currentTri.provaFinal as any).observation || "Avaliação final acumulativa."}
                           </TableCell>
                         </TableRow>
                       )}
@@ -476,7 +476,7 @@ export default function Historico() {
 
                         <div className="flex items-end justify-between gap-4">
                           <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.weight * 100) || 40}% na média</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round((currentTri.provaFinal as any).weight * 100) || 40}% na média</p>
                             <Badge className={cn(
                               "rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-none",
                               currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"

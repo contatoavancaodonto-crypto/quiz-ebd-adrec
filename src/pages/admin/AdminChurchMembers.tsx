@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { UsersRound } from "lucide-react";
+import { UsersRound, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { Search, Shield, ShieldOff, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
 import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
+import { AdminCommentDialog } from "@/components/admin/AdminCommentDialog";
 
 interface Member {
   id: string;
@@ -42,6 +43,8 @@ export default function AdminChurchMembers() {
   const [q, setQ] = useState("");
   const [editTarget, setEditTarget] = useState<EditableMember | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [commentTarget, setCommentTarget] = useState<{ id: string; name: string } | null>(null);
+  const [commentOpen, setCommentOpen] = useState(false);
 
   const load = async () => {
     if (!churchId) return;
@@ -140,14 +143,27 @@ export default function AdminChurchMembers() {
       variant="primary"
     >
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Buscar por nome ou email…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Buscar por nome ou email…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <Button 
+          variant="outline" 
+          className="gap-2"
+          onClick={() => {
+            setCommentTarget(null);
+            setCommentOpen(true);
+          }}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Comunicado Coletivo
+        </Button>
       </div>
 
       <Card>
@@ -203,6 +219,18 @@ export default function AdminChurchMembers() {
                   <TableCell className="text-right space-x-2">
                     <Button
                       size="sm"
+                      variant="ghost"
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      onClick={() => {
+                        setCommentTarget({ id: m.id, name: `${m.first_name} ${m.last_name}` });
+                        setCommentOpen(true);
+                      }}
+                      title="Enviar comentário"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => {
                         setEditTarget({
@@ -241,6 +269,13 @@ export default function AdminChurchMembers() {
         member={editTarget}
         allowChurchEdit={false}
         onSaved={load}
+      />
+
+      <AdminCommentDialog
+        open={commentOpen}
+        onOpenChange={setCommentOpen}
+        recipientId={commentTarget?.id}
+        recipientName={commentTarget?.name}
       />
     </AdminPage>
   );
