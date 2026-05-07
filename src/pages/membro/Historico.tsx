@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Search,
   Filter,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -25,89 +26,11 @@ import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import { useFullProfile } from "@/hooks/useFullProfile";
+import { useAcademicHistory } from "@/hooks/useAcademicHistory";
 import { cn } from "@/lib/utils";
 
 // Types
 type Status = 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
-
-interface NotaSemanal {
-  semana: number;
-  licao: number;
-  tema: string;
-  nota?: number;
-  status: Status;
-  observacao?: string;
-}
-
-interface ProvaoFinal {
-  nota?: number;
-  peso: number;
-  status: 'concluido' | 'pendente' | 'nao_realizado';
-  observacao?: string;
-}
-
-interface ComentarioProfessor {
-  id: string;
-  comentario: string;
-  criadoEm: string;
-  professorNome?: string;
-}
-
-interface TrimestreAcademico {
-  trimestre: '1º TRI' | '2º TRI' | '3º TRI' | '4º TRI';
-  semanas: NotaSemanal[];
-  provaFinal?: ProvaoFinal;
-  ranking?: number;
-  comentariosProfessor?: ComentarioProfessor[];
-}
-
-interface AnoAcademico {
-  ano: number;
-  trimestres: TrimestreAcademico[];
-}
-
-interface HistoricoAcademico {
-  membroId: string;
-  membroNome: string;
-  turmaAtual?: string;
-  anos: AnoAcademico[];
-}
-
-// Mock Data
-const ACADEMIC_HISTORY: HistoricoAcademico = {
-  membroId: "user-123",
-  membroNome: "João Silva",
-  turmaAtual: "Turma Alpha - 2025",
-  anos: [
-    {
-      ano: 2025,
-      trimestres: [
-        {
-          trimestre: "1º TRI",
-          ranking: 3,
-          semanas: [
-            { semana: 1, licao: 1, tema: "Introdução à Teologia", nota: 8.5, status: "concluido", observacao: "Excelente participação." },
-            { semana: 2, licao: 2, tema: "História da Igreja", nota: 7.0, status: "concluido" },
-            { semana: 3, licao: 3, tema: "Doutrinas Bíblicas", nota: 9.5, status: "concluido", observacao: "Nota máxima no quiz!" },
-            { semana: 4, licao: 4, tema: "Epístolas Paulinas", nota: 8.0, status: "concluido" },
-            { semana: 5, licao: 5, tema: "Evangelhos Sinóticos", nota: 8.8, status: "em_analise" },
-            { semana: 6, licao: 6, tema: "Antigo Testamento", status: "pendente" },
-          ],
-          provaFinal: {
-            nota: 8.2,
-            peso: 0.3,
-            status: "concluido",
-            observacao: "Avaliação final do trimestre."
-          },
-          comentariosProfessor: [
-            { id: "c1", comentario: "O aluno demonstrou grande evolução na compreensão das doutrinas básicas.", criadoEm: "2025-03-15", professorNome: "Prof. Marcos" },
-            { id: "c2", comentario: "Continue focado nas leituras complementares.", criadoEm: "2025-03-20", professorNome: "Prof. Marcos" }
-          ]
-        }
-      ]
-    }
-  ]
-};
 
 const statusMap: Record<Status, { label: string; color: string }> = {
   concluido: { label: "Concluído", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
@@ -116,40 +39,39 @@ const statusMap: Record<Status, { label: string; color: string }> = {
   em_analise: { label: "Em análise", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
 };
 
+const formatTime = (ms: number) => {
+  if (!ms) return "0m";
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = (minutes / 60).toFixed(1);
+  return `${hours}h`;
+};
+
 export default function Historico() {
   const { data: profile } = useFullProfile();
+  const { data: academicData, isLoading } = useAcademicHistory();
   const [selectedAno, setSelectedAno] = useState("2025");
   const [selectedTri, setSelectedTri] = useState("1º TRI");
 
-  const currentAno = ACADEMIC_HISTORY.anos.find(a => a.ano.toString() === selectedAno);
-  const currentTri = currentAno?.trimestres.find(t => t.trimestre === selectedTri);
+  const currentTri = useMemo(() => {
+    if (!academicData) return null;
+    return academicData.trimestres.find(t => t.trimestre === selectedTri) || academicData.trimestres[0];
+  }, [academicData, selectedTri]);
 
   const stats = useMemo(() => {
     if (!currentTri) return null;
 
-    const notas = currentTri.semanas.filter(s => s.nota !== undefined).map(s => s.nota as number);
-    const mediaSemanal = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
-    
-    const concluidas = currentTri.semanas.filter(s => s.status === 'concluido').length;
-    const totalSemanas = currentTri.semanas.length;
-    const participacao = totalSemanas > 0 ? (concluidas / totalSemanas) * 100 : 0;
-    
-    const frequencia = 87; 
-
-    const notaFinal = currentTri.provaFinal?.nota 
-      ? (mediaSemanal * 0.7) + (currentTri.provaFinal.nota * 0.3)
-      : mediaSemanal;
-
     return {
-      mediaSemanal: mediaSemanal.toFixed(1),
-      mediaFinal: notaFinal.toFixed(1),
-      participacao: Math.round(participacao),
-      concluidas,
-      totalSemanas,
-      frequencia,
+      mediaSemanal: currentTri.mediaSemanal.toFixed(1),
+      mediaFinal: currentTri.mediaFinal.toFixed(1),
+      participacao: Math.round(currentTri.participacao),
+      concluidas: currentTri.semanas.filter(s => s.status === 'concluido').length,
+      totalSemanas: currentTri.semanas.length,
+      frequencia: Math.round(currentTri.frequencia),
       ranking: currentTri.ranking,
       provaFinalNota: currentTri.provaFinal?.nota?.toFixed(1) || "—",
-      provaFinalStatus: currentTri.provaFinal?.status || "pendente"
+      provaFinalStatus: currentTri.provaFinal?.status || "pendente",
+      tempoTotal: formatTime(currentTri.tempoTotalMs)
     };
   }, [currentTri]);
 
@@ -191,19 +113,29 @@ export default function Historico() {
             <div>
               <p className="text-sm font-bold leading-none">{profile?.first_name} {profile?.last_name}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 font-medium">
-                {ACADEMIC_HISTORY.turmaAtual}
+                {academicData?.turmaAtual || "Carregando..."}
               </p>
             </div>
           </div>
         </motion.div>
 
-        {/* Filtros */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit"
-        >
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-sm text-muted-foreground animate-pulse">Sincronizando dados acadêmicos...</p>
+          </div>
+        )}
+
+        {!isLoading && (
+          <>
+            {/* Filtros */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit"
+            >
           <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
             <Filter className="w-3.5 h-3.5" />
             Filtrar por:
@@ -254,6 +186,7 @@ export default function Historico() {
             value={`${stats?.frequencia || 0}%`} 
             icon={Clock} 
             color="purple"
+            description={`Tempo total: ${stats?.tempoTotal || "0m"}`}
             delay={0.3}
           />
           <StatCard 
@@ -269,7 +202,7 @@ export default function Historico() {
             value={stats?.ranking ? `#${stats.ranking}` : "—"} 
             icon={Trophy} 
             color="rose"
-            description="Top da turma"
+            description="Posição na turma"
             delay={0.5}
           />
         </div>
@@ -468,6 +401,8 @@ export default function Historico() {
             </Table>
           </div>
         </motion.div>
+          </>
+        )}
       </PageShell>
     </MemberLayout>
   );
