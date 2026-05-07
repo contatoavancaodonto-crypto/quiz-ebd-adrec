@@ -113,19 +113,29 @@ export default function Historico() {
             <div>
               <p className="text-sm font-bold leading-none">{profile?.first_name} {profile?.last_name}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 font-medium">
-                {ACADEMIC_HISTORY.turmaAtual}
+                {academicData?.turmaAtual || "Carregando..."}
               </p>
             </div>
           </div>
         </motion.div>
 
-        {/* Filtros */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit"
-        >
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-sm text-muted-foreground animate-pulse">Sincronizando dados acadêmicos...</p>
+          </div>
+        )}
+
+        {!isLoading && (
+          <>
+            {/* Filtros */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit"
+            >
           <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
             <Filter className="w-3.5 h-3.5" />
             Filtrar por:
