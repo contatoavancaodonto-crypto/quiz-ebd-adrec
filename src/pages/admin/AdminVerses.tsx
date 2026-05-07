@@ -133,10 +133,16 @@ export default function AdminVerses() {
 
     setSaving(true);
     
-    // Status validation
-    const has7Verses = Object.values(form.verses).every(v => v.referencia.trim() !== "" && v.texto.trim() !== "");
-    const hasQuestions = form.questions.length > 0;
-    const status = (form.theme && has7Verses && hasQuestions) ? 'completo' : 'incompleto';
+    // Status validation logic
+    const allDays = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
+    const hasDailyVerses = allDays.every(day => {
+      const v = form.verses[day as keyof typeof DEFAULT_VERSES];
+      return v && v.referencia?.trim() && v.texto?.trim();
+    });
+    const hasQuestions = form.questions && form.questions.length > 0;
+    const isThemeValid = !!form.theme?.trim();
+
+    const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
     const payload = { ...form, status };
 
