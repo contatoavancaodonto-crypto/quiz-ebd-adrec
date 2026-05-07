@@ -23,6 +23,8 @@ import {
 import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+// ... keep existing code
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -86,7 +88,7 @@ const WeeklyLessonsList = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2].map((i) => (
-          <div key={i} className="h-48 rounded-3xl bg-muted animate-pulse" />
+          <Skeleton key={i} className="h-48 rounded-3xl" />
         ))}
       </div>
     );
@@ -109,6 +111,27 @@ const WeeklyLessonsList = () => {
   );
 };
 
+const WeeklyQuizCardSkeleton = () => (
+  <section className="space-y-2">
+    <SectionLabel color="primary" label="Quiz da semana" />
+    <div className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5 space-y-4">
+      <div className="flex items-start gap-3">
+        <Skeleton className="shrink-0 w-12 h-12 rounded-2xl" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </div>
+      <Skeleton className="h-16 w-full rounded-2xl" />
+      <div className="flex items-center gap-3">
+        <Skeleton className="flex-1 h-12 rounded-xl" />
+        <Skeleton className="w-28 h-12 rounded-xl" />
+      </div>
+    </div>
+  </section>
+);
+
 const Index = () => {
 
   const navigate = useNavigate();
@@ -120,8 +143,8 @@ const Index = () => {
   const seasonExpired = !!season && seasonCountdown.expired;
 
   const userClassId = profile?.class_id ?? null;
-  const { data: weeklyQuiz } = useWeeklyQuiz(userClassId);
-  const { data: nextQuiz } = useNextScheduledQuiz(userClassId);
+  const { data: weeklyQuiz, isLoading: isLoadingWeeklyQuiz } = useWeeklyQuiz(userClassId);
+  const { data: nextQuiz, isLoading: isLoadingNextQuiz } = useNextScheduledQuiz(userClassId);
   const { data: provao } = useTrimestralProvao(userClassId, season?.id);
 
   const fullName = profile
@@ -130,8 +153,14 @@ const Index = () => {
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
   const weekClose = useCountdown(weeklyQuiz?.closes_at);
   const nextOpen = useCountdown(nextQuiz?.opens_at);
-  const { data: currentLesson } = useCurrentLesson();
-  const { data: nextLesson } = useNextLesson();
+  const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
+  const { data: nextLesson, isLoading: isLoadingNextLesson } = useNextLesson();
+
+  const isQuizLoading =
+    isLoadingWeeklyQuiz ||
+    isLoadingNextQuiz ||
+    isLoadingCurrentLesson ||
+    isLoadingNextLesson;
 
   const showProvao = useMemo(() => {
     if (!provao || !season?.end_date) return false;
@@ -320,7 +349,9 @@ const Index = () => {
           </section>
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
-          {weeklyQuiz && !seasonExpired ? (
+          {isQuizLoading ? (
+            <WeeklyQuizCardSkeleton />
+          ) : weeklyQuiz && !seasonExpired ? (
             <section id="quiz-semanal-section" className="space-y-2">
               <SectionLabel color="primary" label="Quiz da semana" />
 
