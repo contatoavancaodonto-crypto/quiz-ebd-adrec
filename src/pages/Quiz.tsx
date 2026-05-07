@@ -137,7 +137,11 @@ const QuizPage = () => {
         
         store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-        const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId).eq("active", true);
+        const { data: allQs, error: qsErr } = await supabase
+          .from("questions")
+          .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+          .eq("quiz_id", quizId)
+          .eq("active", true);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
