@@ -134,7 +134,6 @@ export default function Historico() {
     const totalSemanas = currentTri.semanas.length;
     const participacao = totalSemanas > 0 ? (concluidas / totalSemanas) * 100 : 0;
     
-    // Frequência mock para o exemplo
     const frequencia = 87; 
 
     const notaFinal = currentTri.provaFinal?.nota 
@@ -169,9 +168,13 @@ export default function Historico() {
       title="Boletim Acadêmico" 
       mobileHeader={{ variant: "back", title: "Boletim Acadêmico", backTo: "/" }}
     >
-      <PageShell contentClassName="pb-20 space-y-8 animate-in fade-in duration-700">
+      <PageShell contentClassName="pb-20 space-y-8">
         {/* Cabeçalho Profissional */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
           <div className="space-y-1">
             <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Boletim Acadêmico
@@ -192,10 +195,15 @@ export default function Historico() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Filtros */}
-        <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-2xl w-fit"
+        >
           <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
             <Filter className="w-3.5 h-3.5" />
             Filtrar por:
@@ -221,7 +229,7 @@ export default function Historico() {
               <SelectItem value="Todos">Todos</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </motion.div>
 
         {/* Cards Superiores de Resumo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -231,6 +239,7 @@ export default function Historico() {
             icon={TrendingUp} 
             color="emerald"
             description={`Semanal: ${stats?.mediaSemanal}`}
+            delay={0.1}
           />
           <StatCard 
             label="Participação" 
@@ -238,12 +247,14 @@ export default function Historico() {
             icon={BookOpen} 
             color="blue"
             description={`${stats?.concluidas} de ${stats?.totalSemanas} lições`}
+            delay={0.2}
           />
           <StatCard 
             label="Frequência" 
             value={`${stats?.frequencia || 0}%`} 
             icon={Clock} 
             color="purple"
+            delay={0.3}
           />
           <StatCard 
             label="Provão Final" 
@@ -251,6 +262,7 @@ export default function Historico() {
             icon={GraduationCap} 
             color="amber"
             description={stats?.provaFinalStatus === 'concluido' ? 'Concluído' : 'Pendente'}
+            delay={0.4}
           />
           <StatCard 
             label="Ranking" 
@@ -258,108 +270,130 @@ export default function Historico() {
             icon={Trophy} 
             color="rose"
             description="Top da turma"
+            delay={0.5}
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Gráfico de Evolução */}
-          <Card className="lg:col-span-2 border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden">
-            <div className="p-6 pb-2">
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-primary" />
-                Evolução de Desempenho
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">Sua trajetória de notas ao longo das semanas.</p>
-            </div>
-            <div className="h-[280px] w-full p-4 pr-8">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
-                    domain={[0, 10]}
-                  />
-                  <Tooltip 
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-background/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{payload[0].payload.name}</p>
-                            <p className="text-sm font-bold text-primary">Nota: {payload[0].value}</p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="nota" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3} 
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4, stroke: 'hsl(var(--background))' }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="lg:col-span-2"
+          >
+            <Card className="border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden h-full">
+              <div className="p-6 pb-2">
+                <h3 className="text-sm font-bold flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  Evolução de Desempenho
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">Sua trajetória de notas ao longo das semanas.</p>
+              </div>
+              <div className="h-[280px] w-full p-4 pr-8">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                      domain={[0, 10]}
+                    />
+                    <Tooltip 
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{payload[0].payload.name}</p>
+                              <p className="text-sm font-bold text-primary">Nota: {payload[0].value}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="nota" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={3} 
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4, stroke: 'hsl(var(--background))' }}
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </motion.div>
 
           {/* Comentários do Professor */}
-          <Card className="border-border/50 bg-card/30 backdrop-blur-sm">
-            <div className="p-6 pb-2">
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Comentários Pedagógicos
-              </h3>
-            </div>
-            <div className="p-6 space-y-4">
-              {currentTri?.comentariosProfessor?.map((c) => (
-                <div key={c.id} className="relative pl-4 border-l-2 border-primary/20 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-primary uppercase">{c.professorNome || 'Professor'}</span>
-                    <span className="text-[10px] text-muted-foreground">{new Date(c.criadoEm).toLocaleDateString()}</span>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Card className="border-border/50 bg-card/30 backdrop-blur-sm h-full">
+              <div className="p-6 pb-2">
+                <h3 className="text-sm font-bold flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Comentários Pedagógicos
+                </h3>
+              </div>
+              <div className="p-6 space-y-4">
+                {currentTri?.comentariosProfessor?.map((c) => (
+                  <div key={c.id} className="relative pl-4 border-l-2 border-primary/20 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-primary uppercase">{c.professorNome || 'Professor'}</span>
+                      <span className="text-[10px] text-muted-foreground">{new Date(c.criadoEm).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-xs text-foreground/80 leading-relaxed italic">
+                      "{c.comentario}"
+                    </p>
                   </div>
-                  <p className="text-xs text-foreground/80 leading-relaxed italic">
-                    "{c.comentario}"
-                  </p>
-                </div>
-              ))}
-              {!currentTri?.comentariosProfessor?.length && (
-                <p className="text-xs text-muted-foreground text-center py-8">Nenhum comentário por enquanto.</p>
-              )}
-            </div>
-          </Card>
+                ))}
+                {!currentTri?.comentariosProfessor?.length && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <MessageSquare className="w-8 h-8 text-muted-foreground/20 mb-2" />
+                    <p className="text-xs text-muted-foreground">Nenhum comentário por enquanto.</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Tabela Principal */}
-        <div className="space-y-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="space-y-4"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" />
               Detalhamento por Trimestre
             </h2>
-            <Badge variant="outline" className="rounded-full px-3 font-bold border-primary/20 text-primary">
+            <Badge variant="outline" className="rounded-full px-3 font-bold border-primary/20 text-primary bg-primary/5">
               {selectedTri}
             </Badge>
           </div>
 
-          <div className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden overflow-x-auto">
+          <div className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden overflow-x-auto shadow-sm">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="border-border/50 hover:bg-transparent">
@@ -410,7 +444,7 @@ export default function Historico() {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-primary uppercase tracking-tight">Provão Final do Trimestre</p>
-                          <p className="text-[10px] text-muted-foreground">Peso: {Math.round(currentTri.provaFinal.peso * 100)}% na média final</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">Peso: {Math.round(currentTri.provaFinal.peso * 100)}% na média final</p>
                         </div>
                       </div>
                     </TableCell>
@@ -433,13 +467,13 @@ export default function Historico() {
               </TableBody>
             </Table>
           </div>
-        </div>
+        </motion.div>
       </PageShell>
     </MemberLayout>
   );
 }
 
-function StatCard({ label, value, icon: Icon, color, description }: any) {
+function StatCard({ label, value, icon: Icon, color, description, delay = 0 }: any) {
   const colors: any = {
     emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-500 border-emerald-500/20",
     blue: "from-blue-500/20 to-blue-500/5 text-blue-500 border-blue-500/20",
@@ -450,6 +484,9 @@ function StatCard({ label, value, icon: Icon, color, description }: any) {
 
   return (
     <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
       whileHover={{ y: -4 }}
       className={cn(
         "relative group p-5 rounded-3xl bg-gradient-to-br border backdrop-blur-sm overflow-hidden",
@@ -471,7 +508,6 @@ function StatCard({ label, value, icon: Icon, color, description }: any) {
         </div>
       </div>
       
-      {/* Decorative Glow */}
       <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-current opacity-[0.03] blur-2xl group-hover:opacity-10 transition-opacity rounded-full" />
     </motion.div>
   );
