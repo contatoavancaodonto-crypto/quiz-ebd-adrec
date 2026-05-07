@@ -30,7 +30,7 @@ const items: Array<{
   { title: "Meu Perfil", url: "/membro/perfil", icon: User },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
-  { title: "Histórico", url: "/membro/historico", icon: History },
+  { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
