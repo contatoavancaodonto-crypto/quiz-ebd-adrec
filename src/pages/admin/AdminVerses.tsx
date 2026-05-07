@@ -165,13 +165,18 @@ export default function AdminVerses() {
   };
 
   const deleteLesson = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+    
     if (!confirm("Tem certeza que deseja apagar esta lição?")) return;
-    const { error } = await supabase.from("lessons").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
+    
+    try {
+      const { error } = await supabase.from("lessons").delete().eq("id", id);
+      if (error) throw error;
       toast.success("Lição removida");
-      load();
+      await load();
+    } catch (err: any) {
+      toast.error(err.message);
     }
   };
 
