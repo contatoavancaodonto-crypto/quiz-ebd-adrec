@@ -46,17 +46,32 @@ const isSameDay = (a: Date, b: Date) =>
 const parseBibleReference = (reference: string | null) => {
   if (!reference) return null;
 
-  const ref = reference.trim().replace(/\s+/g, " ");
-  const match = ref.match(/^(.*?)\s+(\d+)(?:[.:](\d+))?$/);
+  // Normalização básica: remove espaços extras e substitui dois pontos por ponto
+  const ref = reference.trim().replace(/\s+/g, " ").replace(/:/g, ".");
+  
+  // Regex para capturar: Livro (pode ter número no início) + Espaço + Capítulo + Versículo(s) opcional
+  // Exemplo: "João 3.16" -> match[1]: "João", match[2]: "3", match[3]: "16"
+  // Exemplo: "1 João 5" -> match[1]: "1 João", match[2]: "5", match[3]: undefined
+  const match = ref.match(/^(.*?)\s+(\d+)(?:\.([\d\s,.-]+))?$/);
 
   if (!match) return null;
 
-  const [, book, chapter, verse] = match;
+  const [, book, chapter, verseContent] = match;
+
+  // Se houver versículos, pegamos apenas o primeiro para o redirecionamento (âncora)
+  let firstVerse = null;
+  if (verseContent) {
+    // Pega o primeiro número que aparecer na parte de versículos
+    const verseMatch = verseContent.match(/(\d+)/);
+    if (verseMatch) {
+      firstVerse = verseMatch[1];
+    }
+  }
 
   return {
     book: book.trim(),
     chapter,
-    verse: verse ?? null,
+    verse: firstVerse,
   };
 };
 
