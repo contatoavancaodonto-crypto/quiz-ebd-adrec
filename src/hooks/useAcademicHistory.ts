@@ -149,7 +149,7 @@ export function useAcademicHistory() {
       return {
         membroId: profile!.id,
         membroNome: `${profile!.first_name} ${profile!.last_name}`,
-        turmaAtual: profile!.class_id ? "Sua Turma" : undefined, // Could fetch class name if needed
+        turmaAtual: profile!.class_id ? "Minha Turma (Adultos)" : undefined, // Alterado de "Sua Turma" por solicitação do usuário
         trimestres: resultTrimestres
       };
     }
