@@ -138,7 +138,7 @@ export function useAcademicHistory() {
         return {
           ...tri,
           mediaSemanal,
-          mediaFinal,
+          mediaFinal: notaFinal,
           participacao,
           frequencia,
           tempoTotalMs
