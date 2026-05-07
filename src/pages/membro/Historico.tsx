@@ -286,17 +286,38 @@ export default function Historico() {
                     </h3>
                   </div>
                   <div className="p-6 space-y-4">
-                    {currentTri?.comentariosProfessor?.map((c: any) => (
-                      <div key={c.id} className="relative pl-4 border-l-2 border-primary/20 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-primary uppercase">{c.professorNome || 'Professor'}</span>
-                          <span className="text-[10px] text-muted-foreground">{new Date(c.criadoEm).toLocaleDateString()}</span>
+                    {currentTri?.comentariosProfessor?.map((c: any) => {
+                      const handleMarkAsRead = async () => {
+                        if (c.lido) return;
+                        await supabase
+                          .from("academic_comments")
+                          .update({ is_read: true, read_at: new Date().toISOString() })
+                          .eq("id", c.id);
+                      };
+
+                      return (
+                        <div 
+                          key={c.id} 
+                          className={cn(
+                            "relative pl-4 border-l-2 space-y-1 transition-all",
+                            c.lido ? "border-primary/20 opacity-70" : "border-primary font-medium"
+                          )}
+                          onMouseEnter={handleMarkAsRead}
+                          onTouchStart={handleMarkAsRead}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-primary uppercase">{c.professorNome || 'Professor'}</span>
+                              {!c.lido && <Badge className="h-1.5 w-1.5 rounded-full p-0 bg-primary border-none" />}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">{new Date(c.criadoEm).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-xs text-foreground/80 leading-relaxed italic">
+                            "{c.comentario}"
+                          </p>
                         </div>
-                        <p className="text-xs text-foreground/80 leading-relaxed italic">
-                          "{c.comentario}"
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {!currentTri?.comentariosProfessor?.length && (
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <MessageSquare className="w-8 h-8 text-muted-foreground/20 mb-2" />
