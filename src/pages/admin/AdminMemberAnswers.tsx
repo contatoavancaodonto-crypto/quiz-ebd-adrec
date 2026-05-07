@@ -200,13 +200,7 @@ export default function AdminMemberAnswers() {
       }));
 
       const [{ data: questions }, { data: answers }] = await Promise.all([
-        supabase
-          .from("questions")
-          .select(
-            "id, question_text, option_a, option_b, option_c, option_d, correct_option, order_index, explanation"
-          )
-          .eq("quiz_id", attempt.quiz_id)
-          .order("order_index", { ascending: true }),
+        supabase.rpc("admin_get_questions_with_answer", { p_quiz_id: attempt.quiz_id }),
         supabase
           .from("answers")
           .select("question_id, selected_option, is_correct, answered_at")
