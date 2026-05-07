@@ -46,42 +46,27 @@ const GabaritoPage = () => {
     }
 
     const fetch = async () => {
-      const { data: answers } = await supabase
-        .from("answers")
-        .select("question_id, selected_option, is_correct")
-        .eq("attempt_id", store.attemptId);
+      const { data, error } = await supabase.rpc("get_attempt_gabarito", {
+        p_attempt_id: store.attemptId,
+      });
 
-      if (!answers || answers.length === 0) {
+      if (error || !data) {
         setLoading(false);
         return;
       }
 
-      const questionIds = answers.map((a) => a.question_id);
-      const { data: questions } = await supabase
-        .from("questions")
-        .select("id, order_index, question_text, correct_option, option_a, option_b, option_c, option_d")
-        .in("id", questionIds);
-
-      if (!questions) {
-        setLoading(false);
-        return;
-      }
-
-      const merged: GabaritoItem[] = questions
-        .map((q) => {
-          const ans = answers.find((a) => a.question_id === q.id);
-          return {
-            order_index: q.order_index,
-            question_text: q.question_text,
-            correct_option: q.correct_option,
-            option_a: q.option_a,
-            option_b: q.option_b,
-            option_c: q.option_c,
-            option_d: q.option_d,
-            selected_option: ans?.selected_option ?? "",
-            is_correct: ans?.is_correct ?? false,
-          };
-        })
+      const merged: GabaritoItem[] = (data as any[])
+        .map((q) => ({
+          order_index: q.order_index,
+          question_text: q.question_text,
+          correct_option: q.correct_option,
+          option_a: q.option_a,
+          option_b: q.option_b,
+          option_c: q.option_c,
+          option_d: q.option_d,
+          selected_option: q.selected_option ?? "",
+          is_correct: q.is_correct ?? false,
+        }))
         .sort((a, b) => a.order_index - b.order_index);
 
       setItems(merged);
