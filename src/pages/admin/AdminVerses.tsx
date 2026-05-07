@@ -324,8 +324,18 @@ export default function AdminVerses() {
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-0 flex justify-between">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white" onClick={(e) => deleteLesson(lesson.id, e)}>
+              <CardFooter className="pt-0 flex justify-between" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-white"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    deleteLesson(lesson.id, e);
+                  }}
+                >
                   <Trash2 className="w-4 h-4 mr-2" /> Apagar
                 </Button>
                 <div className="flex items-center text-sm font-medium text-primary">
