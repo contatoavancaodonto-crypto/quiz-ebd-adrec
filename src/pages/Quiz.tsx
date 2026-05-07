@@ -74,9 +74,10 @@ const QuizPage = () => {
         let quizId = store.quizId;
 
         if (!store.isRetrying) {
+          const { data: { user } } = await supabase.auth.getUser();
           const { data: participant, error: pErr } = await supabase
             .from("participants")
-            .insert({ name: store.participantName, class_id: store.classId })
+            .insert({ name: store.participantName, class_id: store.classId, user_id: user?.id ?? null })
             .select("id")
             .single();
           if (pErr) throw pErr;
