@@ -23,7 +23,6 @@ interface Question {
   option_b: string;
   option_c: string;
   option_d: string;
-  correct_option: string;
   order_index: number;
 }
 
@@ -46,6 +45,8 @@ const QuizPage = () => {
   const { playSound } = useSound();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [revealedCorrect, setRevealedCorrect] = useState<Record<string, string>>({});
+  const [correctnessByQ, setCorrectnessByQ] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,7 +137,11 @@ const QuizPage = () => {
         
         store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-        const { data: allQs, error: qsErr } = await supabase.from("questions").select("*").eq("quiz_id", quizId).eq("active", true);
+        const { data: allQs, error: qsErr } = await supabase
+          .from("questions")
+          .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+          .eq("quiz_id", quizId)
+          .eq("active", true);
         if (qsErr) throw qsErr;
 
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
@@ -197,7 +202,7 @@ const QuizPage = () => {
 
       let score = 0;
       questions.forEach((q) => {
-        if (allAnswers[q.id] === q.correct_option) score++;
+        if (correctnessByQ[q.id]) score++;
       });
 
       const totalTime = seconds;
@@ -333,28 +338,30 @@ const QuizPage = () => {
           <div className="space-y-3 mb-8">
             {optionLabels.map((label, i) => {
               const isSelected = selectedOption === label;
-              const isCorrect = label === currentQ.correct_option;
+              const revealed = revealedCorrect[currentQ.id];
+              const isCorrect = revealed ? label === revealed : false;
               
               return (
                 <motion.button
                   key={label}
                   whileHover={!confirmed ? { scale: 1.01 } : {}}
                   whileTap={!confirmed ? { scale: 0.99 } : {}}
-                  onClick={() => {
+                  onClick={async () => {
                     if (confirmed) return;
                     playSound('ding');
                     setSelectedOption(label);
                     setConfirmed(true);
-
-                    const isCorrectAnswer = label === currentQ.correct_option;
                     store.setAnswer(currentQ.id, label);
 
-                    supabase.from("answers").insert({
-                      attempt_id: store.attemptId,
-                      question_id: currentQ.id,
-                      selected_option: label,
-                      is_correct: isCorrectAnswer,
+                    const { data, error } = await supabase.rpc("submit_answer", {
+                      p_attempt_id: store.attemptId,
+                      p_question_id: currentQ.id,
+                      p_selected_option: label,
                     });
+                    if (!error && data && data[0]) {
+                      setRevealedCorrect((s) => ({ ...s, [currentQ.id]: data[0].correct_option }));
+                      setCorrectnessByQ((s) => ({ ...s, [currentQ.id]: data[0].is_correct }));
+                    }
                   }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
                     confirmed
