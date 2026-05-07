@@ -135,6 +135,7 @@ const WeeklyQuizCardSkeleton = () => (
 const Index = () => {
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { setParticipant, setChurch } = useQuizStore();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
@@ -143,6 +144,16 @@ const Index = () => {
   const seasonExpired = !!season && seasonCountdown.expired;
 
   const userClassId = profile?.class_id ?? null;
+
+  const handleRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["weekly-quiz"] });
+    queryClient.invalidateQueries({ queryKey: ["next-quiz"] });
+    queryClient.invalidateQueries({ queryKey: ["current-lesson"] });
+    queryClient.invalidateQueries({ queryKey: ["next-lesson"] });
+    queryClient.invalidateQueries({ queryKey: ["weekly-lessons"] });
+    queryClient.invalidateQueries({ queryKey: ["weekly-attempt"] });
+  }, [queryClient]);
+
   const { data: weeklyQuiz, isLoading: isLoadingWeeklyQuiz } = useWeeklyQuiz(userClassId);
   const { data: nextQuiz, isLoading: isLoadingNextQuiz } = useNextScheduledQuiz(userClassId);
   const { data: provao } = useTrimestralProvao(userClassId, season?.id);
@@ -151,10 +162,23 @@ const Index = () => {
     ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
     : "";
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
-  const weekClose = useCountdown(weeklyQuiz?.closes_at);
-  const nextOpen = useCountdown(nextQuiz?.opens_at);
+  const weekClose = useCountdown(weeklyQuiz?.closes_at, handleRefresh);
+  const nextOpen = useCountdown(nextQuiz?.opens_at, handleRefresh);
   const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
   const { data: nextLesson, isLoading: isLoadingNextLesson } = useNextLesson();
+
+  useEffect(() => {
+    // Sincronização adicional para troca de dia (meia-noite)
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const msToMidnight = tomorrow.getTime() - now.getTime();
+
+    const timeout = setTimeout(() => {
+      handleRefresh();
+    }, msToMidnight + 1000);
+
+    return () => clearTimeout(timeout);
+  }, [handleRefresh]);
 
   const isQuizLoading =
     isLoadingWeeklyQuiz ||
