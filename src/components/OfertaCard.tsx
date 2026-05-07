@@ -18,7 +18,7 @@ interface OfertaCardProps {
 export const OfertaCard = ({
   qrCodeImage = "/pix-qr-code.jpg",
   pixKey = "Qr code ",
-  pixCode = "00020126580014BR.GOV.BCB.PIX0136Qr code 5204000053039865802BR5920Marcos A M Mendonça6008BRASILIA62070503***6304E221",
+  pixCode = "2c309b87-c326-428c-92da-a0ed2a75c010",
   beneficiaryName = "Marcos A M Mendonça",
   bankName = "Mercado Pago",
   keyType = "Aleatória",
