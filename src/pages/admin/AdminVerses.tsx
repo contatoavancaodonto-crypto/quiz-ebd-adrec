@@ -199,20 +199,22 @@ export default function AdminVerses() {
       });
       if (error) throw error;
       
-      const updatedForm = {
-        ...prev,
-        ...data,
-        trimester: data.trimester ? data.trimester.toString() : prev.trimester,
-        verses: { ...prev.verses, ...data.verses },
-        questions: data.questions && data.questions.length > 0 
-          ? data.questions.map((q: any) => ({
-              ...q,
-              id: q.id || Math.random().toString(36).substr(2, 9)
-            })) 
-          : prev.questions
-      };
-      console.log("IA data applied to form:", updatedForm);
-      return updatedForm;
+      setForm(prev => {
+        const updatedForm = {
+          ...prev,
+          ...data,
+          trimester: data.trimester ? data.trimester.toString() : prev.trimester,
+          verses: { ...prev.verses, ...data.verses },
+          questions: data.questions && data.questions.length > 0 
+            ? data.questions.map((q: any) => ({
+                ...q,
+                id: q.id || Math.random().toString(36).substr(2, 9)
+              })) 
+            : prev.questions
+        };
+        console.log("IA data applied to form:", updatedForm);
+        return updatedForm;
+      });
       setAiImportOpen(false);
       setAiText("");
       toast.success("Informações extraídas com sucesso!");
