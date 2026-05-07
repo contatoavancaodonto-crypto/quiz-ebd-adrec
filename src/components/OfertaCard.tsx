@@ -16,9 +16,9 @@ interface OfertaCardProps {
 }
 
 export const OfertaCard = ({
-  qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=00020126580014BR.GOV.BCB.PIX0136email@empresa.com5204000053039865802BR5915Nome da Empresa6008BRASILIA62070503***6304E221",
-  pixKey = "email@empresa.com",
-  pixCode = "00020126580014BR.GOV.BCB.PIX0136email@empresa.com5204000053039865802BR5915Nome da Empresa6008BRASILIA62070503***6304E221",
+  qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=00020126580014BR.GOV.BCB.PIX0136Qr code ​Aleatória5204000053039865802BR5915Nome da Empresa6008BRASILIA62070503***6304E221",
+  pixKey = "Qr code ​Aleatória",
+  pixCode = "00020126580014BR.GOV.BCB.PIX0136Qr code ​Aleatória5204000053039865802BR5915Nome da Empresa6008BRASILIA62070503***6304E221",
   beneficiaryName = "Nome da Empresa",
   bankName = "Mercado Pago",
   keyType = "Email",
