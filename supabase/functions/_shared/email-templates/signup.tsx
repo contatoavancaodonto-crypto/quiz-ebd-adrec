@@ -16,7 +16,7 @@ interface Props {
 export const SignupEmail = ({ siteName, confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Confirme seu e-mail e comece a participar do {siteName}</Preview>
+    <Preview>Confirme seu e-mail e comece a participar do Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>

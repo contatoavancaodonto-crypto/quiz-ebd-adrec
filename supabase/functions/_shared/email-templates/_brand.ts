@@ -125,7 +125,7 @@ export const styles = {
     lineHeight: '1.6',
   },
   footerBrand: {
-    fontSize: '12px',
+    fontSize: '14px',
     color: BRAND.dark,
     fontWeight: 600 as const,
     margin: '0',
