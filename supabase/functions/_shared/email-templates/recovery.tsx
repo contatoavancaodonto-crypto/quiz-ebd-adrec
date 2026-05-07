@@ -11,7 +11,7 @@ interface Props { siteName: string; confirmationUrl: string }
 export const RecoveryEmail = ({ siteName, confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Redefinir sua senha no {siteName}</Preview>
+    <Preview>Redefinir sua senha no Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>

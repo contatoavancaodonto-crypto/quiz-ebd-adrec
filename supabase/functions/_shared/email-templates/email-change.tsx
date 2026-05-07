@@ -17,7 +17,7 @@ interface Props {
 export const EmailChangeEmail = ({ oldEmail, newEmail, confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Confirme a alteração de e-mail no {BRAND.name}</Preview>
+    <Preview>Confirme seu novo e-mail no Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>

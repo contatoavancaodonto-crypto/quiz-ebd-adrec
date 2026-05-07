@@ -11,7 +11,7 @@ interface Props { siteName: string; confirmationUrl: string }
 export const MagicLinkEmail = ({ siteName, confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Seu link mágico de acesso ao {siteName}</Preview>
+    <Preview>Seu link de acesso ao Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>

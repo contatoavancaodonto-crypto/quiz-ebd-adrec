@@ -11,7 +11,7 @@ interface Props { token: string }
 export const ReauthenticationEmail = ({ token }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Seu código de verificação é {token}</Preview>
+    <Preview>Seu código de verificação do Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
