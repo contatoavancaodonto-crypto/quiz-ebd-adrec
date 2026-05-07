@@ -15,7 +15,8 @@ import {
   Search,
   Filter,
   ArrowRight,
-  Loader2
+  Loader2,
+  Check
 } from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -28,6 +29,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tool
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useAcademicHistory } from "@/hooks/useAcademicHistory";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 // Types
 type Status = 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
