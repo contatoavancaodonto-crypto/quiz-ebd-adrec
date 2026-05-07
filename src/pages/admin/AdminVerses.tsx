@@ -179,7 +179,6 @@ export default function AdminVerses() {
       toast.error(err.message);
     }
   };
-  };
 
   const handleAiImport = async () => {
     if (!aiText.trim()) return toast.error("Insira o texto para processar.");
