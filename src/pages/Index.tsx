@@ -23,6 +23,8 @@ import {
 import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+// ... keep existing code
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
