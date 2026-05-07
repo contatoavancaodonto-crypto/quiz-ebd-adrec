@@ -2219,6 +2219,7 @@ export type Database = {
           p_selected_option: string
         }
         Returns: {
+          correct_option: string
           is_correct: boolean
         }[]
       }
