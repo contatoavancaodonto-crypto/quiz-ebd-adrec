@@ -38,8 +38,14 @@ serve(async (req) => {
 
     const { mode, text, imageUrl, type, id, userId } = await req.json();
 
-    // Moderation writes require admin/superadmin
-    if (mode === "moderate") {
+    // Admin-gated modes: moderation + admin parsing flows
+    const ADMIN_MODES = new Set([
+      "moderate",
+      "parse_reading_plan",
+      "parse_verses",
+      "parse_weekly_lesson",
+    ]);
+    if (ADMIN_MODES.has(mode)) {
       const { data: roles } = await supabaseClient
         .from("user_roles")
         .select("role")
