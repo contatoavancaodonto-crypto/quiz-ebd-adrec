@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -64,6 +65,8 @@ export default function AdminVerses() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiImportOpen, setAiImportOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
 
   const [form, setForm] = useState<Omit<LicaoSemanal, 'id'>>({
     trimester: "1",
@@ -167,16 +170,23 @@ export default function AdminVerses() {
   const deleteLesson = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (!confirm("Tem certeza que deseja apagar esta lição?")) return;
+    setLessonToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!lessonToDelete) return;
     
     try {
-      const { error } = await supabase.from("lessons").delete().eq("id", id);
+      const { error } = await supabase.from("lessons").delete().eq("id", lessonToDelete);
       if (error) throw error;
-      toast.success("Lição removida");
+      toast.success("Lição removida com sucesso");
       await load();
     } catch (err: any) {
       toast.error(err.message);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setLessonToDelete(null);
     }
   };
 
@@ -577,6 +587,31 @@ export default function AdminVerses() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-slate-950 border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-display font-bold text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-rose-500" /> Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Tem certeza que deseja apagar esta lição? Esta ação é irreversível e removerá permanentemente o conteúdo, versículos e perguntas associadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6">
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white border-none shadow-lg shadow-rose-900/20"
+            >
+              Apagar permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminPage>
   );
 }
