@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { resolveSupportAttachmentUrl } from "@/lib/support-attachment";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { TicketForm } from "@/components/suporte/TicketForm";
 import { TicketThread } from "@/components/suporte/TicketThread";
@@ -20,6 +21,18 @@ import { cn } from "@/lib/utils";
 export default function Suporte() {
   const { tickets, loading } = useSupportTickets();
   const [selected, setSelected] = useState<SupportTicket | null>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setAttachmentUrl(null);
+    if (selected?.screenshot_url) {
+      resolveSupportAttachmentUrl(selected.screenshot_url).then((u) => {
+        if (active) setAttachmentUrl(u);
+      });
+    }
+    return () => { active = false; };
+  }, [selected]);
 
   return (
     <MemberLayout title="Suporte">
@@ -120,15 +133,15 @@ export default function Suporte() {
                 </DrawerDescription>
               </DrawerHeader>
               <div className="px-4 pb-6 overflow-y-auto">
-                {selected.screenshot_url && (
+                {attachmentUrl && (
                   <a
-                    href={selected.screenshot_url}
+                    href={attachmentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block mb-3"
                   >
                     <img
-                      src={selected.screenshot_url}
+                      src={attachmentUrl}
                       alt="Anexo"
                       className="rounded-lg border border-border max-h-48 object-contain"
                     />

@@ -69,8 +69,8 @@ export function TicketForm({ onSubmitted }: Props) {
         toast.error("Falha ao enviar imagem");
         return;
       }
-      const { data } = supabase.storage.from("support").getPublicUrl(path);
-      screenshot_url = data.publicUrl;
+      // Store the storage path; viewers generate signed URLs on demand.
+      screenshot_url = path;
     }
 
     const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || null;

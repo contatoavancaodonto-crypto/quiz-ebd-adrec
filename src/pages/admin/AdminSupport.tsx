@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { resolveSupportAttachmentUrl } from "@/lib/support-attachment";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,6 +55,18 @@ export default function AdminSupport() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [selected, setSelected] = useState<SupportTicket | null>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setAttachmentUrl(null);
+    if (selected?.screenshot_url) {
+      resolveSupportAttachmentUrl(selected.screenshot_url).then((u) => {
+        if (active) setAttachmentUrl(u);
+      });
+    }
+    return () => { active = false; };
+  }, [selected]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -333,15 +346,15 @@ export default function AdminSupport() {
                   </div>
                 )}
 
-                {selected.screenshot_url && (
+                {attachmentUrl && (
                   <a
-                    href={selected.screenshot_url}
+                    href={attachmentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block"
                   >
                     <img
-                      src={selected.screenshot_url}
+                      src={attachmentUrl}
                       alt="Anexo"
                       className="rounded-lg border border-border max-h-60 object-contain w-full bg-muted/30"
                     />
