@@ -11,7 +11,7 @@ interface Props { siteName: string; siteUrl: string; confirmationUrl: string }
 export const InviteEmail = ({ confirmationUrl }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Você foi convidado(a) para o {BRAND.name}</Preview>
+    <Preview>Você foi convidado(a) para o Quiz EBD</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
