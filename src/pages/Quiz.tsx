@@ -338,28 +338,30 @@ const QuizPage = () => {
           <div className="space-y-3 mb-8">
             {optionLabels.map((label, i) => {
               const isSelected = selectedOption === label;
-              const isCorrect = label === currentQ.correct_option;
+              const revealed = revealedCorrect[currentQ.id];
+              const isCorrect = revealed ? label === revealed : false;
               
               return (
                 <motion.button
                   key={label}
                   whileHover={!confirmed ? { scale: 1.01 } : {}}
                   whileTap={!confirmed ? { scale: 0.99 } : {}}
-                  onClick={() => {
+                  onClick={async () => {
                     if (confirmed) return;
                     playSound('ding');
                     setSelectedOption(label);
                     setConfirmed(true);
-
-                    const isCorrectAnswer = label === currentQ.correct_option;
                     store.setAnswer(currentQ.id, label);
 
-                    supabase.from("answers").insert({
-                      attempt_id: store.attemptId,
-                      question_id: currentQ.id,
-                      selected_option: label,
-                      is_correct: isCorrectAnswer,
+                    const { data, error } = await supabase.rpc("submit_answer", {
+                      p_attempt_id: store.attemptId,
+                      p_question_id: currentQ.id,
+                      p_selected_option: label,
                     });
+                    if (!error && data && data[0]) {
+                      setRevealedCorrect((s) => ({ ...s, [currentQ.id]: data[0].correct_option }));
+                      setCorrectnessByQ((s) => ({ ...s, [currentQ.id]: data[0].is_correct }));
+                    }
                   }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
                     confirmed
