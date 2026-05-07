@@ -349,7 +349,9 @@ const Index = () => {
           </section>
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
-          {weeklyQuiz && !seasonExpired ? (
+          {isQuizLoading ? (
+            <WeeklyQuizCardSkeleton />
+          ) : weeklyQuiz && !seasonExpired ? (
             <section id="quiz-semanal-section" className="space-y-2">
               <SectionLabel color="primary" label="Quiz da semana" />
 
