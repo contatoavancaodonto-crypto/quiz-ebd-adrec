@@ -159,6 +159,30 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Authorization gate per template:
+  // - Templates with a fixed `to` (admin notifications) require admin/superadmin or service_role.
+  // - Otherwise the recipient must equal the caller's own JWT email, unless the
+  //   caller is admin/superadmin/service_role (server-side or admin-driven sends).
+  const isPrivileged =
+    callerRole === 'service_role' || callerRole === 'admin' || callerRole === 'superadmin'
+  if (template.to && !isPrivileged) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  if (!isPrivileged) {
+    if (!callerEmail || effectiveRecipient.toLowerCase() !== callerEmail.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ error: 'Recipient must match the authenticated caller' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+  }
+
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
