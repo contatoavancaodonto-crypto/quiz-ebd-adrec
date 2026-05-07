@@ -65,6 +65,8 @@ export default function AdminVerses() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiImportOpen, setAiImportOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
 
   const [form, setForm] = useState<Omit<LicaoSemanal, 'id'>>({
     trimester: "1",
