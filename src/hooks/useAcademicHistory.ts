@@ -48,22 +48,26 @@ export function useAcademicHistory() {
     queryKey: ["academic-history", profile?.id, season?.id],
     enabled: !!profile?.id && !!season?.id,
     queryFn: async (): Promise<HistoricoAcademico> => {
-      // 0. Fetch comments
+      // 0. Fetch comments that are not scheduled for future or are already sent
+      const now = new Date().toISOString();
       const { data: comments } = await supabase
         .from("academic_comments")
         .select(`
           id,
           content,
           created_at,
+          is_read,
           sender:profiles!academic_comments_sender_id_fkey(display_name, first_name, last_name)
         `)
         .or(`recipient_id.eq.${profile!.id},type.eq.global_collective,and(type.eq.church_collective,church_id.eq.${profile!.church_id})`)
+        .or(`scheduled_for.is.null,scheduled_for.lte.${now}`)
         .order("created_at", { ascending: false });
 
       const formattedComments = (comments ?? []).map((c: any) => ({
         id: c.id,
         comentario: c.content,
         criadoEm: c.created_at,
+        lido: c.is_read,
         professorNome: c.sender?.display_name || `${c.sender?.first_name ?? ""} ${c.sender?.last_name ?? ""}`.trim() || "Professor"
       }));
       const { data: quizzes, error: quizzesError } = await supabase
