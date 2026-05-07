@@ -50,7 +50,7 @@ export function useCommunity() {
 
     // Listen for real-time changes to the user's profile (specifically church_id)
     const profileChannel = supabase
-      .channel(`user-profile-${user.id}`)
+      .channel(`user-profile-${user.id}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {
