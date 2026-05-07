@@ -20,7 +20,10 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_read: boolean | null
+          read_at: string | null
           recipient_id: string | null
+          scheduled_for: string | null
           sender_id: string
           type: string
           updated_at: string
@@ -30,7 +33,10 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_read?: boolean | null
+          read_at?: string | null
           recipient_id?: string | null
+          scheduled_for?: string | null
           sender_id: string
           type: string
           updated_at?: string
@@ -40,7 +46,10 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_read?: boolean | null
+          read_at?: string | null
           recipient_id?: string | null
+          scheduled_for?: string | null
           sender_id?: string
           type?: string
           updated_at?: string
