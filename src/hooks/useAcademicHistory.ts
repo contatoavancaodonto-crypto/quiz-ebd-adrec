@@ -30,6 +30,7 @@ export interface TrimestreAcademico {
   participacao: number;
   frequencia: number;
   tempoTotalMs: number;
+  comentariosProfessor?: any[];
 }
 
 export interface HistoricoAcademico {
