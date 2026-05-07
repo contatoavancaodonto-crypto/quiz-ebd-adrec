@@ -12,12 +12,48 @@ serve(async (req) => {
   }
 
   try {
+    // Auth: require a valid JWT for any call
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const { data: claimsData, error: claimsErr } = await supabaseClient.auth.getClaims(token);
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const callerId = claimsData.claims.sub as string;
+
     const { mode, text, imageUrl, type, id, userId } = await req.json();
+
+    // Moderation writes require admin/superadmin
+    if (mode === "moderate") {
+      const { data: roles } = await supabaseClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", callerId);
+      const isAdmin = (roles ?? []).some(
+        (r: { role: string }) => r.role === "admin" || r.role === "superadmin"
+      );
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (mode === "spellcheck") {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {

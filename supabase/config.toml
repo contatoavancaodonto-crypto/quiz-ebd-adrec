@@ -13,3 +13,7 @@ project_id = "ndautjliwnpnbpxvfsik"
     verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = true
+  [functions.community-ai]
+    verify_jwt = true
+  [functions.send-bulk-material-notification]
+    verify_jwt = true
