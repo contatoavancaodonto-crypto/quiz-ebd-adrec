@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Shield, ShieldOff, Loader2, Pencil } from "lucide-react";
+import { Search, Shield, ShieldOff, Loader2, Pencil, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
 import { EditMemberDialog, type EditableMember } from "@/components/admin/EditMemberDialog";
@@ -197,6 +197,10 @@ export default function AdminChurchMembers() {
             <TabsTrigger value="history" className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Clock className="w-4 h-4 mr-2" />
               Histórico de Feedbacks
+            </TabsTrigger>
+            <TabsTrigger value="scheduled" className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <CalendarIcon className="w-4 h-4 mr-2" />
+              Agendados
             </TabsTrigger>
           </TabsList>
 
@@ -424,6 +428,100 @@ export default function AdminChurchMembers() {
                       </TableRow>
                     );
                   })
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="scheduled" className="space-y-6 mt-0">
+          <Card className="overflow-hidden border-border/50">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>Data Agendada</TableHead>
+                  <TableHead>Destinatário</TableHead>
+                  <TableHead className="w-[40%]">Mensagem</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingComments ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                      Carregando agendamentos…
+                    </TableCell>
+                  </TableRow>
+                ) : comments.filter(c => c.scheduled_for && new Date(c.scheduled_for) > new Date()).length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                      Nenhum comunicado agendado para o futuro.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  comments
+                    .filter(c => c.scheduled_for && new Date(c.scheduled_for) > new Date())
+                    .map((c) => (
+                      <TableRow key={c.id} className="hover:bg-muted/10 transition-colors">
+                        <TableCell className="text-xs font-semibold whitespace-nowrap text-amber-600">
+                          {format(new Date(c.scheduled_for!), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {c.type === 'individual' ? (
+                            <span className="font-semibold">{c.recipient_name}</span>
+                          ) : (
+                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                              Coletivo ({c.type === 'church_collective' ? 'Igreja' : 'Global'})
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground italic">
+                          "{c.content}"
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="w-fit bg-amber-500/10 text-amber-500 border-amber-500/20 flex gap-1 items-center px-1.5 py-0">
+                            <Clock className="w-3 h-3" /> Pendente
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              setCommentToEdit(c);
+                              setCommentOpen(true);
+                            }}
+                            title="Reprogramar ou editar"
+                          >
+                            <CalendarIcon className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            onClick={async () => {
+                              if (confirm("Tem certeza que deseja cancelar este agendamento?")) {
+                                const { error } = await supabase
+                                  .from("academic_comments")
+                                  .delete()
+                                  .eq("id", c.id);
+                                if (error) toast.error("Erro ao cancelar: " + error.message);
+                                else {
+                                  toast.success("Comunicado cancelado");
+                                  loadComments();
+                                }
+                              }
+                            }}
+                            title="Cancelar envio"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
                 )}
               </TableBody>
             </Table>
