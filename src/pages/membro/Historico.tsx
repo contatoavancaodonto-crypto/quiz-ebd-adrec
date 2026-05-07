@@ -401,6 +401,8 @@ export default function Historico() {
             </Table>
           </div>
         </motion.div>
+          </>
+        )}
       </PageShell>
     </MemberLayout>
   );
