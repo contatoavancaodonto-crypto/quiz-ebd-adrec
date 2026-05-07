@@ -2116,6 +2116,20 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_questions_with_answer: {
+        Args: { p_quiz_id: string }
+        Returns: {
+          correct_option: string
+          explanation: string
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          order_index: number
+          question_text: string
+        }[]
+      }
       approve_church_edit_request: {
         Args: { p_note?: string; p_request_id: string }
         Returns: undefined
@@ -2139,6 +2153,21 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_attempt_gabarito: {
+        Args: { p_attempt_id: string }
+        Returns: {
+          correct_option: string
+          is_correct: boolean
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          order_index: number
+          question_id: string
+          question_text: string
+          selected_option: string
+        }[]
       }
       get_or_create_daily_verse: {
         Args: { p_class_id?: string }
@@ -2182,6 +2211,16 @@ export type Database = {
       reject_church_edit_request: {
         Args: { p_note?: string; p_request_id: string }
         Returns: undefined
+      }
+      submit_answer: {
+        Args: {
+          p_attempt_id: string
+          p_question_id: string
+          p_selected_option: string
+        }
+        Returns: {
+          is_correct: boolean
+        }[]
       }
       tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
     }
