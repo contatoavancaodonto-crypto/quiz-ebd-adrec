@@ -186,6 +186,7 @@ export default function Historico() {
             value={`${stats?.frequencia || 0}%`} 
             icon={Clock} 
             color="purple"
+            description={`Tempo total: ${stats?.tempoTotal || "0m"}`}
             delay={0.3}
           />
           <StatCard 
@@ -201,7 +202,7 @@ export default function Historico() {
             value={stats?.ranking ? `#${stats.ranking}` : "—"} 
             icon={Trophy} 
             color="rose"
-            description="Top da turma"
+            description="Posição na turma"
             delay={0.5}
           />
         </div>
