@@ -21,16 +21,30 @@ function compute(target: number): CountdownValue {
   return { days, hours, minutes, seconds, totalMs: diff, expired: false };
 }
 
-export function useCountdown(targetDate: string | Date | null | undefined): CountdownValue {
+export function useCountdown(
+  targetDate: string | Date | null | undefined,
+  onExpire?: () => void
+): CountdownValue {
   const target = targetDate ? new Date(targetDate).getTime() : 0;
   const [value, setValue] = useState<CountdownValue>(() => compute(target));
 
   useEffect(() => {
     if (!target) return;
-    setValue(compute(target));
-    const id = setInterval(() => setValue(compute(target)), 1000);
+
+    const initialValue = compute(target);
+    setValue(initialValue);
+
+    const id = setInterval(() => {
+      const newValue = compute(target);
+      setValue(newValue);
+      if (newValue.expired) {
+        onExpire?.();
+        clearInterval(id);
+      }
+    }, 1000);
+
     return () => clearInterval(id);
-  }, [target]);
+  }, [target, onExpire]);
 
   return value;
 }
