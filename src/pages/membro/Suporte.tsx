@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { resolveSupportAttachmentUrl } from "@/lib/support-attachment";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { TicketForm } from "@/components/suporte/TicketForm";
 import { TicketThread } from "@/components/suporte/TicketThread";
