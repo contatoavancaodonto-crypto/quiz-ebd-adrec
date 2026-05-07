@@ -30,9 +30,9 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Auth: verify_jwt = true validates the JWT at the gateway, but we additionally
+// check the caller's role and bind user-facing templates to the caller's own email
+// to prevent the function from being used as an open relay.
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -52,6 +52,43 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+  }
+
+  // In-function auth check: identify caller and gate by role.
+  // Service-role callers (server-side triggers) bypass these restrictions.
+  const authHeader = req.headers.get('Authorization') || ''
+  const jwt = authHeader.replace(/^Bearer\s+/i, '')
+  const authClient = createClient(supabaseUrl, supabaseServiceKey)
+  let callerEmail: string | null = null
+  let callerRole: 'service_role' | 'admin' | 'superadmin' | 'authenticated' | 'anon' = 'anon'
+  let callerId: string | null = null
+  if (jwt) {
+    const { data: claimsData } = await authClient.auth.getClaims(jwt)
+    const claims = claimsData?.claims as any
+    if (claims?.role === 'service_role') {
+      callerRole = 'service_role'
+    } else if (claims?.sub) {
+      callerId = claims.sub as string
+      callerEmail = (claims.email as string | undefined) ?? null
+      const { data: roles } = await authClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', callerId)
+      if ((roles ?? []).some((r: { role: string }) => r.role === 'superadmin')) {
+        callerRole = 'superadmin'
+      } else if ((roles ?? []).some((r: { role: string }) => r.role === 'admin')) {
+        callerRole = 'admin'
+      } else {
+        callerRole = 'authenticated'
+      }
+    }
+  }
+
+  if (callerRole === 'anon') {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 
   // Parse request body
@@ -120,6 +157,30 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+  }
+
+  // Authorization gate per template:
+  // - Templates with a fixed `to` (admin notifications) require admin/superadmin or service_role.
+  // - Otherwise the recipient must equal the caller's own JWT email, unless the
+  //   caller is admin/superadmin/service_role (server-side or admin-driven sends).
+  const isPrivileged =
+    callerRole === 'service_role' || callerRole === 'admin' || callerRole === 'superadmin'
+  if (template.to && !isPrivileged) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  if (!isPrivileged) {
+    if (!callerEmail || effectiveRecipient.toLowerCase() !== callerEmail.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ error: 'Recipient must match the authenticated caller' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
   }
 
   // Create Supabase client with service role (bypasses RLS)
