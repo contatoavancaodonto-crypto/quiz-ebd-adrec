@@ -495,26 +495,58 @@ export default function Historico() {
                   </Card>
                 </motion.div>
               )}
-            </div>
-          </div>
-                        currentTri.provaFinal.status === 'concluido' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                      )}>
-                        {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {currentTri.provaFinal.observacao || "Aguardando realização"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
         </motion.div>
           </>
         )}
       </PageShell>
     </MemberLayout>
+  );
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  icon: Icon, 
+  color, 
+  description, 
+  delay = 0 
+}: { 
+  label: string; 
+  value: string | number; 
+  icon: any; 
+  color: "emerald" | "blue" | "purple" | "amber" | "rose"; 
+  description?: string;
+  delay?: number;
+}) {
+  const colors = {
+    emerald: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    blue: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    purple: "text-purple-500 bg-purple-500/10 border-purple-500/20",
+    amber: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    rose: "text-rose-500 bg-rose-500/10 border-rose-500/20",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+    >
+      <Card className="border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden group hover:border-primary/30 transition-all duration-500">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", colors[color])}>
+              <Icon className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
+            <h3 className="text-2xl font-display font-bold">{value}</h3>
+            {description && <p className="text-[10px] text-muted-foreground font-medium">{description}</p>}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
