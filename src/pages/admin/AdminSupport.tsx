@@ -346,15 +346,15 @@ export default function AdminSupport() {
                   </div>
                 )}
 
-                {selected.screenshot_url && (
+                {attachmentUrl && (
                   <a
-                    href={selected.screenshot_url}
+                    href={attachmentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block"
                   >
                     <img
-                      src={selected.screenshot_url}
+                      src={attachmentUrl}
                       alt="Anexo"
                       className="rounded-lg border border-border max-h-60 object-contain w-full bg-muted/30"
                     />
