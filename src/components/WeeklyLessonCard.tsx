@@ -260,9 +260,6 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                       </DialogTitle>
                     </div>
                   </div>
-                  <DialogClose className="absolute right-4 top-4 rounded-full p-1.5 bg-muted hover:bg-muted/80 transition-colors">
-                    <X className="w-4 h-4" />
-                  </DialogClose>
                 </DialogHeader>
                 <div className="rounded-xl bg-muted/40 border border-border/50 p-4 my-2">
                   <p className="text-sm leading-relaxed text-foreground italic">
