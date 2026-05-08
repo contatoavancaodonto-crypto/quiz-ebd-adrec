@@ -113,9 +113,10 @@ const QuizPage = () => {
             
             // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
             // Filtra pela lição ativa agendada para a turma considerando a janela de tempo
+            // Adicionamos um log detalhado para debugar o que o banco está retornando
             const { data: lessonQuiz, error: lessonErr } = await supabase
               .from("lessons")
-              .select("id, questions")
+              .select("id, questions, scheduled_date, scheduled_end_date")
               .eq("class_id", store.classId)
               .lte("scheduled_date", nowIso)
               .gte("scheduled_end_date", nowIso)
@@ -123,7 +124,13 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
-            console.log("Resultado da busca por lessonQuiz:", { lessonQuiz, lessonErr });
+            console.log("Debug Quiz Load - Lesson Search:", { 
+              now: nowIso, 
+              classId: store.classId,
+              found: !!lessonQuiz,
+              lessonId: lessonQuiz?.id,
+              error: lessonErr 
+            });
 
             let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
 
