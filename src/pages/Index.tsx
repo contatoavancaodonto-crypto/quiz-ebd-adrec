@@ -238,6 +238,12 @@ const Index = () => {
     "index-quizzes"
   );
 
+  useRealtimeInvalidate(
+    "lessons",
+    [["weekly-lessons"], ["current-lesson"], ["next-lesson"]],
+    "index-lessons"
+  );
+
   const startQuiz = (
     quizClassId: string,
     quizClassName: string,
