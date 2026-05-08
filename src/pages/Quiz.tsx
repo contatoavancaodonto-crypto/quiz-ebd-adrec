@@ -354,16 +354,16 @@ const QuizPage = () => {
     setShowEvalBreak(false);
   }, [playSound]);
 
-  // ✅ auto-avance DESABILITADO na última pergunta
+  // ✅ auto-avança também na última pergunta (finaliza automaticamente)
   useEffect(() => {
-    if (!confirmed || isLast) return;
+    if (!confirmed) return;
 
     const timer = setTimeout(() => {
       handleNext();
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [confirmed, handleNext, isLast]);
+  }, [confirmed, handleNext]);
 
   if (seasonExpired) {
     return <SeasonClosedScreen />;
