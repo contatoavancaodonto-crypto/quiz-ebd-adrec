@@ -477,9 +477,7 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
         />
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg bg-background border border-border shadow-lg">
-            {filtered.length === 0 && !showAddButton ? (
-              <div className="px-3.5 py-2.5 text-sm text-muted-foreground">Nenhuma igreja encontrada</div>
-            ) : (
+            {filtered.length === 0 && !showAddButton ? null : (
               <>
                 {filtered.map((o) => (
                   <button
