@@ -283,9 +283,6 @@ const ResultPage = () => {
           )}
         </motion.div>
 
-        {/* Badges conquistados movidos para página dedicada */}
-
-
         {/* Rankings da SEMANA (por lesson_number, tempo como desempate) */}
         <WeeklyRankings
           quizId={store.quizId}
@@ -293,6 +290,7 @@ const ResultPage = () => {
           classId={store.classId}
           className={store.className}
         />
+
 
         {/* Ranking da Igreja */}
         {churchTop.length > 0 && (
