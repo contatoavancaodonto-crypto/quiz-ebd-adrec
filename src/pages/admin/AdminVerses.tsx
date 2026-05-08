@@ -170,8 +170,6 @@ export default function AdminVerses() {
 
     setSaving(true);
     
-    const status = calculateStatus(form);
-
     // Reinforce rule: starts at 00:00 and ends at 23:59
     let finalStartDate = form.scheduled_date;
     if (finalStartDate && finalStartDate.length === 10) {
@@ -182,7 +180,7 @@ export default function AdminVerses() {
     if (finalStartDate) {
       if (!finalEndDate) {
         const date = new Date(finalStartDate);
-        const day = date.getDay();
+        const day = date.getUTCDay();
         const diff = (7 - day) % 7;
         const nextSunday = new Date(date);
         nextSunday.setUTCDate(date.getUTCDate() + diff);
@@ -192,6 +190,8 @@ export default function AdminVerses() {
         finalEndDate = `${finalEndDate}T23:59:59.999Z`;
       }
     }
+
+    const status = calculateStatus({ ...form, scheduled_date: finalStartDate, scheduled_end_date: finalEndDate });
 
     const payload = { 
       trimester: form.trimester,
