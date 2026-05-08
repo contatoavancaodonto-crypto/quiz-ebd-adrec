@@ -6,6 +6,9 @@ import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, Boo
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
+import { useQuizStore } from "@/stores/quizStore";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
