@@ -224,35 +224,36 @@ const QuizPage = () => {
             questionsPerQuiz = allQs.length;
             store.setQuizMetadata("weekly", questionsPerQuiz);
           } else {
-          // Fallback para a tabela 'quizzes' e 'questions' tradicional
-          const { data: quizMeta, error: qmErr } = await supabase
-            .from("quizzes")
-            .select("total_questions, quiz_kind")
-            .eq("id", quizId)
-            .maybeSingle();
-          
-          if (qmErr) {
-            console.error("Erro ao buscar metadados do quiz:", qmErr);
-            throw qmErr;
-          }
-          
-          const quizKind = quizMeta?.quiz_kind ?? "weekly";
-          const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
-          questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
-          store.setQuizMetadata(quizKind, questionsPerQuiz);
+            // Fallback para a tabela 'quizzes' e 'questions' tradicional
+            const { data: quizMeta, error: qmErr } = await supabase
+              .from("quizzes")
+              .select("total_questions, quiz_kind")
+              .eq("id", quizId)
+              .maybeSingle();
+            
+            if (qmErr) {
+              console.error("Erro ao buscar metadados do quiz:", qmErr);
+              throw qmErr;
+            }
+            
+            const quizKind = quizMeta?.quiz_kind ?? "weekly";
+            const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
+            questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
+            store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-          const { data: dbQs, error: dbQsErr } = await supabase
-            .from("questions")
-            .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
-            .eq("quiz_id", quizId)
-            .eq("active", true);
-          
-          if (dbQsErr) {
-            console.error("Erro ao buscar perguntas:", dbQsErr);
-            throw dbQsErr;
+            const { data: dbQs, error: dbQsErr } = await supabase
+              .from("questions")
+              .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+              .eq("quiz_id", quizId)
+              .eq("active", true);
+            
+            if (dbQsErr) {
+              console.error("Erro ao buscar perguntas:", dbQsErr);
+              throw dbQsErr;
+            }
+            
+            allQs = (dbQs || []) as Question[];
           }
-          
-          allQs = (dbQs || []) as Question[];
         }
 
         if (allQs.length === 0) {
