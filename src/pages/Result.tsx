@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles, CheckCircle2 } from "lucide-react";
@@ -12,6 +12,12 @@ import { formatTimeMs } from "@/hooks/useTimer";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero, HeroChip } from "@/components/ui/page-hero";
 import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
+import { ProvaoCard } from "@/components/ProvaoCard";
+import { useTrimestralProvao } from "@/hooks/useWeeklyQuiz";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 
 function getPerformanceMessage(pct: number) {
   if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };
@@ -163,6 +169,41 @@ const ResultPage = () => {
     { icon: BarChart3, label: "Ranking Geral", value: generalRank ? `#${generalRank}` : "—", sub: "Todas igrejas" },
   ];
 
+  const { data: season } = useActiveSeason();
+  const { data: provao } = useTrimestralProvao(store.classId, season?.id);
+
+  const { data: alreadyAnsweredProvao } = useQuery({
+    queryKey: ["provao-attempt", provao?.id, store.participantName],
+    enabled: !!provao?.id && !!store.participantName,
+    queryFn: async () => {
+      const { data: parts } = await supabase
+        .from("participants")
+        .select("id, name")
+        .ilike("name", store.participantName!);
+      const ids = (parts ?? []).map((p) => p.id);
+      if (ids.length === 0) return false;
+      const { data } = await supabase
+        .from("quiz_attempts")
+        .select("id")
+        .eq("quiz_id", provao!.id)
+        .in("participant_id", ids)
+        .not("finished_at", "is", null)
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+  });
+
+  const handleStartProvao = () => {
+    if (!provao) return;
+    if (!store.classId || !store.className) return toast.error("Informações da turma não encontradas.");
+    
+    store.setParticipant(store.participantName!, store.classId, store.className, store.trimester);
+    useQuizStore.getState().setQuizId(provao.id);
+    navigate("/quiz");
+  };
+
+  const isWeekly = store.quizKind === "weekly";
+
   return (
     <div
       className="min-h-screen bg-background"
@@ -195,6 +236,18 @@ const ResultPage = () => {
             </div>
           </PageHero>
         </motion.div>
+
+        {/* PROVÃO DISPONÍVEL APÓS QUIZ SEMANAL */}
+        {isWeekly && provao && (
+          <ProvaoCard
+            provao={provao}
+            seasonEndDate={season?.end_date}
+            onStart={handleStartProvao}
+            isAnswered={alreadyAnsweredProvao}
+            className="border-primary/40 bg-gradient-to-br from-primary/10 via-card to-secondary/10"
+          />
+        )}
+
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
@@ -283,9 +336,6 @@ const ResultPage = () => {
           )}
         </motion.div>
 
-        {/* Badges conquistados movidos para página dedicada */}
-
-
         {/* Rankings da SEMANA (por lesson_number, tempo como desempate) */}
         <WeeklyRankings
           quizId={store.quizId}
@@ -293,6 +343,7 @@ const ResultPage = () => {
           classId={store.classId}
           className={store.className}
         />
+
 
         {/* Ranking da Igreja */}
         {churchTop.length > 0 && (
