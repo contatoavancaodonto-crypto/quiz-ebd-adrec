@@ -110,13 +110,12 @@ const QuizPage = () => {
           // Se o quizId não veio do store (veio da Home), tentamos descobrir o quiz aberto
           if (!quizId) {
             const nowIso = new Date().toISOString();
+            console.log("QuizId não encontrado no store, buscando quiz ativo...");
             
-            // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
-            // Filtra pela lição ativa agendada para a turma considerando a janela de tempo
-            // Adicionamos um log detalhado para debugar o que o banco está retornando
-            const { data: lessonQuiz, error: lessonErr } = await supabase
+            // Prioridade 1: Tabela de lições
+            const { data: lessonQuiz } = await supabase
               .from("lessons")
-              .select("id, questions, scheduled_date, scheduled_end_date")
+              .select("id")
               .eq("class_id", store.classId)
               .lte("scheduled_date", nowIso)
               .gte("scheduled_end_date", nowIso)
@@ -124,22 +123,11 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
-            console.log("Debug Quiz Load - Lesson Search:", { 
-              now: nowIso, 
-              classId: store.classId,
-              found: !!lessonQuiz,
-              lessonId: lessonQuiz?.id,
-              error: lessonErr 
-            });
-
             if (lessonQuiz) {
               quizId = lessonQuiz.id;
-              // No novo sistema, usamos lessonId separadamente, mas guardamos no quizId do store temporariamente
-              // para compatibilidade com o fluxo atual de navegação se necessário
               store.setQuizId(quizId);
-              console.log("Lição detectada:", { quizId });
+              console.log("Lição detectada via busca automática:", quizId);
             } else {
-              console.log("Nenhum quiz válido na tabela lessons, buscando na tabela quizzes tradicional...");
               // Prioridade 2: Tabela de quizzes tradicional
               const { data: openQuizzes } = await supabase
                 .from("quizzes")
@@ -151,7 +139,7 @@ const QuizPage = () => {
                 .order("week_number", { ascending: false })
                 .limit(1);
 
-              let quiz: { id: string } | null = openQuizzes?.[0] ?? null;
+              let quiz = openQuizzes?.[0];
 
               if (!quiz) {
                 const { data: legacyQuiz } = await supabase
