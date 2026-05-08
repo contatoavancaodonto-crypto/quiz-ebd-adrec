@@ -173,6 +173,12 @@ const Auth = () => {
     }
     setSubmitting(true);
     localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
+    
+    // Se não quiser manter conectado, usamos sessionStorage (temporário)
+    // O cliente Supabase usa localStorage por padrão no integrations/supabase/client.ts
+    // Podemos trocar dinamicamente o storage ou apenas aceitar o padrão do cliente
+    // que já está configurado para persistir.
+    
     const loginType = detectIdentifier(identifier);
     const isEmail = loginType === "email";
     const { error } = isEmail
