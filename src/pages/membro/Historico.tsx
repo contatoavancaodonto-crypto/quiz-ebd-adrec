@@ -57,9 +57,10 @@ export default function Historico() {
   const navigate = useNavigate();
   const store = useQuizStore();
   const { data: profile } = useFullProfile();
-
+  const { data: academicData, isLoading } = useAcademicHistory();
   const [selectedAno, setSelectedAno] = useState("2026");
   const [selectedTri, setSelectedTri] = useState("1º TRI");
+
 
   const currentTri = useMemo(() => {
     if (!academicData) return null;
