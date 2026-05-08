@@ -287,14 +287,13 @@ export default function AdminVerses() {
               key={lesson.id} 
               className="group relative cursor-pointer overflow-hidden border-white/10 bg-black/40 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(var(--primary),0.1)] hover:-translate-y-1 rounded-2xl"
               onClick={(e) => {
-                // Previne abrir o card se o clique vier de um botão dentro do footer
-                if ((e.target as HTMLElement).closest('button')) return;
+                if ((e.target as HTMLElement).closest('[data-card-action="true"]')) return;
                 openEdit(lesson);
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               
-              <CardHeader className="pb-3">
+              <CardHeader className="relative z-10 pb-3">
                 <div className="flex justify-between items-start mb-2">
                   <Badge variant="outline" className="bg-white/5 border-white/10 text-white">
                     Lição {lesson.lesson_number} • {lesson.trimester}º TRI
@@ -312,7 +311,7 @@ export default function AdminVerses() {
                 <CardTitle className="text-xl leading-tight group-hover:text-primary transition-colors">{lesson.theme}</CardTitle>
               </CardHeader>
               
-              <CardContent className="space-y-4 pb-4">
+              <CardContent className="relative z-10 space-y-4 pb-4">
                 {lesson.reading_theme && (
                   <div className="flex items-center gap-2 text-xs text-primary font-medium bg-primary/10 w-fit px-2 py-1 rounded-md mb-2">
                     <BookOpen className="w-3 h-3" /> {lesson.reading_theme}
@@ -336,11 +335,14 @@ export default function AdminVerses() {
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-0 flex justify-between" onClick={(e) => e.stopPropagation()}>
+              <CardFooter className="relative z-10 pt-0 flex justify-between" data-card-action="true" onClick={(e) => e.stopPropagation()}>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   className="text-muted-foreground hover:text-white"
+                  data-card-action="true"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.preventDefault();
