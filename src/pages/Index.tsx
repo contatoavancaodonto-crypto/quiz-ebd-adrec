@@ -21,6 +21,8 @@ import {
   ArrowRight,
   AlertCircle,
   Timer,
+  Users,
+  Lock,
 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
