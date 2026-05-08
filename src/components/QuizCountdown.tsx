@@ -8,7 +8,7 @@ interface QuizCountdownProps {
 }
 
 const getRules = (total: number) => [
-  `📝 O quiz contém ${total} perguntas aleatórias`,
+  `📝 O quiz contém ${total} perguntas aleatórias da lição vigente`,
   "🏆 Haverá 2 rankings: da sua Classe e Geral",
   "💡 Critério de desempate: Menor tempo de respostas",
 ];
