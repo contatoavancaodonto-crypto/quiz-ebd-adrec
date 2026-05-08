@@ -462,10 +462,13 @@ const Index = () => {
                   </div>
 
                   {alreadyAnsweredWeekly ? (
-                    <div className="shrink-0 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="text-xs font-semibold">Respondido</span>
-                    </div>
+                    <motion.button
+                      disabled
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-muted text-muted-foreground font-bold text-[11px] flex items-center gap-1.5 opacity-60 cursor-not-allowed border border-border"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Você já respondeu a lição dessa semana
+                    </motion.button>
                   ) : (
                     <motion.button
                       whileTap={{ scale: 0.96 }}
