@@ -62,20 +62,6 @@ export type Database = {
             referencedRelation: "churches"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "academic_comments_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "academic_comments_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
         ]
       }
       answers: {
@@ -307,20 +293,6 @@ export type Database = {
             foreignKeyName: "class_materials_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "class_materials_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "class_materials_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
             referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
@@ -382,20 +354,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "daily_verse_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "daily_verse_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "daily_verse_class_id_fkey"
@@ -591,20 +549,6 @@ export type Database = {
             foreignKeyName: "lessons_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "lessons_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "lessons_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
             referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
@@ -764,20 +708,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "participants_class_id_fkey"
@@ -949,20 +879,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "posts_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "posts_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
-          {
             foreignKeyName: "posts_user_id_profiles_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1056,39 +972,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
-          {
             foreignKeyName: "profiles_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "profiles_class_id_fkey"
@@ -1356,20 +1244,6 @@ export type Database = {
             foreignKeyName: "quizzes_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "quizzes_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "quizzes_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
             referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
@@ -1460,20 +1334,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "suggestions_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "suggestions_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "suggestions_class_id_fkey"
@@ -1713,20 +1573,6 @@ export type Database = {
             referencedRelation: "churches"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_roles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "user_roles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
         ]
       }
       verses: {
@@ -1781,20 +1627,6 @@ export type Database = {
             foreignKeyName: "verses_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "verses_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "verses_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
             referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
@@ -1806,23 +1638,56 @@ export type Database = {
         Row: {
           accuracy_percentage: number | null
           attempt_id: string | null
-          church_id: string | null
-          church_name: string | null
           class_id: string | null
           class_name: string | null
           final_score: number | null
-          finished_at: string | null
-          is_retry: boolean | null
+          lesson_id: string | null
           participant_name: string | null
           position: number | null
+          quiz_id: string | null
           score: number | null
-          streak_bonus: number | null
-          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
+          week_number: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["quiz_id"]
+          },
+        ]
       }
       ranking_churches_classic: {
         Row: {
@@ -1841,20 +1706,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "churches"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
           },
         ]
       }
@@ -1875,20 +1726,6 @@ export type Database = {
             referencedRelation: "churches"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
         ]
       }
       ranking_churches_weekly: {
@@ -1908,20 +1745,6 @@ export type Database = {
             referencedRelation: "churches"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
         ]
       }
       ranking_general: {
@@ -1933,18 +1756,60 @@ export type Database = {
           class_id: string | null
           class_name: string | null
           final_score: number | null
-          finished_at: string | null
-          is_retry: boolean | null
+          lesson_id: string | null
           participant_name: string | null
           position: number | null
+          quiz_id: string | null
           score: number | null
-          streak_bonus: number | null
-          total_questions: number | null
           total_time_ms: number | null
           total_time_seconds: number | null
           trimester: number | null
+          week_number: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["quiz_id"]
+          },
+        ]
       }
       ranking_monthly: {
         Row: {
@@ -1969,39 +1834,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
-          {
             foreignKeyName: "profiles_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "profiles_class_id_fkey"
@@ -2042,39 +1879,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
-          },
-          {
             foreignKeyName: "profiles_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "profiles_class_id_fkey"
@@ -2119,20 +1928,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "churches"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_by_class"
-            referencedColumns: ["church_id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_general"
-            referencedColumns: ["church_id"]
           },
           {
             foreignKeyName: "quiz_attempts_season_id_fkey"
