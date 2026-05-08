@@ -17,7 +17,7 @@ import { useSound } from "@/hooks/useSound";
 import { toast } from "sonner";
 
 interface Question {
-  id: string;
+  id: string | number;
   question_text: string;
   option_a: string;
   option_b: string;
