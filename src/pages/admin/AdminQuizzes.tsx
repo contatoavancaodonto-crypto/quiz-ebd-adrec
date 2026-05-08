@@ -935,6 +935,7 @@ export default function AdminQuizzes() {
               <div>
                 <Label>Janela Fecha</Label>
                 <Input type="datetime-local" value={qForm.closes_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground italic">Padrão: Domingo às 23:59</p>
               </div>
             </div>
             
