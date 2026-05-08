@@ -358,9 +358,9 @@ const Auth = () => {
                   options={[
                     { value: INDIVIDUAL, label: INDIVIDUAL },
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
-                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    ...(churchRequested ? [{ value: church, label: church }] : []),
                   ]}
-                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL && !churchRequested}
                   onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
                 />
