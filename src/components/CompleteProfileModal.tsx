@@ -182,6 +182,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   onChange={handleChurchChange}
                   placeholder="Digite ou selecione sua igreja"
                   options={[
+                    { value: "INDIVIDUAL", label: "INDIVIDUAL" },
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
                     ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
                   ]}
