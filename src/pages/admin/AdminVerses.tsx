@@ -620,7 +620,7 @@ export default function AdminVerses() {
 
                         <div className="space-y-1.5">
                           <Label>Comentário/Explicação (opcional)</Label>
-                          <Input value={q.comentario} onChange={e => updateQuestion(q.id, { comentario: e.target.value })} className="bg-black/20 h-9 text-xs" />
+                          <Input value={q.comentario || ""} onChange={e => updateQuestion(q.id, { comentario: e.target.value })} className="bg-black/20 h-9 text-xs" />
                         </div>
                       </div>
                     </Card>
