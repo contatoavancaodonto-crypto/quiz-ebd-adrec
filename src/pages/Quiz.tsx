@@ -63,7 +63,9 @@ const QuizPage = () => {
   const finishingRef = useRef(false);
 
   useEffect(() => {
+    console.log("QuizPage mounted. store.classId:", store.classId);
     if (!store.classId) {
+      console.warn("Redirecionando para home pois classId está vazio.");
       navigate("/");
       return;
     }
