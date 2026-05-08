@@ -248,24 +248,38 @@ export default function AdminVerses() {
   const applyAiPreview = () => {
     const data = aiPreviewData;
     if (!data) return;
+    
+    // Ensure data types are correct for the form
+    const sanitizedQuestions = (data.questions || []).map((q: any) => ({
+      id: q.id || Math.random().toString(36).substr(2, 9),
+      pergunta: q.pergunta || "",
+      tipo: q.tipo === 'discursiva' ? 'discursiva' : 'multipla_escolha',
+      alternativas: q.alternativas || { a: "", b: "", c: "", d: "" },
+      respostaCorreta: q.respostaCorreta || "a",
+      comentario: q.comentario || ""
+    }));
+
+    const sanitizedVerses = {
+      segunda: { referencia: data.verses?.segunda?.referencia || "", texto: data.verses?.segunda?.texto || "", observacao: data.verses?.segunda?.observacao || "" },
+      terca: { referencia: data.verses?.terca?.referencia || "", texto: data.verses?.terca?.texto || "", observacao: data.verses?.terca?.observacao || "" },
+      quarta: { referencia: data.verses?.quarta?.referencia || "", texto: data.verses?.quarta?.texto || "", observacao: data.verses?.quarta?.observacao || "" },
+      quinta: { referencia: data.verses?.quinta?.referencia || "", texto: data.verses?.quinta?.texto || "", observacao: data.verses?.quinta?.observacao || "" },
+      sexta: { referencia: data.verses?.sexta?.referencia || "", texto: data.verses?.sexta?.texto || "", observacao: data.verses?.sexta?.observacao || "" },
+      sabado: { referencia: data.verses?.sabado?.referencia || "", texto: data.verses?.sabado?.texto || "", observacao: data.verses?.sabado?.observacao || "" }
+    };
+
     setForm(prev => ({
       ...prev,
       theme: data.theme || prev.theme,
       reading_theme: data.reading_theme || prev.reading_theme,
       description: data.description || prev.description,
-      lesson_number: data.lesson_number || prev.lesson_number,
-      trimester: data.trimester ? data.trimester.toString() : prev.trimester,
-      verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
-      questions: data.questions && data.questions.length > 0
-        ? data.questions.map((q: any) => ({
-            ...q,
-            id: q.id || Math.random().toString(36).substr(2, 9),
-            tipo: q.tipo || 'multipla_escolha',
-            alternativas: q.alternativas || { a: "", b: "", c: "", d: "" },
-            respostaCorreta: q.respostaCorreta || "a"
-          }))
-        : prev.questions,
+      lesson_number: Number(data.lesson_number) || prev.lesson_number,
+      trimester: data.trimester ? String(data.trimester) : prev.trimester,
+      verses: sanitizedVerses,
+      questions: sanitizedQuestions,
+      scheduled_date: data.scheduled_date || prev.scheduled_date
     }));
+    
     setAiPreviewOpen(false);
     setAiPreviewData(null);
     setAiText("");
