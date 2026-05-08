@@ -195,7 +195,7 @@ export default function AdminVerses() {
         }
       }
       toast.success("Lição salva com sucesso!");
-      setOpen(false);
+      // Não fecha o editor — mantém o card ativo conforme solicitado
     } catch (err: any) {
       console.error("Error saving lesson:", err);
       toast.error(err.message || "Erro inesperado ao salvar lição");
@@ -245,11 +245,7 @@ export default function AdminVerses() {
     }
   };
 
-  const applyAiPreview = () => {
-    const data = aiPreviewData;
-    if (!data) return;
-    
-    // Ensure data types are correct for the form
+  const buildFormFromAi = (data: any): Omit<LicaoSemanal, 'id'> => {
     const sanitizedQuestions = (data.questions || []).map((q: any) => ({
       id: q.id || Math.random().toString(36).substr(2, 9),
       pergunta: q.pergunta || "",
@@ -268,22 +264,107 @@ export default function AdminVerses() {
       sabado: { referencia: data.verses?.sabado?.referencia || "", texto: data.verses?.sabado?.texto || "", observacao: data.verses?.sabado?.observacao || "" }
     };
 
-    setForm(prev => ({
-      ...prev,
-      theme: data.theme || prev.theme,
-      reading_theme: data.reading_theme || prev.reading_theme,
-      description: data.description || prev.description,
-      lesson_number: Number(data.lesson_number) || prev.lesson_number,
-      trimester: data.trimester ? String(data.trimester) : prev.trimester,
+    return {
+      trimester: data.trimester ? String(data.trimester) : "1",
+      lesson_number: Number(data.lesson_number) || 1,
+      theme: data.theme || "",
+      reading_theme: data.reading_theme || "",
+      scheduled_date: data.scheduled_date || "",
+      description: data.description || "",
       verses: sanitizedVerses,
       questions: sanitizedQuestions,
-      scheduled_date: data.scheduled_date || prev.scheduled_date
-    }));
-    
+      status: 'incompleto',
+      class_id: form.class_id,
+    };
+  };
+
+  const applyAiPreview = () => {
+    const data = aiPreviewData;
+    if (!data) return;
+
+    const newForm = buildFormFromAi(data);
+    setEditingId(null);
+    setForm(newForm);
+
     setAiPreviewOpen(false);
     setAiPreviewData(null);
     setAiText("");
-    toast.success("Informações aplicadas ao formulário!");
+    setOpen(true);
+    toast.success("Dados aplicados ao editor. Revise e clique em Salvar Lição.");
+  };
+
+  const applyAndSaveAi = async () => {
+    const data = aiPreviewData;
+    if (!data) return;
+    const newForm = buildFormFromAi(data);
+    if (!newForm.theme || !newForm.lesson_number || !newForm.trimester) {
+      return toast.error("A IA não preencheu número, trimestre ou tema. Use 'Aplicar e revisar'.");
+    }
+
+    setSaving(true);
+    try {
+      const allDays = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
+      const hasDailyVerses = allDays.every(day => {
+        const v: any = (newForm.verses as any)[day];
+        return v && v.referencia?.trim() && v.texto?.trim();
+      });
+      const hasQuestions = newForm.questions && newForm.questions.length > 0;
+      const status = (hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
+
+      const payload = {
+        trimester: newForm.trimester,
+        lesson_number: newForm.lesson_number,
+        theme: newForm.theme,
+        reading_theme: newForm.reading_theme,
+        scheduled_date: newForm.scheduled_date || null,
+        description: newForm.description,
+        verses: newForm.verses,
+        questions: newForm.questions,
+        status,
+        class_id: newForm.class_id || null,
+      };
+      console.log("[IA] Saving lesson payload:", payload);
+
+      const { error, data: inserted } = await supabase
+        .from("lessons")
+        .insert([payload as any])
+        .select();
+
+      if (error) {
+        console.error("[IA] Supabase insert error:", error);
+        throw new Error(`Erro ao salvar (${error.code}): ${error.message}${error.details ? ' — ' + error.details : ''}`);
+      }
+
+      if (inserted && inserted[0]) {
+        const saved = inserted[0] as unknown as LicaoSemanal;
+        setLessons(prev => [saved, ...prev]);
+        // Mantém o card/editor ativo com os dados salvos
+        setEditingId(saved.id);
+        setForm({
+          trimester: saved.trimester,
+          lesson_number: saved.lesson_number,
+          theme: saved.theme,
+          reading_theme: saved.reading_theme || "",
+          scheduled_date: saved.scheduled_date || "",
+          description: saved.description || "",
+          verses: { ...DEFAULT_VERSES, ...(saved.verses as any) },
+          questions: (saved.questions as any) || [],
+          status: saved.status,
+          class_id: saved.class_id,
+        });
+        setOpen(true);
+      }
+
+      setAiPreviewOpen(false);
+      setAiPreviewData(null);
+      setAiText("");
+      toast.success("Lição salva com sucesso! O editor permanece aberto para ajustes.");
+    } catch (err: any) {
+      console.error("[IA] Error saving lesson:", err);
+      toast.error(err.message || "Erro inesperado ao salvar lição");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addQuestion = () => {
@@ -901,8 +982,11 @@ export default function AdminVerses() {
             >
               Voltar e editar texto
             </Button>
-            <Button onClick={applyAiPreview} className="bg-primary hover:bg-primary/90 min-w-[160px]">
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Aplicar ao formulário
+            <Button onClick={applyAiPreview} variant="outline" className="border-primary/30 text-primary min-w-[180px]">
+              <Pencil className="w-4 h-4 mr-2" /> Aplicar e revisar
+            </Button>
+            <Button onClick={applyAndSaveAi} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[180px]">
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {saving ? "Salvando..." : "Salvar lição agora"}
             </Button>
           </DialogFooter>
         </DialogContent>
