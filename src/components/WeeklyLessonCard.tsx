@@ -272,7 +272,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
 
           <div className="pt-2">
             <Button
-              onClick={() => navigate("/quiz")}
+              onClick={handleStartQuiz}
               disabled={!lesson.has_quiz}
               className="w-full gradient-primary text-white font-bold rounded-2xl h-12 shadow-lg shadow-primary/20 gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
