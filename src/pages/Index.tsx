@@ -261,15 +261,23 @@ const Index = () => {
     !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri);
 
   const handleProvaoTriClick = (t: number) => {
-    if (t !== 2) {
-      toast.info(`📅 ${t}º Trimestre - Em breve!`);
+    const isClosed = PROVAO_CLOSED_TRIMESTERS.includes(t);
+    const isAvailable = PROVAO_AVAILABLE_TRIMESTERS.includes(t) && provaoStatus.available;
+
+    if (isClosed) {
+      setProvaoSelectedTri(t);
       return;
     }
-    
-    if (!provaoStatus.available) {
-      toast.info(`📅 Provão disponível em ${provaoStatus.daysToOpen} dias!`);
+
+    if (!isAvailable) {
+      if (t === 2 && !provaoStatus.available) {
+        toast.info(`📅 Provão disponível em ${provaoStatus.daysToOpen} dias!`);
+      } else {
+        toast.info(`📅 ${t}º Trimestre - Em breve!`);
+      }
       return;
     }
+
     setProvaoSelectedTri(t);
   };
 
