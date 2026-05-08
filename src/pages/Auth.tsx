@@ -384,10 +384,10 @@ const Auth = () => {
                 />
                 {password && (
                   <div className="flex gap-1 items-center">
-                    {[0, 1, 2].map((i) => (
+                    {[0, 1, 2, 3].map((i) => (
                       <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
                         i < pwdStrength.score
-                          ? pwdStrength.score === 1 ? "bg-destructive" : pwdStrength.score === 2 ? "bg-primary/70" : "bg-primary"
+                          ? pwdStrength.score <= 2 ? "bg-destructive" : pwdStrength.score === 3 ? "bg-primary/70" : "bg-primary"
                           : "bg-muted"
                       }`} />
                     ))}
