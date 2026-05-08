@@ -335,7 +335,7 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
                     onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}
                     className={`w-full text-left px-3.5 py-2.5 text-sm hover:bg-muted transition-colors ${
                       o.value === value ? "bg-muted text-primary font-semibold" : "text-foreground"
-                    }`}
+                    } ${o.value === "INDIVIDUAL" ? "border-b border-border font-medium bg-primary/5" : ""}`}
                   >
                     {o.label}
                   </button>
