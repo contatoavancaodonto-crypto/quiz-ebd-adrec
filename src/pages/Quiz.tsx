@@ -113,9 +113,10 @@ const QuizPage = () => {
             
             // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
             // Filtra pela lição ativa agendada para a turma considerando a janela de tempo
+            // Adicionamos um log detalhado para debugar o que o banco está retornando
             const { data: lessonQuiz, error: lessonErr } = await supabase
               .from("lessons")
-              .select("id, questions")
+              .select("id, questions, scheduled_date, scheduled_end_date")
               .eq("class_id", store.classId)
               .lte("scheduled_date", nowIso)
               .gte("scheduled_end_date", nowIso)
@@ -123,7 +124,13 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
-            console.log("Resultado da busca por lessonQuiz:", { lessonQuiz, lessonErr });
+            console.log("Debug Quiz Load - Lesson Search:", { 
+              now: nowIso, 
+              classId: store.classId,
+              found: !!lessonQuiz,
+              lessonId: lessonQuiz?.id,
+              error: lessonErr 
+            });
 
             let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
 
@@ -180,19 +187,20 @@ const QuizPage = () => {
         let allQs: Question[] = [];
         let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
 
-        if (lessonData && Array.isArray(lessonData.questions)) {
+        if (lessonData && Array.isArray(lessonData.questions) && lessonData.questions.length > 0) {
+          console.log("Processando perguntas da tabela lessons. Total:", lessonData.questions.length);
           allQs = lessonData.questions.map((q: any, index: number) => {
-            // Suporta ambos os formatos de pergunta (tradicional e novo do Drive)
-            const questionText = q.question_text || q.pergunta || q.text || "";
+            // Normalização robusta para múltiplos formatos (Drive, Manual, etc)
+            const questionText = q.question_text || q.pergunta || q.text || q.title || "";
             const options = q.alternativas || {};
             
             return {
               id: q.id || `q-${index}`,
               question_text: questionText,
-              option_a: q.option_a || options.a || "",
-              option_b: q.option_b || options.b || "",
-              option_c: q.option_c || options.c || "",
-              option_d: q.option_d || options.d || "",
+              option_a: q.option_a || options.a || options.option_a || "",
+              option_b: q.option_b || options.b || options.option_b || "",
+              option_c: q.option_c || options.c || options.option_c || "",
+              option_d: q.option_d || options.d || options.option_d || "",
               order_index: q.order_index || index
             };
           });
@@ -246,18 +254,20 @@ const QuizPage = () => {
             quiz_id: quizId,
             total_questions: selected.length,
             source_type: (lessonData && Array.isArray(lessonData.questions) && lessonData.questions.length > 0) ? 'lesson_table' : 'quiz_table'
-          } as any)
+          })
           .select("id")
           .single();
+
         if (aErr) {
           console.error("Erro ao criar tentativa:", aErr);
-          // mensagem clara se trigger de janela rejeitar
+          // Mensagem clara se trigger de janela rejeitar ou erro de banco
           if (aErr.message?.includes("já está encerrado") || aErr.message?.includes("ainda não está aberto")) {
             toast.error(aErr.message);
-            navigate("/");
-            return;
+          } else {
+            toast.error("Erro ao registrar início do quiz. Verifique sua conexão.");
           }
-          throw aErr;
+          navigate("/");
+          return;
         }
 
         store.setAttemptId(attempt.id);
