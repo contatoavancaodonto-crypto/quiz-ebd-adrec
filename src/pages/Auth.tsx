@@ -183,11 +183,29 @@ const Auth = () => {
     });
     setSubmitting(false);
     if (error) {
+      console.error("Erro no signup:", error);
       toast.error(error.message.includes("already") ? "Este email já está cadastrado" : error.message);
       return;
     }
-    localStorage.setItem("last_login_method", method);
-    toast.success("Conta criada! Bem-vindo!");
+    
+    // Auto-login after signup to ensure smooth transition
+    const loginType = email.trim() ? "email" : "phone";
+    const identifier = email.trim() || `${phone.replace(/\D/g, "")}@quiz-ebd.local`;
+    
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: identifier,
+      password: password,
+    });
+
+    if (signInError) {
+      console.error("Erro no auto-login após signup:", signInError);
+      toast.info("Conta criada! Por favor, faça login.");
+      setMode("login");
+    } else {
+      localStorage.setItem("last_login_method", method);
+      toast.success("Conta criada! Bem-vindo!");
+      navigate("/", { replace: true });
+    }
   };
 
   const pwdStrength = passwordStrength(password);
