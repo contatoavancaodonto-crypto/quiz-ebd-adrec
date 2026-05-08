@@ -214,6 +214,7 @@ const QuizPage = () => {
             participant_id: participantId,
             quiz_id: quizId,
             total_questions: selected.length,
+            source_type: (lessonData && Array.isArray(lessonData.questions)) ? 'lesson_table' : 'quiz_table'
           } as any)
           .select("id")
           .single();
