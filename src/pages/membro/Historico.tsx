@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Trophy, 
@@ -19,7 +20,6 @@ import {
   Check,
   Eye
 } from "lucide-react";
-
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +32,8 @@ import { useFullProfile } from "@/hooks/useFullProfile";
 import { useAcademicHistory } from "@/hooks/useAcademicHistory";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuizStore } from "@/stores/quizStore";
+
 
 // Types
 type Status = 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
@@ -52,8 +54,10 @@ const formatTime = (ms: number) => {
 };
 
 export default function Historico() {
+  const navigate = useNavigate();
+  const store = useQuizStore();
   const { data: profile } = useFullProfile();
-  const { data: academicData, isLoading } = useAcademicHistory();
+
   const [selectedAno, setSelectedAno] = useState("2026");
   const [selectedTri, setSelectedTri] = useState("1º TRI");
 
@@ -392,16 +396,25 @@ export default function Historico() {
                           <TableCell className="text-center">
                             {s.attempt_id ? (
                               <button
-                                onClick={() => {
-                                  supabase.from('quiz_attempts').select('score, total_time_seconds, total_time_ms, participant_id, quiz_id, quiz_kind').eq('id', s.attempt_id).single().then(({ data }) => {
-                                    if (data) {
-                                      const store = (window as any).quizStore;
-                                      if (store) {
-                                        store.setAttempt(s.attempt_id, data.quiz_id, data.score, data.total_time_seconds, data.total_time_ms, data.participant_id, data.quiz_kind);
-                                        navigate("/gabarito");
-                                      }
-                                    }
-                                  });
+                                onClick={async () => {
+                                  const { data, error } = await supabase
+                                    .from('quiz_attempts')
+                                    .select('score, total_time_seconds, total_time_ms, participant_id, quiz_id')
+                                    .eq('id', s.attempt_id)
+                                    .maybeSingle();
+                                  
+                                  if (data) {
+                                    store.setAttempt(
+                                      s.attempt_id,
+                                      data.quiz_id,
+                                      data.score,
+                                      data.total_time_seconds,
+                                      data.total_time_ms,
+                                      data.participant_id,
+                                      'weekly'
+                                    );
+                                    navigate("/gabarito");
+                                  }
                                 }}
                                 className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto hover:bg-primary/20 transition-colors"
                                 title="Ver Gabarito"
@@ -412,6 +425,7 @@ export default function Historico() {
                               <span className="text-muted-foreground text-[10px]">—</span>
                             )}
                           </TableCell>
+
                           <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                             {s.observacao || "—"}
                           </TableCell>
@@ -447,17 +461,26 @@ export default function Historico() {
                           <TableCell className="text-center">
                             {(currentTri.provaFinal as any).attempt_id ? (
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   const attId = (currentTri.provaFinal as any).attempt_id;
-                                  supabase.from('quiz_attempts').select('score, total_time_seconds, total_time_ms, participant_id, quiz_id, quiz_kind').eq('id', attId).single().then(({ data }) => {
-                                    if (data) {
-                                      const store = (window as any).quizStore;
-                                      if (store) {
-                                        store.setAttempt(attId, data.quiz_id, data.score, data.total_time_seconds, data.total_time_ms, data.participant_id, data.quiz_kind);
-                                        navigate("/gabarito");
-                                      }
-                                    }
-                                  });
+                                  const { data } = await supabase
+                                    .from('quiz_attempts')
+                                    .select('score, total_time_seconds, total_time_ms, participant_id, quiz_id')
+                                    .eq('id', attId)
+                                    .maybeSingle();
+                                  
+                                  if (data) {
+                                    store.setAttempt(
+                                      attId,
+                                      data.quiz_id,
+                                      data.score,
+                                      data.total_time_seconds,
+                                      data.total_time_ms,
+                                      data.participant_id,
+                                      'trimestral'
+                                    );
+                                    navigate("/gabarito");
+                                  }
                                 }}
                                 className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center mx-auto hover:bg-primary/30 transition-colors"
                               >
@@ -467,6 +490,7 @@ export default function Historico() {
                               <span className="text-muted-foreground text-[10px]">—</span>
                             )}
                           </TableCell>
+
 
                           <TableCell className="text-xs text-muted-foreground">
                             {currentTri.provaFinal.observacao || "Avaliação final acumulativa."}

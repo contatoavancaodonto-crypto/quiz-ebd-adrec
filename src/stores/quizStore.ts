@@ -32,7 +32,9 @@ export interface QuizState {
   finishQuiz: (score: number, totalTimeMs?: number) => void;
   retryQuiz: () => void;
   reset: () => void;
+  setAttempt: (attemptId: string, quizId: string, score: number, totalTimeSeconds: number, totalTimeMs: number, participantId: string, quizKind: string) => void;
 }
+
 
 export const useQuizStore = create<QuizState>((set, get) => ({
   participantName: "",
@@ -105,4 +107,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       hasRetried: false,
       isRetrying: false,
     }),
+  setAttempt: (attemptId, quizId, score, totalTimeSeconds, totalTimeMs, participantId, quizKind) =>
+    set({
+      attemptId,
+      quizId,
+      score,
+      totalTimeSeconds,
+      totalTimeMs,
+      participantId,
+      quizKind
+    }),
 }));
+
