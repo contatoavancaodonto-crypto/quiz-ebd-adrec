@@ -385,7 +385,7 @@ const Auth = () => {
                 />
                 <Checkbox
                   checked={acceptUpdates} onChange={setAcceptUpdates} error={errors.acceptUpdates}
-                  label="Desejo receber atualizações importantes da CIMADSETA"
+                  label="Desejo receber atualizações importantes do QUIZ EBD"
                   hint="Enviamos apenas comunicações relevantes"
                 />
 
