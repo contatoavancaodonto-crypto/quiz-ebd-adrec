@@ -308,6 +308,12 @@ export default function Biblia() {
       mobileHeader={{ variant: "back", title: "Bíblia Online", subtitle: "Almeida Corrigida Fiel", backTo: "/" }}
     >
       <PageShell contentClassName="pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
         <PageHero
           eyebrow="Almeida Corrigida Fiel"
           title="Bíblia Sagrada"
@@ -360,6 +366,7 @@ export default function Biblia() {
             </TabsContent>
           </Tabs>
         )}
+        </motion.div>
       </PageShell>
     </MemberLayout>
   );
