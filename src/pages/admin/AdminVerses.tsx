@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Sparkles, BookOpen, Trash2, CalendarDays, HelpCircle, CheckCircle2, AlertCircle, Pencil, ChevronRight, Users } from "lucide-react";
+import { Plus, Sparkles, BookOpen, Trash2, CalendarDays, HelpCircle, CheckCircle2, AlertCircle, Pencil, ChevronRight, Users, Filter, Clock, Archive, FileQuestion, XCircle } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ type LicaoSemanal = {
     sabado: { referencia: string; texto: string; observacao?: string }
   }
   questions: Pergunta[]
-  status: 'completo' | 'incompleto'
+  status: 'completo' | 'incompleto' | 'AGENDADO' | 'ARQUIVADO' | 'COMPLETO SEM AGENDAMENTO' | 'INCOMPLETO'
   class_id?: string
 }
 
@@ -71,6 +71,11 @@ export default function AdminVerses() {
   const [aiPreviewOpen, setAiPreviewOpen] = useState(false);
   const [aiPreviewData, setAiPreviewData] = useState<any>(null);
 
+  // Filtros
+  const [filterClass, setFilterClass] = useState<string>("all");
+  const [filterTrimester, setFilterTrimester] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+
   const [form, setForm] = useState<Omit<LicaoSemanal, 'id'>>({
     trimester: "1",
     lesson_number: 1,
@@ -81,7 +86,7 @@ export default function AdminVerses() {
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
-    status: 'incompleto',
+    status: 'INCOMPLETO',
     class_id: undefined,
   });
 
@@ -135,6 +140,29 @@ export default function AdminVerses() {
     setOpen(true);
   };
 
+  const calculateStatus = (formData: Omit<LicaoSemanal, 'id'>): LicaoSemanal['status'] => {
+    const allDays = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
+    const hasDailyVerses = allDays.every(day => {
+      const v = formData.verses[day as keyof typeof DEFAULT_VERSES];
+      return v && v.referencia?.trim() && v.texto?.trim();
+    });
+    const hasQuestions = formData.questions && formData.questions.length > 0;
+    const isThemeValid = !!formData.theme?.trim();
+    const isComplete = isThemeValid && hasDailyVerses && hasQuestions;
+
+    if (!isComplete) return 'INCOMPLETO';
+    
+    if (!formData.scheduled_date) return 'COMPLETO SEM AGENDAMENTO';
+
+    // Se tiver data, verificar se está arquivado
+    if (formData.scheduled_end_date) {
+      const endDate = new Date(formData.scheduled_end_date);
+      if (endDate < new Date()) return 'ARQUIVADO';
+    }
+
+    return 'AGENDADO';
+  };
+
   const save = async () => {
     if (!form.theme || !form.lesson_number || !form.trimester) {
       return toast.error("Preencha número, trimestre e tema.");
@@ -142,16 +170,7 @@ export default function AdminVerses() {
 
     setSaving(true);
     
-    // Status validation logic
-    const allDays = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
-    const hasDailyVerses = allDays.every(day => {
-      const v = form.verses[day as keyof typeof DEFAULT_VERSES];
-      return v && v.referencia?.trim() && v.texto?.trim();
-    });
-    const hasQuestions = form.questions && form.questions.length > 0;
-    const isThemeValid = !!form.theme?.trim();
-
-    const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
+    const status = calculateStatus(form);
 
     // Ensure end date is Sunday 23:59 if not provided or if it's just a date
     let finalEndDate = form.scheduled_end_date;
@@ -331,13 +350,7 @@ export default function AdminVerses() {
 
     setSaving(true);
     try {
-      const allDays = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
-      const hasDailyVerses = allDays.every(day => {
-        const v: any = (newForm.verses as any)[day];
-        return v && v.referencia?.trim() && v.texto?.trim();
-      });
-      const hasQuestions = newForm.questions && newForm.questions.length > 0;
-      const status = (hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
+      const status = calculateStatus(newForm);
 
       // Ensure end date is Sunday 23:59 if not provided or if it's just a date
       let finalEndDate = newForm.scheduled_end_date;
@@ -427,6 +440,27 @@ export default function AdminVerses() {
     }));
   };
 
+  const filteredLessons = lessons.filter(lesson => {
+    const matchClass = filterClass === "all" || lesson.class_id === filterClass || (filterClass === "global" && !lesson.class_id);
+    const matchTrimester = filterTrimester === "all" || lesson.trimester === filterTrimester;
+    const matchStatus = filterStatus === "all" || lesson.status === filterStatus;
+    return matchClass && matchTrimester && matchStatus;
+  });
+
+  const getStatusBadge = (status: LicaoSemanal['status']) => {
+    switch (status) {
+      case 'AGENDADO':
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1"><Clock className="w-3 h-3" /> Agendado</Badge>;
+      case 'ARQUIVADO':
+        return <Badge variant="secondary" className="bg-slate-500/10 text-slate-500 border-slate-500/20 gap-1"><Archive className="w-3 h-3" /> Arquivado</Badge>;
+      case 'COMPLETO SEM AGENDAMENTO':
+        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 gap-1"><FileQuestion className="w-3 h-3" /> Completo s/ Agend.</Badge>;
+      case 'INCOMPLETO':
+      default:
+        return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1"><XCircle className="w-3 h-3" /> Incompleto</Badge>;
+    }
+  };
+
   return (
     <AdminPage
       title="Lições Semanais"
@@ -444,22 +478,64 @@ export default function AdminVerses() {
         </div>
       }
     >
+      <div className="mb-8 p-4 bg-black/20 rounded-2xl border border-white/5 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+          <Filter className="w-4 h-4" /> Filtros de Visualização
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Turma</Label>
+            <Select value={filterClass} onValueChange={setFilterClass}>
+              <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Turmas</SelectItem>
+                <SelectItem value="global">Global (Sem turma)</SelectItem>
+                {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Trimestre</Label>
+            <Select value={filterTrimester} onValueChange={setFilterTrimester}>
+              <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Trimestres</SelectItem>
+                {[1, 2, 3, 4].map(t => <SelectItem key={t} value={t.toString()}>{t}º Trimestre</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Status</Label>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="AGENDADO">Agendado</SelectItem>
+                <SelectItem value="ARQUIVADO">Arquivado</SelectItem>
+                <SelectItem value="COMPLETO SEM AGENDAMENTO">Completo s/ Agend.</SelectItem>
+                <SelectItem value="INCOMPLETO">Incompleto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-64 rounded-2xl bg-white/5" />)}
         </div>
-      ) : lessons.length === 0 ? (
+      ) : filteredLessons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
           <div className="p-4 bg-primary/10 rounded-full mb-4">
             <BookOpen className="w-10 h-10 text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Nenhuma lição encontrada</h3>
-          <p className="text-muted-foreground mb-6">Comece criando sua primeira lição semanal.</p>
+          <p className="text-muted-foreground mb-6">Tente ajustar seus filtros ou crie uma nova lição.</p>
           <Button onClick={openNew}>Criar Lição</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map(lesson => (
+          {filteredLessons.map(lesson => (
             <Card 
               key={lesson.id} 
               className="group relative cursor-pointer overflow-hidden border-white/10 bg-black/40 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(var(--primary),0.1)] hover:-translate-y-1 rounded-2xl"
@@ -483,15 +559,7 @@ export default function AdminVerses() {
                         : "Todas as Turmas"}
                     </Badge>
                   </div>
-                  {lesson.status === 'completo' ? (
-                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Completo
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
-                      <AlertCircle className="w-3 h-3" /> Incompleto
-                    </Badge>
-                  )}
+                  {getStatusBadge(lesson.status)}
                 </div>
                 <CardTitle className="text-xl leading-tight group-hover:text-primary transition-colors">{lesson.theme}</CardTitle>
               </CardHeader>
