@@ -170,31 +170,35 @@ export default function AdminVerses() {
 
     setSaving(true);
     
-    const status = calculateStatus(form);
+    // Reinforce rule: starts at 00:00 and ends at 23:59
+    let finalStartDate = form.scheduled_date;
+    if (finalStartDate && finalStartDate.length === 10) {
+      finalStartDate = `${finalStartDate}T00:00:00.000Z`;
+    }
 
-    // Ensure end date is Sunday 23:59 if not provided or if it's just a date
     let finalEndDate = form.scheduled_end_date;
-    if (form.scheduled_date) {
+    if (finalStartDate) {
       if (!finalEndDate) {
-        const date = new Date(form.scheduled_date + "T12:00:00");
-        const day = date.getDay();
+        const date = new Date(finalStartDate);
+        const day = date.getUTCDay();
         const diff = (7 - day) % 7;
         const nextSunday = new Date(date);
-        nextSunday.setDate(date.getDate() + diff);
-        nextSunday.setHours(23, 59, 59, 999);
+        nextSunday.setUTCDate(date.getUTCDate() + diff);
+        nextSunday.setUTCHours(23, 59, 59, 999);
         finalEndDate = nextSunday.toISOString();
-      } else if (finalEndDate.length <= 10) {
-        // If it's just YYYY-MM-DD, add the time
+      } else if (finalEndDate.length === 10) {
         finalEndDate = `${finalEndDate}T23:59:59.999Z`;
       }
     }
+
+    const status = calculateStatus({ ...form, scheduled_date: finalStartDate, scheduled_end_date: finalEndDate });
 
     const payload = { 
       trimester: form.trimester,
       lesson_number: form.lesson_number,
       theme: form.theme,
       reading_theme: form.reading_theme,
-      scheduled_date: form.scheduled_date || null,
+      scheduled_date: finalStartDate || null,
       scheduled_end_date: finalEndDate || null,
       description: form.description,
       verses: form.verses,
@@ -350,31 +354,35 @@ export default function AdminVerses() {
 
     setSaving(true);
     try {
-      const status = calculateStatus(newForm);
+      // Reinforce rule: starts at 00:00 and ends at 23:59
+      let finalStartDate = newForm.scheduled_date;
+      if (finalStartDate && finalStartDate.length === 10) {
+        finalStartDate = `${finalStartDate}T00:00:00.000Z`;
+      }
 
-      // Ensure end date is Sunday 23:59 if not provided or if it's just a date
       let finalEndDate = newForm.scheduled_end_date;
-      if (newForm.scheduled_date) {
+      if (finalStartDate) {
         if (!finalEndDate) {
-          const date = new Date(newForm.scheduled_date + "T12:00:00");
-          const day = date.getDay();
+          const date = new Date(finalStartDate);
+          const day = date.getUTCDay();
           const diff = (7 - day) % 7;
           const nextSunday = new Date(date);
-          nextSunday.setDate(date.getDate() + diff);
-          nextSunday.setHours(23, 59, 59, 999);
+          nextSunday.setUTCDate(date.getUTCDate() + diff);
+          nextSunday.setUTCHours(23, 59, 59, 999);
           finalEndDate = nextSunday.toISOString();
-        } else if (finalEndDate.length <= 10) {
-          // If it's just YYYY-MM-DD, add the time
+        } else if (finalEndDate.length === 10) {
           finalEndDate = `${finalEndDate}T23:59:59.999Z`;
         }
       }
+
+      const status = calculateStatus({ ...newForm, scheduled_date: finalStartDate, scheduled_end_date: finalEndDate });
 
       const payload = {
         trimester: newForm.trimester,
         lesson_number: newForm.lesson_number,
         theme: newForm.theme,
         reading_theme: newForm.reading_theme,
-        scheduled_date: newForm.scheduled_date || null,
+        scheduled_date: finalStartDate || null,
         scheduled_end_date: finalEndDate || null,
         description: newForm.description,
         verses: newForm.verses,
@@ -667,17 +675,22 @@ export default function AdminVerses() {
                   </div>
                   <div className="space-y-1.5">
                     <Label>Data de Início</Label>
-                    <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
+                    <Input 
+                      type="date" 
+                      value={form.scheduled_date ? form.scheduled_date.slice(0, 10) : ""} 
+                      onChange={e => setForm({...form, scheduled_date: e.target.value})} 
+                      className="bg-white/5" 
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Data Final (Opcional)</Label>
                     <Input 
-                      type="datetime-local" 
-                      value={form.scheduled_end_date ? new Date(new Date(form.scheduled_end_date).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""} 
-                      onChange={e => setForm({...form, scheduled_end_date: e.target.value ? new Date(e.target.value).toISOString() : ""})} 
+                      type="date" 
+                      value={form.scheduled_end_date ? form.scheduled_end_date.slice(0, 10) : ""} 
+                      onChange={e => setForm({...form, scheduled_end_date: e.target.value})} 
                       className="bg-white/5" 
                     />
-                    <p className="text-[10px] text-muted-foreground italic">Padrão: Domingo às 23:59</p>
+                    <p className="text-[10px] text-muted-foreground italic text-center">Saída automática às 23:59</p>
                   </div>
                 </div>
                 <div className="space-y-1.5">
