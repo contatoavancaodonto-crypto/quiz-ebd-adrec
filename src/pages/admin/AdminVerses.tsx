@@ -198,7 +198,7 @@ export default function AdminVerses() {
       lesson_number: form.lesson_number,
       theme: form.theme,
       reading_theme: form.reading_theme,
-      scheduled_date: form.scheduled_date || null,
+      scheduled_date: finalStartDate || null,
       scheduled_end_date: finalEndDate || null,
       description: form.description,
       verses: form.verses,
