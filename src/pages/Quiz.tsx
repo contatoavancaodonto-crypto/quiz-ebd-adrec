@@ -185,24 +185,40 @@ const QuizPage = () => {
           store.setQuizMetadata("weekly", questionsPerQuiz);
         } else {
           // Fallback para a tabela 'quizzes' e 'questions' tradicional
-          const { data: quizMeta } = await supabase
+          const { data: quizMeta, error: qmErr } = await supabase
             .from("quizzes")
             .select("total_questions, quiz_kind")
             .eq("id", quizId)
             .maybeSingle();
+          
+          if (qmErr) {
+            console.error("Erro ao buscar metadados do quiz:", qmErr);
+            throw qmErr;
+          }
           
           const quizKind = quizMeta?.quiz_kind ?? "weekly";
           const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
           questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
           store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-          const { data: dbQs } = await supabase
+          const { data: dbQs, error: dbQsErr } = await supabase
             .from("questions")
             .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
             .eq("quiz_id", quizId)
             .eq("active", true);
           
+          if (dbQsErr) {
+            console.error("Erro ao buscar perguntas:", dbQsErr);
+            throw dbQsErr;
+          }
+          
           allQs = (dbQs || []) as Question[];
+        }
+
+        if (allQs.length === 0) {
+          toast.error("Este quiz não possui perguntas cadastradas.");
+          navigate("/");
+          return;
         }
 
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
@@ -214,11 +230,12 @@ const QuizPage = () => {
             participant_id: participantId,
             quiz_id: quizId,
             total_questions: selected.length,
-            source_type: (lessonData && Array.isArray(lessonData.questions)) ? 'lesson_table' : 'quiz_table'
+            source_type: (lessonData && Array.isArray(lessonData.questions) && lessonData.questions.length > 0) ? 'lesson_table' : 'quiz_table'
           } as any)
           .select("id")
           .single();
         if (aErr) {
+          console.error("Erro ao criar tentativa:", aErr);
           // mensagem clara se trigger de janela rejeitar
           if (aErr.message?.includes("já está encerrado") || aErr.message?.includes("ainda não está aberto")) {
             toast.error(aErr.message);
@@ -230,7 +247,8 @@ const QuizPage = () => {
 
         store.setAttemptId(attempt.id);
         setIsLoading(false);
-      } catch {
+      } catch (err) {
+        console.error("Erro fatal ao carregar quiz:", err);
         toast.error("Erro ao carregar quiz.");
         navigate("/");
       }
