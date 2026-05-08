@@ -633,21 +633,132 @@ const Index = () => {
             </div>
           </section>
 
-          {/* ===== STATUS DA MINHA TURMA ===== */}
-          {userClass && (
-            <section className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <SectionLabel color="success" label="Minha turma" inline />
-                <span className="text-[10px] text-muted-foreground">
-                  Encerra dom · 23h59
-                </span>
+          {/* ===== PROVÃO TRIMESTRAL ===== */}
+          <section className="space-y-2">
+            <SectionLabel color="success" label="Provão trimestral" />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card rounded-2xl p-5 space-y-4"
+            >
+              <div>
+                <h2 className="text-lg font-bold text-foreground">
+                  Provões trimestrais
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Acesse o provão de 13 perguntas de cada trimestre.
+                </p>
               </div>
-              <ClassWeeklyStatusCard
-                classId={userClass.id}
-                className={userClass.name}
-              />
-            </section>
-          )}
+
+              {PROVAO_QUIZ_CLOSED || seasonExpired ? (
+                <div className="text-center space-y-2 py-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10">
+                    <Lock className="w-6 h-6 text-destructive" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {seasonExpired
+                      ? "Temporada encerrada."
+                      : "Período de respostas encerrado."}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-2">
+                      <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                      Trimestre
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[1, 2, 3, 4].map((t) => {
+                        const closed = PROVAO_CLOSED_TRIMESTERS.includes(t);
+                        const available = PROVAO_AVAILABLE_TRIMESTERS.includes(t);
+                        const selectable = available || closed;
+                        const active = provaoSelectedTri === t && selectable;
+                        return (
+                          <motion.button
+                            key={t}
+                            whileHover={{ scale: selectable ? 1.05 : 1 }}
+                            whileTap={{ scale: selectable ? 0.95 : 1 }}
+                            onClick={() => handleProvaoTriClick(t)}
+                            className={`py-2.5 rounded-xl border-2 transition-all text-center cursor-pointer ${
+                              active
+                                ? "border-primary bg-primary/10 shadow-md"
+                                : selectable
+                                ? "border-border bg-muted/50 hover:border-primary/40"
+                                : "border-border bg-muted/30 opacity-60"
+                            }`}
+                          >
+                            <div className="text-sm font-bold text-foreground">
+                              {t}º
+                            </div>
+                            <div className="text-[9px] text-muted-foreground">
+                              {closed ? "Encerrado" : available ? "Tri." : "Em breve"}
+                            </div>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-2">
+                      <Users className="w-3.5 h-3.5 inline mr-1" />
+                      Turma
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {allClasses?.map((cls) => (
+                        <motion.button
+                          key={cls.id}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setProvaoSelectedClass({ id: cls.id, name: cls.name })}
+                          className={`p-2 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col items-center justify-center min-h-[80px] ${
+                            provaoSelectedClass?.id === cls.id
+                              ? "border-primary bg-primary/10 shadow-md"
+                              : "border-border bg-muted/50 hover:border-primary/40"
+                          }`}
+                        >
+                          <div className="text-base mb-1 leading-none h-5 flex items-center justify-center">
+                            {provaoClassIcons[cls.name] || "📚"}
+                          </div>
+                          <div className="text-[11px] font-semibold text-foreground leading-tight">
+                            {cls.name}
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: provaoIsDisabled ? 1 : 1.02 }}
+                    whileTap={{ scale: provaoIsDisabled ? 1 : 0.98 }}
+                    onClick={handleStartProvaoCard}
+                    disabled={provaoLoading || provaoIsDisabled}
+                    className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-shadow disabled:opacity-60 disabled:cursor-not-allowed ${
+                      provaoIsDisabled
+                        ? "bg-muted text-muted-foreground"
+                        : "gradient-primary text-primary-foreground hover:shadow-lg cursor-pointer"
+                    }`}
+                  >
+                    {provaoLoading ? (
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    ) : provaoIsDisabled ? (
+                      <>
+                        <Lock className="w-4 h-4" />
+                        {provaoSelectedTri}º Tri. Encerrado
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Iniciar {provaoSelectedTri}º Tri.
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </motion.button>
+                </>
+              )}
+            </motion.div>
+          </section>
 
           {/* ===== ATALHO RANKING ===== */}
           <motion.button
