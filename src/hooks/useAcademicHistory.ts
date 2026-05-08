@@ -81,11 +81,14 @@ export function useAcademicHistory() {
       if (quizzesError) throw quizzesError;
 
       // 2. Fetch all quiz attempts for the user in this season
-      // We need to match attempts with quizzes
+      // We need to match attempts with quizzes via participants table user_id
       const { data: attempts, error: attemptsError } = await supabase
         .from("quiz_attempts")
-        .select("*")
-        .eq("participant_id", profile!.id)
+        .select(`
+          *,
+          participants!inner(user_id)
+        `)
+        .eq("participants.user_id", profile!.id)
         .eq("season_id", season!.id);
 
       if (attemptsError) throw attemptsError;
