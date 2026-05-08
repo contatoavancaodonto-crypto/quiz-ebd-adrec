@@ -113,12 +113,14 @@ const QuizPage = () => {
             const today = nowIso.split("T")[0];
 
             // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
+            // Filtra pela lição ativa agendada para a turma
             const { data: lessonQuiz } = await supabase
               .from("lessons")
               .select("id, questions")
-              .or(`class_id.eq.${store.classId},class_id.is.null`)
-              .lte("scheduled_date", today)
-              .order("scheduled_date", { ascending: false })
+              .eq("class_id", store.classId)
+              .lte("scheduled_date", nowIso)
+              .gte("scheduled_end_date", nowIso)
+              .eq("status", "AGENDADO")
               .limit(1)
               .maybeSingle();
 
