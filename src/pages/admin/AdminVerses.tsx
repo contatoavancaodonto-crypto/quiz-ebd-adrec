@@ -32,6 +32,7 @@ type LicaoSemanal = {
   theme: string
   reading_theme?: string
   scheduled_date?: string
+  scheduled_end_date?: string
   description?: string
   verses: {
     segunda: { referencia: string; texto: string; observacao?: string }
@@ -76,6 +77,7 @@ export default function AdminVerses() {
     theme: "",
     reading_theme: "",
     scheduled_date: "",
+    scheduled_end_date: "",
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
@@ -105,6 +107,7 @@ export default function AdminVerses() {
       theme: "",
       reading_theme: "",
       scheduled_date: "",
+      scheduled_end_date: "",
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
