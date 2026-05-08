@@ -6,6 +6,9 @@ import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, Boo
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
+import { useQuizStore } from "@/stores/quizStore";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -77,9 +80,26 @@ const parseBibleReference = (reference: string | null) => {
 
 export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const { setParticipant, setChurch, setQuizId } = useQuizStore();
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [readDays, setReadDays] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const handleStartQuiz = () => {
+    if (!lesson.has_quiz) return;
+    if (!profile?.first_name || !profile?.class_id || !profile?.class_name) {
+      return toast.error("Complete seu perfil para iniciar o quiz.");
+    }
+    const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    const trimester = Math.floor((new Date().getMonth()) / 3) + 1;
+    setParticipant(fullName, profile.class_id, profile.class_name, trimester);
+    if (profile.church_id && profile.church_name) {
+      setChurch(profile.church_id, profile.church_name);
+    }
+    setQuizId("");
+    navigate("/quiz");
+  };
 
   // Chave baseada no ID da lição para persistir o progresso
   const storageKey = `lesson-read-${lesson.id}`;
@@ -252,7 +272,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
 
           <div className="pt-2">
             <Button
-              onClick={() => navigate("/quiz")}
+              onClick={handleStartQuiz}
               disabled={!lesson.has_quiz}
               className="w-full gradient-primary text-white font-bold rounded-2xl h-12 shadow-lg shadow-primary/20 gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
