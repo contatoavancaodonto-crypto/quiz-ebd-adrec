@@ -103,40 +103,59 @@ const QuizPage = () => {
           // Se o quizId não veio do store (veio da Home), tentamos descobrir o quiz aberto
           if (!quizId) {
             const nowIso = new Date().toISOString();
-            const { data: openQuizzes, error: oqErr } = await supabase
-              .from("quizzes")
-              .select("id")
+            const today = nowIso.split("T")[0];
+
+            // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
+            const { data: lessonQuiz } = await supabase
+              .from("lessons")
+              .select("id, questions")
               .eq("class_id", store.classId)
-              .eq("active", true)
-              .lte("opens_at", nowIso)
-              .gte("closes_at", nowIso)
-              .order("week_number", { ascending: false })
-              .limit(1);
-            if (oqErr) throw oqErr;
+              .lte("scheduled_date", today)
+              .or(`scheduled_end_date.gte.${nowIso},scheduled_end_date.is.null`)
+              .order("scheduled_date", { ascending: false })
+              .limit(1)
+              .maybeSingle();
 
-            let quiz: { id: string } | null = openQuizzes?.[0] ?? null;
-
-            if (!quiz) {
-              const { data: legacyQuiz, error: qErr } = await supabase
+            if (lessonQuiz && Array.isArray(lessonQuiz.questions) && lessonQuiz.questions.length > 0) {
+              quizId = lessonQuiz.id;
+              store.setQuizId(quizId);
+              // Como estamos usando a tabela 'lessons', marcamos o store para o carregamento de perguntas saber de onde puxar
+              store.setQuizMetadata("weekly", lessonQuiz.questions.length);
+            } else {
+              // Prioridade 2: Tabela de quizzes tradicional
+              const { data: openQuizzes } = await supabase
                 .from("quizzes")
                 .select("id")
                 .eq("class_id", store.classId)
                 .eq("active", true)
-                .eq("trimester", store.trimester)
-                .is("opens_at", null)
-                .limit(1)
-                .maybeSingle();
-              if (qErr) throw qErr;
-              quiz = legacyQuiz;
-            }
+                .lte("opens_at", nowIso)
+                .gte("closes_at", nowIso)
+                .order("week_number", { ascending: false })
+                .limit(1);
 
-            if (!quiz) {
-              toast.info("Nenhum quiz disponível para esta turma no momento.");
-              navigate("/");
-              return;
+              let quiz: { id: string } | null = openQuizzes?.[0] ?? null;
+
+              if (!quiz) {
+                const { data: legacyQuiz } = await supabase
+                  .from("quizzes")
+                  .select("id")
+                  .eq("class_id", store.classId)
+                  .eq("active", true)
+                  .eq("trimester", store.trimester)
+                  .is("opens_at", null)
+                  .limit(1)
+                  .maybeSingle();
+                quiz = legacyQuiz;
+              }
+
+              if (!quiz) {
+                toast.info("Nenhum quiz disponível para esta turma no momento.");
+                navigate("/");
+                return;
+              }
+              quizId = quiz.id;
+              store.setQuizId(quizId);
             }
-            quizId = quiz.id;
-            store.setQuizId(quizId);
           }
         }
 
