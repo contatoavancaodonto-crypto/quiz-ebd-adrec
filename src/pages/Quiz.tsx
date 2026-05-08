@@ -187,19 +187,20 @@ const QuizPage = () => {
         let allQs: Question[] = [];
         let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
 
-        if (lessonData && Array.isArray(lessonData.questions)) {
+        if (lessonData && Array.isArray(lessonData.questions) && lessonData.questions.length > 0) {
+          console.log("Processando perguntas da tabela lessons. Total:", lessonData.questions.length);
           allQs = lessonData.questions.map((q: any, index: number) => {
-            // Suporta ambos os formatos de pergunta (tradicional e novo do Drive)
-            const questionText = q.question_text || q.pergunta || q.text || "";
+            // Normalização robusta para múltiplos formatos (Drive, Manual, etc)
+            const questionText = q.question_text || q.pergunta || q.text || q.title || "";
             const options = q.alternativas || {};
             
             return {
               id: q.id || `q-${index}`,
               question_text: questionText,
-              option_a: q.option_a || options.a || "",
-              option_b: q.option_b || options.b || "",
-              option_c: q.option_c || options.c || "",
-              option_d: q.option_d || options.d || "",
+              option_a: q.option_a || options.a || options.option_a || "",
+              option_b: q.option_b || options.b || options.option_b || "",
+              option_c: q.option_c || options.c || options.option_c || "",
+              option_d: q.option_d || options.d || options.option_d || "",
               order_index: q.order_index || index
             };
           });
