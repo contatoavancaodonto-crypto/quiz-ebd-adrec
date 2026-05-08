@@ -195,7 +195,7 @@ export default function AdminVerses() {
         }
       }
       toast.success("Lição salva com sucesso!");
-      setOpen(false);
+      // Não fecha o editor — mantém o card ativo conforme solicitado
     } catch (err: any) {
       console.error("Error saving lesson:", err);
       toast.error(err.message || "Erro inesperado ao salvar lição");
