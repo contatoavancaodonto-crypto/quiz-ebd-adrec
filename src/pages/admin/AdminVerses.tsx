@@ -167,18 +167,7 @@ export default function AdminVerses() {
       if (editingId) {
         const { error, data } = await supabase
           .from("lessons")
-          .update({
-            trimester: payload.trimester,
-            lesson_number: payload.lesson_number,
-            theme: payload.theme,
-            reading_theme: payload.reading_theme,
-            scheduled_date: payload.scheduled_date || null,
-            description: payload.description,
-            verses: payload.verses as any,
-            questions: payload.questions as any,
-            status: payload.status,
-            class_id: payload.class_id || null
-          })
+          .update(payload as any)
           .eq("id", editingId)
           .select();
         
