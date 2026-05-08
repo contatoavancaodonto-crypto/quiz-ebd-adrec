@@ -43,6 +43,7 @@ export default function Arquivo() {
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
+  const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
@@ -118,7 +119,7 @@ export default function Arquivo() {
       <PageShell contentClassName="flex flex-col items-center px-4 pt-2 pb-6 space-y-5">
         <div className="w-full max-w-md space-y-5">
           <PageHero
-            eyebrow="Provões · 1º TRI. 2026 - ADREC"
+            eyebrow={periodEyebrow("Provões")}
             title="Arquivo trimestral"
             description="Refaça os provões de 13 perguntas dos trimestres disponíveis."
             Icon={Archive}

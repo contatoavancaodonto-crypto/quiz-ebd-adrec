@@ -40,6 +40,7 @@ interface MiniRankEntry {
 const ResultPage = () => {
   const navigate = useNavigate();
   const store = useQuizStore();
+  const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
   const [classRank, setClassRank] = useState<number | null>(null);
   const [generalRank, setGeneralRank] = useState<number | null>(null);
   const [churchRank, setChurchRank] = useState<number | null>(null);
@@ -176,7 +177,7 @@ const ResultPage = () => {
           transition={{ duration: 0.45 }}
         >
           <PageHero
-            eyebrow="Resultado · 1º TRI. 2026 - ADREC"
+            eyebrow={periodEyebrow("Resultado")}
             title={store.participantName}
             description={
               <span className={`font-semibold ${perf.color === "text-green-500" ? "text-emerald-100" : perf.color === "text-primary" ? "text-white" : perf.color === "text-yellow-500" ? "text-amber-100" : "text-rose-100"}`}>

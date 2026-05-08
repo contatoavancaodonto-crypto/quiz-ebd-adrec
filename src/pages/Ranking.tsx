@@ -51,6 +51,7 @@ const RankingPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
+  const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
   const trimesterParam = parseInt(searchParams.get("trimester") || "1", 10);
   const [trimester, setTrimester] = useState<number>(
@@ -236,7 +237,7 @@ const RankingPage = () => {
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
       <PageShell contentClassName="px-4 py-4 max-w-lg mx-auto w-full space-y-4">
         <PageHero
-          eyebrow="Classificação · 1º TRI. 2026 - ADREC"
+          eyebrow={periodEyebrow("Classificação")}
           title="Ranking"
           description={
             mode === "weekly"

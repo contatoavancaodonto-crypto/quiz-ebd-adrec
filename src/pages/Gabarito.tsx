@@ -39,6 +39,7 @@ const GabaritoPage = () => {
   const store = useQuizStore();
   const [items, setItems] = useState<GabaritoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
   useEffect(() => {
     if (!store.attemptId) {
@@ -106,7 +107,7 @@ const GabaritoPage = () => {
 
       <PageShell contentClassName="w-full max-w-md mx-auto px-4 pt-4 pb-8 space-y-5">
         <PageHero
-          eyebrow="Revisão · 1º TRI. 2026 - ADREC"
+          eyebrow={periodEyebrow("Revisão")}
           title="Meu Gabarito"
           description="Confira o que você acertou e errou nesta tentativa."
           Icon={BookOpenCheck}
