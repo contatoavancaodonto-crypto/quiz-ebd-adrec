@@ -54,6 +54,15 @@ import { toast } from "sonner";
 const pad = (n: number) => String(n).padStart(2, "0");
 const PROVAO_WINDOW_DAYS = 14;
 
+const PROVAO_AVAILABLE_TRIMESTERS: number[] = [2];
+const PROVAO_CLOSED_TRIMESTERS: number[] = [1];
+const PROVAO_QUIZ_CLOSED = false;
+const provaoClassIcons: Record<string, string> = {
+  Adultos: "🤵🏻‍♂️🤵🏻‍♀️",
+  Jovens: "🎺",
+  Adolescentes: "🙆🏻‍♂️🙆🏻‍♀️",
+};
+
 const TOOL_TILES = [
   {
     label: "Bíblia",
