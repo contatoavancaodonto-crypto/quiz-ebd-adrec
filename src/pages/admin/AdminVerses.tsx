@@ -171,7 +171,11 @@ export default function AdminVerses() {
           .eq("id", editingId)
           .select();
         
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase update error:", error);
+          throw new Error(`Erro ao atualizar: ${error.message} (${error.code})`);
+        }
+        
         if (data && data[0]) {
           setLessons(prev => prev.map(l => l.id === editingId ? (data[0] as unknown as LicaoSemanal) : l));
         }
@@ -192,7 +196,11 @@ export default function AdminVerses() {
           }])
           .select();
           
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase insert error:", error);
+          throw new Error(`Erro ao inserir: ${error.message} (${error.code})`);
+        }
+        
         if (data && data[0]) {
           setLessons(prev => [data[0] as unknown as LicaoSemanal, ...prev]);
         }
@@ -200,7 +208,8 @@ export default function AdminVerses() {
       toast.success("Lição salva com sucesso!");
       setOpen(false);
     } catch (err: any) {
-      toast.error(err.message);
+      console.error("Error saving lesson:", err);
+      toast.error(err.message || "Erro inesperado ao salvar lição");
     } finally {
       setSaving(false);
     }
