@@ -254,18 +254,20 @@ const QuizPage = () => {
             quiz_id: quizId,
             total_questions: selected.length,
             source_type: (lessonData && Array.isArray(lessonData.questions) && lessonData.questions.length > 0) ? 'lesson_table' : 'quiz_table'
-          } as any)
+          })
           .select("id")
           .single();
+
         if (aErr) {
           console.error("Erro ao criar tentativa:", aErr);
-          // mensagem clara se trigger de janela rejeitar
+          // Mensagem clara se trigger de janela rejeitar ou erro de banco
           if (aErr.message?.includes("já está encerrado") || aErr.message?.includes("ainda não está aberto")) {
             toast.error(aErr.message);
-            navigate("/");
-            return;
+          } else {
+            toast.error("Erro ao registrar início do quiz. Verifique sua conexão.");
           }
-          throw aErr;
+          navigate("/");
+          return;
         }
 
         store.setAttemptId(attempt.id);
