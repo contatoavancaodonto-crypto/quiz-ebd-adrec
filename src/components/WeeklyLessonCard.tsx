@@ -89,15 +89,19 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const handleStartQuiz = () => {
     if (!lesson.has_quiz) return;
     if (!profile?.first_name || !profile?.class_id || !profile?.class_name) {
+      console.log("Perfil incompleto para iniciar quiz:", { profile });
       return toast.error("Complete seu perfil para iniciar o quiz.");
     }
     const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     const trimester = Math.floor((new Date().getMonth()) / 3) + 1;
+    
+    console.log("Iniciando quiz para:", { fullName, classId: profile.class_id, className: profile.class_name });
+    
     setParticipant(fullName, profile.class_id, profile.class_name, trimester);
     if (profile.church_id && profile.church_name) {
       setChurch(profile.church_id, profile.church_name);
     }
-    setQuizId("");
+    useQuizStore.getState().setQuizId(""); // Garante que limpamos o ID anterior para buscar o atual da lição
     navigate("/quiz");
   };
 
