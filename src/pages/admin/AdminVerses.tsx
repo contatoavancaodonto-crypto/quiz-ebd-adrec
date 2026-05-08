@@ -149,7 +149,18 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
-    const payload = { ...form, status };
+    const payload = { 
+      trimester: form.trimester,
+      lesson_number: form.lesson_number,
+      theme: form.theme,
+      reading_theme: form.reading_theme,
+      scheduled_date: form.scheduled_date || null,
+      description: form.description,
+      verses: form.verses,
+      questions: form.questions,
+      status,
+      class_id: form.class_id || null
+    };
     console.log("Saving lesson payload:", payload);
 
     try {
