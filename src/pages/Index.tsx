@@ -579,6 +579,77 @@ const Index = () => {
                 classId={userClass.id}
                 className={userClass.name}
               />
+
+              {/* ===== PROVÃO DO TRIMESTRE ===== */}
+              {provao && season?.end_date && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative overflow-hidden rounded-3xl p-5 border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-secondary/5"
+                >
+                  <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+                  
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <GraduationCap className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">Provão do Trimestre</h4>
+                        <p className="text-[10px] text-muted-foreground">Avaliação final geral</p>
+                      </div>
+                    </div>
+                    {showProvao ? (
+                      <div className="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-600 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        DISPONÍVEL AGORA
+                      </div>
+                    ) : (
+                      <div className="px-2 py-1 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-bold text-primary flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        EM BREVE
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 rounded-2xl bg-card border border-border/50">
+                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold mb-1 flex items-center gap-1">
+                        <Timer className="w-3 h-3" /> Fim do Trimestre
+                      </div>
+                      <div className="text-sm font-mono font-bold text-foreground tabular-nums">
+                        {seasonCountdown.expired ? "Encerrado" : 
+                          `${seasonCountdown.days}d ${pad(seasonCountdown.hours)}h ${pad(seasonCountdown.minutes)}m`}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-card border border-border/50">
+                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold mb-1 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Disponível em
+                      </div>
+                      <div className="text-sm font-bold text-primary">
+                        {new Date(new Date(season.end_date).getTime() - 7 * 86400000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {showProvao ? (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleStartProvao}
+                      className="w-full py-3 rounded-2xl gradient-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                    >
+                      Iniciar Provão Final
+                      <ArrowRight className="w-4 h-4" />
+                    </motion.button>
+                  ) : (
+                    <div className="w-full py-3 rounded-2xl bg-muted/50 border border-dashed border-border text-center">
+                      <p className="text-[11px] text-muted-foreground italic">
+                        Provão disponível uma semana antes do final do trimestre.
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </section>
           )}
 
