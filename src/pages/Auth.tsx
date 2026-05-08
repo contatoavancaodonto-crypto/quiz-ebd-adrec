@@ -472,7 +472,13 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return options;
-    return options.filter((o) => o.label.toLowerCase().includes(q));
+    const isExactMatchInOptions = options.some(o => o.label.toLowerCase() === q);
+    
+    let result = options.filter((o) => o.label.toLowerCase().includes(q));
+    
+    // Se não houver match exato e não estiver na lista filtrada, 
+    // e o usuário digitou algo substancial, poderíamos adicionar um feedback visual
+    return result;
   }, [options, query]);
 
   const selectedLabel = options.find((o) => o.value === value)?.label ?? "";
