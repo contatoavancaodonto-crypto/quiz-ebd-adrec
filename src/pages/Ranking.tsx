@@ -53,16 +53,16 @@ const RankingPage = () => {
   const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
   const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
-  const trimesterParam = parseInt(searchParams.get("trimester") || "1", 10);
+  const trimesterParam = parseInt(searchParams.get("trimester") || "2", 10);
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 1
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 2
   );
   const rawModeParam = searchParams.get("mode");
   // Backwards-compat: links antigos com ?mode=season caem em monthly
   const normalizedModeParam: Mode =
     rawModeParam === "season" ? "monthly" :
     (["weekly", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
-    "weekly";
+    "classic";
   const [mode, setMode] = useState<Mode>(normalizedModeParam);
   const { profile } = useProfile();
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
