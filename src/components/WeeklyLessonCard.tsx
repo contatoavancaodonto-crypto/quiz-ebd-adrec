@@ -81,21 +81,33 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const [readDays, setReadDays] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Chave baseada no ID da lição para persistir o progresso
   const storageKey = `lesson-read-${lesson.id}`;
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) setReadDays(JSON.parse(stored));
-    } catch {}
+      if (stored) {
+        setReadDays(JSON.parse(stored));
+      } else {
+        // Reset local state if no storage found for this lesson
+        setReadDays({});
+      }
+    } catch {
+      setReadDays({});
+    }
   }, [storageKey]);
 
   const toggleRead = (dayKey: string) => {
-    const next = { ...readDays, [dayKey]: !readDays[dayKey] };
-    setReadDays(next);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {}
+    setReadDays(prev => {
+      const next = { ...prev, [dayKey]: !prev[dayKey] };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch (e) {
+        console.error("Erro ao salvar progresso da lição:", e);
+      }
+      return next;
+    });
     setOpenDay(null);
   };
 
