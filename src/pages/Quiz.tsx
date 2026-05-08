@@ -116,10 +116,12 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
+            let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
+
             if (lessonQuiz && Array.isArray(lessonQuiz.questions) && lessonQuiz.questions.length > 0) {
               quizId = lessonQuiz.id;
               store.setQuizId(quizId);
-              // Como estamos usando a tabela 'lessons', marcamos o store para o carregamento de perguntas saber de onde puxar
+              quizSource = 'lesson_table';
               store.setQuizMetadata("weekly", lessonQuiz.questions.length);
             } else {
               // Prioridade 2: Tabela de quizzes tradicional
