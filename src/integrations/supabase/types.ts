@@ -2013,6 +2013,19 @@ export type Database = {
           verse_id: string
         }[]
       }
+      get_trimestral_provao_questions: {
+        Args: { p_class_id: string; p_season_id: string }
+        Returns: {
+          correct_option: string
+          id: string
+          lesson_number: number
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
