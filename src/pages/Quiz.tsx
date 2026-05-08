@@ -361,6 +361,7 @@ const QuizPage = () => {
         .rpc("finalize_attempt", {
           p_attempt_id: store.attemptId,
           p_total_time_ms: totalMs,
+          p_trimester: store.trimester
         })
         .then(() => {
           store.finishQuiz(score, totalMs);
