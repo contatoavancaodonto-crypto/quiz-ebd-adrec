@@ -212,7 +212,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   checked={acceptUpdates}
                   onChange={setAcceptUpdates}
                   error={errors.acceptUpdates}
-                  label="Desejo receber atualizações importantes da CIMADSETA"
+                  label="Desejo receber atualizações importantes do QUIZ EBD"
                 />
 
                 <button
