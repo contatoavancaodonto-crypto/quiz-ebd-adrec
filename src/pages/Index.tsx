@@ -218,6 +218,62 @@ const Index = () => {
     },
   });
 
+  // ===== Provão Trimestral (card no final da home) =====
+  const [provaoSelectedTri, setProvaoSelectedTri] = useState<number>(2);
+  const [provaoSelectedClass, setProvaoSelectedClass] = useState<{ id: string; name: string } | null>(null);
+  const [provaoLoading, setProvaoLoading] = useState(false);
+
+  const { data: allClasses } = useQuery({
+    queryKey: ["classes-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("classes")
+        .select("*")
+        .eq("active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const provaoIsDisabled =
+    PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri) ||
+    !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri);
+
+  const handleProvaoTriClick = (t: number) => {
+    if (!PROVAO_AVAILABLE_TRIMESTERS.includes(t) && !PROVAO_CLOSED_TRIMESTERS.includes(t)) {
+      toast.info(`📅 ${t}º Trimestre - Disponível em breve!`);
+      return;
+    }
+    setProvaoSelectedTri(t);
+  };
+
+  const handleStartProvaoCard = async () => {
+    if (seasonExpired) return toast.error("Este quiz foi encerrado.");
+    if (PROVAO_QUIZ_CLOSED) return toast.error("⏰ Tempo esgotado!");
+    if (!profile?.first_name) return toast.error("Perfil incompleto.");
+    if (!provaoSelectedClass) return toast.error("Selecione uma turma.");
+    if (PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri))
+      return toast.info(`🔒 ${provaoSelectedTri}º Tri. encerrado.`);
+    if (!PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri))
+      return toast.info(`📅 ${provaoSelectedTri}º Tri. em breve!`);
+    if (provaoSelectedClass.name === "Adolescentes")
+      return toast.info("🚧 Em construção!");
+
+    setProvaoLoading(true);
+    try {
+      const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+      setParticipant(fullNameLocal, provaoSelectedClass.id, provaoSelectedClass.name, provaoSelectedTri);
+      if (profile.church_id && profile.church_name) {
+        setChurch(profile.church_id, profile.church_name);
+      }
+      navigate("/quiz");
+    } catch {
+      toast.error("Erro ao iniciar.");
+    } finally {
+      setProvaoLoading(false);
+    }
+  };
   const { data: alreadyAnsweredWeekly } = useQuery({
     queryKey: ["weekly-attempt", weeklyQuiz?.id, fullName],
     enabled: !!weeklyQuiz?.id && !!fullName,
