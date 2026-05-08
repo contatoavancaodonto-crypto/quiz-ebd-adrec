@@ -1076,6 +1076,7 @@ export type Database = {
           total_questions: number
           total_time_ms: number
           total_time_seconds: number
+          trimester: number | null
           week_number: number | null
         }
         Insert: {
@@ -1096,6 +1097,7 @@ export type Database = {
           total_questions?: number
           total_time_ms?: number
           total_time_seconds?: number
+          trimester?: number | null
           week_number?: number | null
         }
         Update: {
@@ -1116,6 +1118,7 @@ export type Database = {
           total_questions?: number
           total_time_ms?: number
           total_time_seconds?: number
+          trimester?: number | null
           week_number?: number | null
         }
         Relationships: [
@@ -1901,6 +1904,45 @@ export type Database = {
           },
         ]
       }
+      ranking_trimester_consolidated: {
+        Row: {
+          avatar_url: string | null
+          church_id: string | null
+          church_name: string | null
+          class_id: string | null
+          class_name: string | null
+          last_finished_at: string | null
+          participant_name: string | null
+          position: number | null
+          quizzes_completed: number | null
+          total_score: number | null
+          total_time_ms: number | null
+          trimester: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "ranking_weekly"
+            referencedColumns: ["class_id"]
+          },
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ranking_weekly: {
         Row: {
           accuracy_percentage: number | null
@@ -1978,15 +2020,29 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      finalize_attempt: {
-        Args: { p_attempt_id: string; p_total_time_ms: number }
-        Returns: {
-          accuracy_percentage: number
-          score: number
-          total_questions: number
-          total_time_ms: number
-        }[]
-      }
+      finalize_attempt:
+        | {
+            Args: { p_attempt_id: string; p_total_time_ms: number }
+            Returns: {
+              accuracy_percentage: number
+              score: number
+              total_questions: number
+              total_time_ms: number
+            }[]
+          }
+        | {
+            Args: {
+              p_attempt_id: string
+              p_total_time_ms: number
+              p_trimester?: number
+            }
+            Returns: {
+              accuracy_percentage: number
+              score: number
+              total_questions: number
+              total_time_ms: number
+            }[]
+          }
       get_attempt_gabarito: {
         Args: { p_attempt_id: string }
         Returns: {
