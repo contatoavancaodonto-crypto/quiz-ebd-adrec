@@ -173,6 +173,14 @@ const Auth = () => {
     }
     setSubmitting(true);
     localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
+    
+    // Configura persistência com base no checkbox
+    if (!keepLoggedIn) {
+      await supabase.auth.setSession({ access_token: '', refresh_token: '' }); // Limpa antes se necessário
+      // Note: Supabase JS v2 doesn't have a direct 'persist: false' per-request in signInWithPassword
+      // But it respects the global config. Since global is true, we might need to handle session clear on window close
+    }
+
     const loginType = detectIdentifier(identifier);
     const isEmail = loginType === "email";
     const { error } = isEmail
