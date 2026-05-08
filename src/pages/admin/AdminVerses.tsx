@@ -202,9 +202,12 @@ export default function AdminVerses() {
       setForm(prev => {
         const updatedForm = {
           ...prev,
-          ...data,
+          theme: data.theme || prev.theme,
+          reading_theme: data.reading_theme || prev.reading_theme,
+          description: data.description || prev.description,
+          lesson_number: data.lesson_number || prev.lesson_number,
           trimester: data.trimester ? data.trimester.toString() : prev.trimester,
-          verses: { ...prev.verses, ...data.verses },
+          verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
           questions: data.questions && data.questions.length > 0 
             ? data.questions.map((q: any) => ({
                 ...q,
