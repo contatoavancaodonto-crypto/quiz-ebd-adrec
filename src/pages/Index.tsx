@@ -258,6 +258,7 @@ const Index = () => {
     if (quizId) {
       // Se tivermos um ID de quiz específico, já deixamos no store
       useQuizStore.getState().setQuizId(quizId);
+      console.log("Quiz ID definido no store:", quizId);
     }
 
     if (profile.church_id && profile.church_name) {
