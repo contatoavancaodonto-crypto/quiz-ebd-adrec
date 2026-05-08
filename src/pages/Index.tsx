@@ -44,9 +44,7 @@ import {
 } from "@/hooks/useWeeklyQuiz";
 import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
-import { ProvaoCard } from "@/components/ProvaoCard";
 import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
-
 import { useCurrentLesson, useNextLesson } from "@/hooks/useCurrentLesson";
 
 import { toast } from "sonner";
@@ -230,28 +228,6 @@ const Index = () => {
     },
   });
 
-  const { data: alreadyAnsweredProvao } = useQuery({
-    queryKey: ["provao-attempt", provao?.id, fullName],
-    enabled: !!provao?.id && !!fullName,
-    queryFn: async () => {
-      const { data: parts } = await supabase
-        .from("participants")
-        .select("id, name")
-        .ilike("name", fullName);
-      const ids = (parts ?? []).map((p) => p.id);
-      if (ids.length === 0) return false;
-      const { data } = await supabase
-        .from("quiz_attempts")
-        .select("id")
-        .eq("quiz_id", provao!.id)
-        .in("participant_id", ids)
-        .not("finished_at", "is", null)
-        .limit(1);
-      return (data?.length ?? 0) > 0;
-    },
-  });
-
-
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
   }, [user, authLoading, navigate]);
@@ -407,25 +383,11 @@ const Index = () => {
             </div>
           </motion.div>
 
-          {/* ===== PROVÃO TRIMESTRAL ===== */}
-          {provao && !seasonExpired && (
-            <section className="space-y-2">
-              <SectionLabel color="secondary" label="Provão Trimestral" />
-              <ProvaoCard
-                provao={provao}
-                seasonEndDate={season?.end_date}
-                onStart={handleStartProvao}
-                isAnswered={alreadyAnsweredProvao}
-              />
-            </section>
-          )}
-
           {/* ===== PLANO DE LEITURA POR LIÇÃO ===== */}
           <section className="space-y-4">
             <SectionLabel color="primary" label="Plano de Leitura por Lição" />
             <WeeklyLessonsList />
           </section>
-
 
           {/* ===== QUIZ DA SEMANA — bloco principal ===== */}
           {isQuizLoading ? (
