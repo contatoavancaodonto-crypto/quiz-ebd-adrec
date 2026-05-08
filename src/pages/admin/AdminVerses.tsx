@@ -369,8 +369,8 @@ export default function AdminVerses() {
           const day = date.getDay();
           const diff = (7 - day) % 7;
           const nextSunday = new Date(date);
-          nextSunday.setDate(date.getDate() + diff);
-          nextSunday.setHours(23, 59, 59, 999);
+          nextSunday.setUTCDate(date.getUTCDate() + diff);
+          nextSunday.setUTCHours(23, 59, 59, 999);
           finalEndDate = nextSunday.toISOString();
         } else if (finalEndDate.length === 10) {
           finalEndDate = `${finalEndDate}T23:59:59.999Z`;
