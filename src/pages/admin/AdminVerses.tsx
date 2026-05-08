@@ -431,8 +431,25 @@ export default function AdminVerses() {
 
       if (inserted && inserted[0]) {
         const saved = inserted[0] as unknown as LicaoSemanal;
+        
+        // Sincronização definitiva para importação IA
+        if (newForm.questions && newForm.questions.length > 0) {
+          const questionsToSync = newForm.questions.map((q, index) => ({
+            lesson_id: saved.id,
+            question_text: q.pergunta,
+            option_a: q.alternativas?.a || "",
+            option_b: q.alternativas?.b || "",
+            option_c: q.alternativas?.c || "",
+            option_d: q.alternativas?.d || "",
+            correct_option: (q.respostaCorreta || "A").toUpperCase(),
+            order_index: index + 1,
+            active: true
+          }));
+
+          await supabase.from("questions").insert(questionsToSync);
+        }
+
         setLessons(prev => [saved, ...prev]);
-        // Fechar tudo após salvamento bem-sucedido
         setEditingId(null);
       }
 
