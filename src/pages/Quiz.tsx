@@ -17,7 +17,7 @@ import { useSound } from "@/hooks/useSound";
 import { toast } from "sonner";
 
 interface Question {
-  id: string;
+  id: string | number;
   question_text: string;
   option_a: string;
   option_b: string;
@@ -103,64 +103,107 @@ const QuizPage = () => {
           // Se o quizId não veio do store (veio da Home), tentamos descobrir o quiz aberto
           if (!quizId) {
             const nowIso = new Date().toISOString();
-            const { data: openQuizzes, error: oqErr } = await supabase
-              .from("quizzes")
-              .select("id")
+            const today = nowIso.split("T")[0];
+
+            // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
+            const { data: lessonQuiz } = await supabase
+              .from("lessons")
+              .select("id, questions")
               .eq("class_id", store.classId)
-              .eq("active", true)
-              .lte("opens_at", nowIso)
-              .gte("closes_at", nowIso)
-              .order("week_number", { ascending: false })
-              .limit(1);
-            if (oqErr) throw oqErr;
+              .lte("scheduled_date", today)
+              .or(`scheduled_end_date.gte.${nowIso},scheduled_end_date.is.null`)
+              .order("scheduled_date", { ascending: false })
+              .limit(1)
+              .maybeSingle();
 
-            let quiz: { id: string } | null = openQuizzes?.[0] ?? null;
+            let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
 
-            if (!quiz) {
-              const { data: legacyQuiz, error: qErr } = await supabase
+            if (lessonQuiz && Array.isArray(lessonQuiz.questions) && lessonQuiz.questions.length > 0) {
+              quizId = lessonQuiz.id;
+              store.setQuizId(quizId);
+              quizSource = 'lesson_table';
+              store.setQuizMetadata("weekly", lessonQuiz.questions.length);
+            } else {
+              // Prioridade 2: Tabela de quizzes tradicional
+              const { data: openQuizzes } = await supabase
                 .from("quizzes")
                 .select("id")
                 .eq("class_id", store.classId)
                 .eq("active", true)
-                .eq("trimester", store.trimester)
-                .is("opens_at", null)
-                .limit(1)
-                .maybeSingle();
-              if (qErr) throw qErr;
-              quiz = legacyQuiz;
-            }
+                .lte("opens_at", nowIso)
+                .gte("closes_at", nowIso)
+                .order("week_number", { ascending: false })
+                .limit(1);
 
-            if (!quiz) {
-              toast.info("Nenhum quiz disponível para esta turma no momento.");
-              navigate("/");
-              return;
+              let quiz: { id: string } | null = openQuizzes?.[0] ?? null;
+
+              if (!quiz) {
+                const { data: legacyQuiz } = await supabase
+                  .from("quizzes")
+                  .select("id")
+                  .eq("class_id", store.classId)
+                  .eq("active", true)
+                  .eq("trimester", store.trimester)
+                  .is("opens_at", null)
+                  .limit(1)
+                  .maybeSingle();
+                quiz = legacyQuiz;
+              }
+
+              if (!quiz) {
+                toast.info("Nenhum quiz disponível para esta turma no momento.");
+                navigate("/");
+                return;
+              }
+              quizId = quiz.id;
+              store.setQuizId(quizId);
             }
-            quizId = quiz.id;
-            store.setQuizId(quizId);
           }
         }
 
-        // Carrega quiz atual para descobrir quantas perguntas usar
-        const { data: quizMeta, error: qmErr } = await supabase
-          .from("quizzes")
-          .select("total_questions, quiz_kind")
+        // Tenta carregar as perguntas primeiro da tabela 'lessons' (se o quizId for de uma lição)
+        const { data: lessonData } = await supabase
+          .from("lessons")
+          .select("questions")
           .eq("id", quizId)
           .maybeSingle();
-        if (qmErr) throw qmErr;
-        
-        const quizKind = quizMeta?.quiz_kind ?? "weekly";
-        // Lógica: trimestral = 26, semanal = 13 (a menos que o DB diga o contrário)
-        const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
-        const questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
-        
-        store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-        const { data: allQs, error: qsErr } = await supabase
-          .from("questions")
-          .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
-          .eq("quiz_id", quizId)
-          .eq("active", true);
-        if (qsErr) throw qsErr;
+        let allQs: Question[] = [];
+        let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
+
+        if (lessonData && Array.isArray(lessonData.questions)) {
+          allQs = lessonData.questions.map((q: any, index: number) => ({
+            id: q.id || `q-${index}`,
+            question_text: q.question_text || q.text || "",
+            option_a: q.option_a || "",
+            option_b: q.option_b || "",
+            option_c: q.option_c || "",
+            option_d: q.option_d || "",
+            order_index: q.order_index || index
+          }));
+          questionsPerQuiz = allQs.length;
+          store.setQuizMetadata("weekly", questionsPerQuiz);
+        } else {
+          // Fallback para a tabela 'quizzes' e 'questions' tradicional
+          const { data: quizMeta } = await supabase
+            .from("quizzes")
+            .select("total_questions, quiz_kind")
+            .eq("id", quizId)
+            .maybeSingle();
+          
+          const quizKind = quizMeta?.quiz_kind ?? "weekly";
+          const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
+          questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
+          store.setQuizMetadata(quizKind, questionsPerQuiz);
+
+          const { data: dbQs } = await supabase
+            .from("questions")
+            .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+            .eq("quiz_id", quizId)
+            .eq("active", true);
+          
+          allQs = (dbQs || []) as Question[];
+        }
 
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
         setQuestions(selected);
@@ -171,7 +214,8 @@ const QuizPage = () => {
             participant_id: participantId,
             quiz_id: quizId,
             total_questions: selected.length,
-          })
+            source_type: (lessonData && Array.isArray(lessonData.questions)) ? 'lesson_table' : 'quiz_table'
+          } as any)
           .select("id")
           .single();
         if (aErr) {
@@ -356,11 +400,11 @@ const QuizPage = () => {
                     playSound('ding');
                     setSelectedOption(label);
                     setConfirmed(true);
-                    store.setAnswer(currentQ.id, label);
+                    store.setAnswer(currentQ.id.toString(), label);
 
                     const { data, error } = await supabase.rpc("submit_answer", {
                       p_attempt_id: store.attemptId,
-                      p_question_id: currentQ.id,
+                      p_question_id: currentQ.id.toString(),
                       p_selected_option: label,
                     });
                     if (!error && data && data[0]) {
