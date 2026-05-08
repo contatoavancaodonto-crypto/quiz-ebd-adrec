@@ -125,6 +125,7 @@ export default function AdminVerses() {
       theme: l.theme,
       reading_theme: l.reading_theme || "",
       scheduled_date: l.scheduled_date || "",
+      scheduled_end_date: l.scheduled_end_date || "",
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
@@ -152,12 +153,25 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
+    // Auto-calculate end date if not provided (Sunday 23:59)
+    let finalEndDate = form.scheduled_end_date;
+    if (!finalEndDate && form.scheduled_date) {
+      const date = new Date(form.scheduled_date + "T12:00:00");
+      const day = date.getDay();
+      const diff = (7 - day) % 7;
+      const nextSunday = new Date(date);
+      nextSunday.setDate(date.getDate() + diff);
+      nextSunday.setHours(23, 59, 59, 999);
+      finalEndDate = nextSunday.toISOString();
+    }
+
     const payload = { 
       trimester: form.trimester,
       lesson_number: form.lesson_number,
       theme: form.theme,
       reading_theme: form.reading_theme,
       scheduled_date: form.scheduled_date || null,
+      scheduled_end_date: finalEndDate || null,
       description: form.description,
       verses: form.verses,
       questions: form.questions,
@@ -274,6 +288,7 @@ export default function AdminVerses() {
       theme: data.theme || "",
       reading_theme: data.reading_theme || "",
       scheduled_date: data.scheduled_date || "",
+      scheduled_end_date: data.scheduled_end_date || "",
       description: data.description || "",
       verses: sanitizedVerses,
       questions: sanitizedQuestions,
@@ -315,12 +330,25 @@ export default function AdminVerses() {
       const hasQuestions = newForm.questions && newForm.questions.length > 0;
       const status = (hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
+      // Auto-calculate end date if not provided (Sunday 23:59)
+      let finalEndDate = newForm.scheduled_end_date;
+      if (!finalEndDate && newForm.scheduled_date) {
+        const date = new Date(newForm.scheduled_date + "T12:00:00");
+        const day = date.getDay();
+        const diff = (7 - day) % 7;
+        const nextSunday = new Date(date);
+        nextSunday.setDate(date.getDate() + diff);
+        nextSunday.setHours(23, 59, 59, 999);
+        finalEndDate = nextSunday.toISOString();
+      }
+
       const payload = {
         trimester: newForm.trimester,
         lesson_number: newForm.lesson_number,
         theme: newForm.theme,
         reading_theme: newForm.reading_theme,
         scheduled_date: newForm.scheduled_date || null,
+        scheduled_end_date: finalEndDate || null,
         description: newForm.description,
         verses: newForm.verses,
         questions: newForm.questions,
