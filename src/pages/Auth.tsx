@@ -490,7 +490,16 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
         <input
           type="text"
           value={open ? query : selectedLabel}
-          onChange={(e) => { setQuery(e.target.value); if (!open) setOpen(true); }}
+          onChange={(e) => { 
+            const val = e.target.value;
+            setQuery(val); 
+            if (!open) setOpen(true);
+            // If the user is typing, we might want to update the parent state if they just stop there
+            // but usually we wait for a selection. However, the requirement says "when user starts writing"
+            // we show the option. The parent already controls showAddButton via the 'church' state.
+            // So we should sync query to parent if we want it to react.
+            onChange(val);
+          }}
           onFocus={() => { setOpen(true); setQuery(""); }}
           placeholder={placeholder}
           className={`w-full px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-text ${
