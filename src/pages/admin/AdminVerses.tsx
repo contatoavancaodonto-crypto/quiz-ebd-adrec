@@ -172,19 +172,23 @@ export default function AdminVerses() {
     
     const status = calculateStatus(form);
 
-    // Ensure end date is Sunday 23:59 if not provided or if it's just a date
+    // Reinforce rule: starts at 00:00 and ends at 23:59
+    let finalStartDate = form.scheduled_date;
+    if (finalStartDate && finalStartDate.length === 10) {
+      finalStartDate = `${finalStartDate}T00:00:00.000Z`;
+    }
+
     let finalEndDate = form.scheduled_end_date;
-    if (form.scheduled_date) {
+    if (finalStartDate) {
       if (!finalEndDate) {
-        const date = new Date(form.scheduled_date + "T12:00:00");
+        const date = new Date(finalStartDate);
         const day = date.getDay();
         const diff = (7 - day) % 7;
         const nextSunday = new Date(date);
         nextSunday.setDate(date.getDate() + diff);
         nextSunday.setHours(23, 59, 59, 999);
         finalEndDate = nextSunday.toISOString();
-      } else if (finalEndDate.length <= 10) {
-        // If it's just YYYY-MM-DD, add the time
+      } else if (finalEndDate.length === 10) {
         finalEndDate = `${finalEndDate}T23:59:59.999Z`;
       }
     }
