@@ -182,15 +182,21 @@ const QuizPage = () => {
         let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
 
         if (lessonData && Array.isArray(lessonData.questions)) {
-          allQs = lessonData.questions.map((q: any, index: number) => ({
-            id: q.id || `q-${index}`,
-            question_text: q.question_text || q.text || "",
-            option_a: q.option_a || "",
-            option_b: q.option_b || "",
-            option_c: q.option_c || "",
-            option_d: q.option_d || "",
-            order_index: q.order_index || index
-          }));
+          allQs = lessonData.questions.map((q: any, index: number) => {
+            // Suporta ambos os formatos de pergunta (tradicional e novo do Drive)
+            const questionText = q.question_text || q.pergunta || q.text || "";
+            const options = q.alternativas || {};
+            
+            return {
+              id: q.id || `q-${index}`,
+              question_text: questionText,
+              option_a: q.option_a || options.a || "",
+              option_b: q.option_b || options.b || "",
+              option_c: q.option_c || options.c || "",
+              option_d: q.option_d || options.d || "",
+              order_index: q.order_index || index
+            };
+          });
           questionsPerQuiz = allQs.length;
           store.setQuizMetadata("weekly", questionsPerQuiz);
         } else {
