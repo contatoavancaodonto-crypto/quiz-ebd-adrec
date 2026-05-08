@@ -177,7 +177,19 @@ export default function AdminQuizzes() {
       trimester: qForm.trimester,
       week_number: qForm.week_number === "" ? null : Number(qForm.week_number),
       opens_at: qForm.opens_at ? new Date(qForm.opens_at).toISOString() : null,
-      closes_at: qForm.closes_at ? new Date(qForm.closes_at).toISOString() : null,
+      closes_at: (function() {
+        if (qForm.closes_at) return new Date(qForm.closes_at).toISOString();
+        if (qForm.opens_at) {
+          const date = new Date(qForm.opens_at);
+          const day = date.getDay();
+          const diff = (7 - day) % 7;
+          const nextSunday = new Date(date);
+          nextSunday.setDate(date.getDate() + diff);
+          nextSunday.setHours(23, 59, 59, 999);
+          return nextSunday.toISOString();
+        }
+        return null;
+      })(),
       season_id: qForm.season_id || null,
       quiz_kind: qForm.quiz_kind || "weekly",
       total_questions: qForm.total_questions === "" ? null : Number(qForm.total_questions),
@@ -923,6 +935,7 @@ export default function AdminQuizzes() {
               <div>
                 <Label>Janela Fecha</Label>
                 <Input type="datetime-local" value={qForm.closes_at} onChange={(e) => setQForm({ ...qForm, closes_at: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground italic">Padrão: Domingo às 23:59</p>
               </div>
             </div>
             

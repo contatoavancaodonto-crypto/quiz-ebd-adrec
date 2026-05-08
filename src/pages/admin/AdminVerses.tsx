@@ -32,6 +32,7 @@ type LicaoSemanal = {
   theme: string
   reading_theme?: string
   scheduled_date?: string
+  scheduled_end_date?: string
   description?: string
   verses: {
     segunda: { referencia: string; texto: string; observacao?: string }
@@ -76,6 +77,7 @@ export default function AdminVerses() {
     theme: "",
     reading_theme: "",
     scheduled_date: "",
+    scheduled_end_date: "",
     description: "",
     verses: { ...DEFAULT_VERSES },
     questions: [],
@@ -105,6 +107,7 @@ export default function AdminVerses() {
       theme: "",
       reading_theme: "",
       scheduled_date: "",
+      scheduled_end_date: "",
       description: "",
       verses: { ...DEFAULT_VERSES },
       questions: [],
@@ -122,6 +125,7 @@ export default function AdminVerses() {
       theme: l.theme,
       reading_theme: l.reading_theme || "",
       scheduled_date: l.scheduled_date || "",
+      scheduled_end_date: l.scheduled_end_date || "",
       description: l.description || "",
       verses: { ...DEFAULT_VERSES, ...l.verses },
       questions: l.questions || [],
@@ -149,12 +153,25 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
+    // Auto-calculate end date if not provided (Sunday 23:59)
+    let finalEndDate = form.scheduled_end_date;
+    if (!finalEndDate && form.scheduled_date) {
+      const date = new Date(form.scheduled_date + "T12:00:00");
+      const day = date.getDay();
+      const diff = (7 - day) % 7;
+      const nextSunday = new Date(date);
+      nextSunday.setDate(date.getDate() + diff);
+      nextSunday.setHours(23, 59, 59, 999);
+      finalEndDate = nextSunday.toISOString();
+    }
+
     const payload = { 
       trimester: form.trimester,
       lesson_number: form.lesson_number,
       theme: form.theme,
       reading_theme: form.reading_theme,
       scheduled_date: form.scheduled_date || null,
+      scheduled_end_date: finalEndDate || null,
       description: form.description,
       verses: form.verses,
       questions: form.questions,
@@ -271,6 +288,7 @@ export default function AdminVerses() {
       theme: data.theme || "",
       reading_theme: data.reading_theme || "",
       scheduled_date: data.scheduled_date || "",
+      scheduled_end_date: data.scheduled_end_date || "",
       description: data.description || "",
       verses: sanitizedVerses,
       questions: sanitizedQuestions,
@@ -312,12 +330,25 @@ export default function AdminVerses() {
       const hasQuestions = newForm.questions && newForm.questions.length > 0;
       const status = (hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
+      // Auto-calculate end date if not provided (Sunday 23:59)
+      let finalEndDate = newForm.scheduled_end_date;
+      if (!finalEndDate && newForm.scheduled_date) {
+        const date = new Date(newForm.scheduled_date + "T12:00:00");
+        const day = date.getDay();
+        const diff = (7 - day) % 7;
+        const nextSunday = new Date(date);
+        nextSunday.setDate(date.getDate() + diff);
+        nextSunday.setHours(23, 59, 59, 999);
+        finalEndDate = nextSunday.toISOString();
+      }
+
       const payload = {
         trimester: newForm.trimester,
         lesson_number: newForm.lesson_number,
         theme: newForm.theme,
         reading_theme: newForm.reading_theme,
         scheduled_date: newForm.scheduled_date || null,
+        scheduled_end_date: finalEndDate || null,
         description: newForm.description,
         verses: newForm.verses,
         questions: newForm.questions,
@@ -454,9 +485,14 @@ export default function AdminVerses() {
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                       <CalendarDays className="w-3 h-3" /> Agendamento
                     </div>
-                    <p className="text-sm font-bold">
-                      {lesson.scheduled_date ? new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR') : 'Não definido'}
-                    </p>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-muted-foreground">
+                        Início: <span className="text-white font-bold">{lesson.scheduled_date ? new Date(lesson.scheduled_date + "T00:00:00").toLocaleDateString('pt-BR') : 'N/D'}</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Fim: <span className="text-white font-bold">{lesson.scheduled_end_date ? new Date(lesson.scheduled_end_date).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Dom 23:59'}</span>
+                      </p>
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -534,14 +570,24 @@ export default function AdminVerses() {
                     <Input value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} className="bg-white/5" placeholder="Ex: A Armadura de Deus" />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <Label>Tema da Leitura</Label>
                     <Input value={form.reading_theme} onChange={e => setForm({...form, reading_theme: e.target.value})} className="bg-white/5" placeholder="Ex: Fé e Obras" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Data de Agendamento</Label>
+                    <Label>Data de Início</Label>
                     <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Data Final (Opcional)</Label>
+                    <Input 
+                      type="datetime-local" 
+                      value={form.scheduled_end_date ? new Date(new Date(form.scheduled_end_date).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""} 
+                      onChange={e => setForm({...form, scheduled_end_date: e.target.value ? new Date(e.target.value).toISOString() : ""})} 
+                      className="bg-white/5" 
+                    />
+                    <p className="text-[10px] text-muted-foreground italic">Padrão: Domingo às 23:59</p>
                   </div>
                 </div>
                 <div className="space-y-1.5">

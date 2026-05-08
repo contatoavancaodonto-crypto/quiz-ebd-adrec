@@ -31,10 +31,13 @@ export const useWeeklyLessons = () => {
     enabled: !!classId,
     queryFn: async (): Promise<WeeklyLesson[]> => {
       const today = new Date().toISOString().slice(0, 10);
+      const now = new Date().toISOString();
+      
       const { data, error } = await supabase
         .from("lessons")
-        .select(`id, theme, lesson_number, reading_theme, scheduled_date, verses, questions, class_id`)
+        .select(`id, theme, lesson_number, reading_theme, scheduled_date, scheduled_end_date, verses, questions, class_id`)
         .lte("scheduled_date", today)
+        .or(`scheduled_end_date.gte.${now},scheduled_end_date.is.null`)
         .or(`class_id.eq.${classId},class_id.is.null`)
         .order("scheduled_date", { ascending: false })
         .limit(4);

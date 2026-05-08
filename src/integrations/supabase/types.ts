@@ -540,6 +540,7 @@ export type Database = {
           questions: Json
           reading_theme: string | null
           scheduled_date: string | null
+          scheduled_end_date: string | null
           status: string
           theme: string
           trimester: string
@@ -555,6 +556,7 @@ export type Database = {
           questions?: Json
           reading_theme?: string | null
           scheduled_date?: string | null
+          scheduled_end_date?: string | null
           status?: string
           theme: string
           trimester: string
@@ -570,6 +572,7 @@ export type Database = {
           questions?: Json
           reading_theme?: string | null
           scheduled_date?: string | null
+          scheduled_end_date?: string | null
           status?: string
           theme?: string
           trimester?: string
