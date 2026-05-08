@@ -199,11 +199,31 @@ const Index = () => {
     isLoadingCurrentLesson ||
     isLoadingNextLesson;
 
-  const showProvao = useMemo(() => {
-    if (!provao || !season?.end_date) return false;
-    const ms = new Date(season.end_date).getTime() - Date.now();
-    return ms > 0 && ms <= PROVAO_WINDOW_DAYS * 86_400_000;
-  }, [provao, season?.end_date]);
+  const PROVAO_START_WINDOW_DAYS = 7;
+
+  const provaoStatus = useMemo(() => {
+    if (!season?.end_date) return { available: false, daysToOpen: 0 };
+    
+    const endDate = new Date(season.end_date);
+    const now = new Date();
+    
+    // Início da janela: 7 dias antes do fim do trimestre
+    const openDate = new Date(endDate.getTime() - PROVAO_START_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    
+    const diffTime = openDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    const isAvailable = now >= openDate && now <= endDate;
+    
+    return {
+      available: isAvailable,
+      daysToOpen: diffDays > 0 ? diffDays : 0,
+      openDate,
+      endDate
+    };
+  }, [season?.end_date]);
+
+  const showProvao = provaoStatus.available;
 
   const { data: userClass } = useQuery({
     queryKey: ["my-class", userClassId],
@@ -241,8 +261,13 @@ const Index = () => {
     !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri);
 
   const handleProvaoTriClick = (t: number) => {
-    if (!PROVAO_AVAILABLE_TRIMESTERS.includes(t) && !PROVAO_CLOSED_TRIMESTERS.includes(t)) {
-      toast.info(`📅 ${t}º Trimestre - Disponível em breve!`);
+    if (t !== 2) {
+      toast.info(`📅 ${t}º Trimestre - Em breve!`);
+      return;
+    }
+    
+    if (!provaoStatus.available) {
+      toast.info(`📅 Provão disponível em ${provaoStatus.daysToOpen} dias!`);
       return;
     }
     setProvaoSelectedTri(t);
@@ -255,8 +280,8 @@ const Index = () => {
     if (!provaoSelectedClass) return toast.error("Selecione uma turma.");
     if (PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri))
       return toast.info(`🔒 ${provaoSelectedTri}º Tri. encerrado.`);
-    if (!PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri))
-      return toast.info(`📅 ${provaoSelectedTri}º Tri. em breve!`);
+    if (!provaoStatus.available)
+      return toast.info(`📅 Disponível em ${provaoStatus.daysToOpen} dias!`);
     if (provaoSelectedClass.name === "Adolescentes")
       return toast.info("🚧 Em construção!");
 

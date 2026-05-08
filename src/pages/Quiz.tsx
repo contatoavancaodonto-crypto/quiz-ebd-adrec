@@ -164,11 +164,49 @@ const QuizPage = () => {
         }
 
         // Tenta carregar as perguntas primeiro da tabela 'questions' unificada (novo sistema de arquivo definitivo)
-        const { data: dbQuestions, error: dbQuestionsErr } = await supabase
-          .from("questions")
-          .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
-          .or(`quiz_id.eq.${quizId},lesson_id.eq.${quizId}`)
-          .eq("active", true);
+        let dbQuestions = null;
+        let dbQuestionsErr = null;
+
+        const { data: quizMeta } = await supabase
+          .from("quizzes")
+          .select("quiz_kind, total_questions")
+          .eq("id", quizId)
+          .maybeSingle();
+
+        const isTrimestral = quizMeta?.quiz_kind === 'trimestral' || store.trimester !== undefined && !quizId;
+
+        if (isTrimestral) {
+          console.log("Detectado Provão Trimestral. Buscando perguntas via RPC...");
+          const { data: provaoQs, error: provaoErr } = await supabase.rpc('get_trimestral_provao_questions', {
+            p_class_id: store.classId,
+            p_season_id: store.seasonId || null
+          });
+          
+          if (!provaoErr && provaoQs) {
+            dbQuestions = provaoQs.map(q => ({
+              id: q.id,
+              question_text: q.question_text,
+              option_a: q.option_a,
+              option_b: q.option_b,
+              option_c: q.option_c,
+              option_d: q.option_d,
+              correct_option: q.correct_option,
+              order_index: 0
+            }));
+          } else {
+            console.error("Erro ao buscar perguntas do provão:", provaoErr);
+          }
+        }
+
+        if (!dbQuestions) {
+          const { data: normalQs, error: normalErr } = await supabase
+            .from("questions")
+            .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+            .or(`quiz_id.eq.${quizId},lesson_id.eq.${quizId}`)
+            .eq("active", true);
+          dbQuestions = normalQs;
+          dbQuestionsErr = normalErr;
+        }
 
         let allQs: Question[] = [];
         let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
