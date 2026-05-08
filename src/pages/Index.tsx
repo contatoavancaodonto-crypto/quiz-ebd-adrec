@@ -247,11 +247,19 @@ const Index = () => {
   const startQuiz = (
     quizClassId: string,
     quizClassName: string,
-    trimester: number
+    trimester: number,
+    quizId?: string
   ) => {
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    
+    // Configura o store com os dados necessários
     setParticipant(fullNameLocal, quizClassId, quizClassName, trimester);
+    if (quizId) {
+      // Se tivermos um ID de quiz específico, já deixamos no store
+      useQuizStore.getState().setQuizId(quizId);
+    }
+
     if (profile.church_id && profile.church_name) {
       setChurch(profile.church_id, profile.church_name);
     }
@@ -265,13 +273,13 @@ const Index = () => {
       return toast.info("Você já respondeu o quiz desta semana 🎉");
     }
     if (weekClose.expired) return toast.error("Janela do quiz encerrada.");
-    startQuiz(userClass.id, userClass.name, 2);
+    startQuiz(userClass.id, userClass.name, 2, weeklyQuiz.id);
   };
 
   const handleStartProvao = () => {
     if (!provao) return;
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
-    startQuiz(userClass.id, userClass.name, 2);
+    startQuiz(userClass.id, userClass.name, 2, provao.id);
   };
 
   const weekCloseLabel = useMemo(() => {
