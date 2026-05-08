@@ -200,34 +200,38 @@ export default function AdminVerses() {
         body: { mode: "parse_weekly_lesson", text: aiText },
       });
       if (error) throw error;
-      
-      setForm(prev => {
-        const updatedForm = {
-          ...prev,
-          theme: data.theme || prev.theme,
-          reading_theme: data.reading_theme || prev.reading_theme,
-          description: data.description || prev.description,
-          lesson_number: data.lesson_number || prev.lesson_number,
-          trimester: data.trimester ? data.trimester.toString() : prev.trimester,
-          verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
-          questions: data.questions && data.questions.length > 0 
-            ? data.questions.map((q: any) => ({
-                ...q,
-                id: q.id || Math.random().toString(36).substr(2, 9)
-              })) 
-            : prev.questions
-        };
-        console.log("IA data applied to form:", updatedForm);
-        return updatedForm;
-      });
+      setAiPreviewData(data);
       setAiImportOpen(false);
-      setAiText("");
-      toast.success("Informações extraídas com sucesso!");
+      setAiPreviewOpen(true);
     } catch (err: any) {
       toast.error("Erro na IA: " + err.message);
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const applyAiPreview = () => {
+    const data = aiPreviewData;
+    if (!data) return;
+    setForm(prev => ({
+      ...prev,
+      theme: data.theme || prev.theme,
+      reading_theme: data.reading_theme || prev.reading_theme,
+      description: data.description || prev.description,
+      lesson_number: data.lesson_number || prev.lesson_number,
+      trimester: data.trimester ? data.trimester.toString() : prev.trimester,
+      verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
+      questions: data.questions && data.questions.length > 0
+        ? data.questions.map((q: any) => ({
+            ...q,
+            id: q.id || Math.random().toString(36).substr(2, 9),
+          }))
+        : prev.questions,
+    }));
+    setAiPreviewOpen(false);
+    setAiPreviewData(null);
+    setAiText("");
+    toast.success("Informações aplicadas ao formulário!");
   };
 
   const addQuestion = () => {
