@@ -206,9 +206,9 @@ export default function AdminVerses() {
       status,
       class_id: form.class_id || null
     };
-    console.log("Saving lesson payload:", payload);
 
     try {
+      let lessonId = editingId;
       if (editingId) {
         const { error, data } = await supabase
           .from("lessons")
@@ -216,11 +216,7 @@ export default function AdminVerses() {
           .eq("id", editingId)
           .select();
         
-        if (error) {
-          console.error("Supabase update error:", error);
-          throw new Error(`Erro ao atualizar: ${error.message} (${error.code})`);
-        }
-        
+        if (error) throw error;
         if (data && data[0]) {
           setLessons(prev => prev.map(l => l.id === editingId ? (data[0] as unknown as LicaoSemanal) : l));
         }
@@ -230,16 +226,47 @@ export default function AdminVerses() {
           .insert([payload as any])
           .select();
           
-        if (error) {
-          console.error("Supabase insert error:", error);
-          throw new Error(`Erro ao inserir: ${error.message} (${error.code})`);
-        }
-        
+        if (error) throw error;
         if (data && data[0]) {
+          lessonId = data[0].id;
           setLessons(prev => [data[0] as unknown as LicaoSemanal, ...prev]);
         }
       }
-      toast.success("Lição salva com sucesso!");
+
+      // Sincronização definitiva: Salvar perguntas na tabela unificada 'questions'
+      if (lessonId && form.questions && form.questions.length > 0) {
+        console.log("Sincronizando perguntas da lição com a tabela questions...");
+        
+        // Primeiro, desativa as perguntas antigas desta lição para evitar duplicatas
+        await supabase
+          .from("questions")
+          .update({ active: false })
+          .eq("lesson_id", lessonId);
+
+        // Prepara as novas perguntas
+        const questionsToSync = form.questions.map((q, index) => ({
+          lesson_id: lessonId,
+          question_text: q.pergunta,
+          option_a: q.alternativas?.a || "",
+          option_b: q.alternativas?.b || "",
+          option_c: q.alternativas?.c || "",
+          option_d: q.alternativas?.d || "",
+          correct_option: (q.respostaCorreta || "A").toUpperCase(),
+          order_index: index + 1,
+          active: true
+        }));
+
+        const { error: syncError } = await supabase
+          .from("questions")
+          .insert(questionsToSync);
+        
+        if (syncError) {
+          console.error("Erro ao sincronizar perguntas:", syncError);
+          toast.warning("Lição salva, mas houve um erro ao arquivar as perguntas no banco.");
+        }
+      }
+
+      toast.success("Lição salva e perguntas arquivadas com sucesso!");
       setOpen(false);
       setEditingId(null);
     } catch (err: any) {
@@ -404,8 +431,25 @@ export default function AdminVerses() {
 
       if (inserted && inserted[0]) {
         const saved = inserted[0] as unknown as LicaoSemanal;
+        
+        // Sincronização definitiva para importação IA
+        if (newForm.questions && newForm.questions.length > 0) {
+          const questionsToSync = newForm.questions.map((q, index) => ({
+            lesson_id: saved.id,
+            question_text: q.pergunta,
+            option_a: q.alternativas?.a || "",
+            option_b: q.alternativas?.b || "",
+            option_c: q.alternativas?.c || "",
+            option_d: q.alternativas?.d || "",
+            correct_option: (q.respostaCorreta || "A").toUpperCase(),
+            order_index: index + 1,
+            active: true
+          }));
+
+          await supabase.from("questions").insert(questionsToSync);
+        }
+
         setLessons(prev => [saved, ...prev]);
-        // Fechar tudo após salvamento bem-sucedido
         setEditingId(null);
       }
 
