@@ -112,8 +112,10 @@ export default function MeuPerfil() {
         show_avatar_in_ranking: showAvatar,
       })
       .eq("id", user.id);
-    if (error) toast.error("Erro ao salvar");
-    else {
+    if (error) {
+      console.error("Erro ao salvar:", error);
+      toast.error("Erro ao salvar");
+    } else {
       toast.success("Perfil atualizado");
       qc.invalidateQueries({ queryKey: ["full-profile"] });
     }

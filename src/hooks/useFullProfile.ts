@@ -43,7 +43,7 @@ export function useFullProfile() {
         id: data.id,
         first_name: data.first_name,
         last_name: data.last_name,
-        display_name: (data as any).display_name ?? null,
+        display_name: (data as any).display_name || null,
         email: data.email,
         phone: data.phone,
         class_name: (data as any).classes?.name ?? null,
