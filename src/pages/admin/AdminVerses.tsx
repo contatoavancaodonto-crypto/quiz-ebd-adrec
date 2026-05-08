@@ -150,16 +150,48 @@ export default function AdminVerses() {
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
     const payload = { ...form, status };
+    console.log("Saving lesson payload:", payload);
 
     try {
       if (editingId) {
-        const { error, data } = await supabase.from("lessons").update(payload).eq("id", editingId).select();
+        const { error, data } = await supabase
+          .from("lessons")
+          .update({
+            trimester: payload.trimester,
+            lesson_number: payload.lesson_number,
+            theme: payload.theme,
+            reading_theme: payload.reading_theme,
+            scheduled_date: payload.scheduled_date || null,
+            description: payload.description,
+            verses: payload.verses as any,
+            questions: payload.questions as any,
+            status: payload.status,
+            class_id: payload.class_id || null
+          })
+          .eq("id", editingId)
+          .select();
+        
         if (error) throw error;
         if (data && data[0]) {
           setLessons(prev => prev.map(l => l.id === editingId ? (data[0] as unknown as LicaoSemanal) : l));
         }
       } else {
-        const { error, data } = await supabase.from("lessons").insert(payload).select();
+        const { error, data } = await supabase
+          .from("lessons")
+          .insert([{
+            trimester: payload.trimester,
+            lesson_number: payload.lesson_number,
+            theme: payload.theme,
+            reading_theme: payload.reading_theme,
+            scheduled_date: payload.scheduled_date || null,
+            description: payload.description,
+            verses: payload.verses as any,
+            questions: payload.questions as any,
+            status: payload.status,
+            class_id: payload.class_id || null
+          }])
+          .select();
+          
         if (error) throw error;
         if (data && data[0]) {
           setLessons(prev => [data[0] as unknown as LicaoSemanal, ...prev]);
