@@ -36,7 +36,7 @@ serve(async (req) => {
     }
     const callerId = claimsData.claims.sub as string;
 
-    const { mode, text, imageUrl, type, id, userId } = await req.json();
+    const { mode, text, imageUrl, type, id, userId, available_classes } = await req.json();
 
     // Admin-gated modes: moderation + admin parsing flows
     const ADMIN_MODES = new Set([
