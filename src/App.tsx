@@ -31,7 +31,9 @@ import Configuracoes from "./pages/membro/Configuracoes";
 import Revista from "./pages/membro/Revista";
 import Suporte from "./pages/membro/Suporte";
 import Comunidade from "./pages/membro/Comunidade";
+import Conquistas from "./pages/membro/Conquistas";
 import { EmBreve } from "./pages/membro/EmBreve";
+
 
 // Admin
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -115,7 +117,9 @@ const App = () => (
               <Route path="/membro/perfil" element={<MeuPerfil />} />
               <Route path="/membro/desempenho" element={<MeuDesempenho />} />
               <Route path="/membro/historico" element={<Historico />} />
+              <Route path="/membro/conquistas" element={<Conquistas />} />
               <Route path="/membro/revista" element={<Revista />} />
+
               <Route path="/revistas" element={<Navigate to="/membro/revista" replace />} />
               <Route path="/Revistas" element={<Navigate to="/membro/revista" replace />} />
               <Route path="/membro/comunidade" element={<Comunidade />} />

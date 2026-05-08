@@ -283,8 +283,8 @@ const ResultPage = () => {
           )}
         </motion.div>
 
-        {/* Badges conquistados */}
-        <BadgesShowcase attemptId={store.attemptId} participantId={store.participantId} />
+        {/* Badges conquistados movidos para página dedicada */}
+
 
         {/* Rankings da SEMANA (por lesson_number, tempo como desempate) */}
         <WeeklyRankings
