@@ -255,7 +255,7 @@ const ResultPage = () => {
           </div>
 
           <p className="text-[10px] text-muted-foreground leading-relaxed italic border-t border-border/50 pt-3">
-            * Cada resposta correta vale 1 ponto. Quizzes semanais realizados dentro do prazo (segunda a domingo da lição) garantem +1 ponto extra de bonificação por participação.
+            * Cada resposta correta vale 1 ponto. {store.totalQuestions > 13 ? 'O provão trimestral avalia seu conhecimento acumulado nas 13 lições.' : 'Quizzes semanais realizados dentro do prazo (segunda a domingo da lição) garantem +1 ponto extra de bonificação por participação.'}
           </p>
                 <div className={`text-sm font-bold ${streakBonus > 0 ? "text-primary" : "text-muted-foreground"}`}>
                   +{streakBonus} pts
