@@ -101,7 +101,7 @@ export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
                 error={errors.pastorName}
               />
               <ModalField
-                label="Telefone"
+                label="Telefone do Pastor ou superintendente da EBD"
                 value={pastorPhone}
                 onChange={(v) => setPastorPhone(phoneMask(v))}
                 placeholder="(11) 99999-9999"
