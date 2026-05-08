@@ -65,6 +65,12 @@ export default function Harpa() {
         }}
         bottomNav={false}
       >
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.2 }}
+          className="px-4 pt-4"
+        >
         <div className="max-w-prose mx-auto space-y-6 text-[15px] leading-relaxed pb-8">
           {verseEntries.map(([num, text]) => (
             <div key={num} className="space-y-3">
@@ -83,6 +89,7 @@ export default function Harpa() {
             </div>
           ))}
         </div>
+        </motion.div>
       </MemberLayout>
     );
   }
@@ -93,6 +100,12 @@ export default function Harpa() {
       mobileHeader={{ variant: "back", title: "Harpa Cristã", subtitle: "640 hinos", backTo: "/" }}
     >
       <PageShell contentClassName="pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
         <PageHero
           eyebrow="Hinário oficial"
           title="Harpa Cristã"
@@ -162,6 +175,7 @@ export default function Harpa() {
             )}
           </div>
         )}
+        </motion.div>
       </PageShell>
     </MemberLayout>
   );

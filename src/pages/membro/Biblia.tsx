@@ -188,6 +188,11 @@ export default function Biblia() {
         bottomNav={false}
         contentPaddingMobile={false}
       >
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.2 }}
+        >
         <BibleStickyHeader
           title={selectedBook.name}
           subtitle={`Capítulo ${selectedChapter + 1}`}
@@ -223,6 +228,7 @@ export default function Biblia() {
             );
           })}
         </div>
+        </motion.div>
       </MemberLayout>
     );
   }
@@ -234,6 +240,11 @@ export default function Biblia() {
         mobileHeader={{ variant: "none" }}
         contentPaddingMobile={false}
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+        >
         <BibleStickyHeader
           title={selectedBook.name}
           subtitle={`${selectedBook.chapters.length} capítulos`}
@@ -263,6 +274,7 @@ export default function Biblia() {
             ))}
           </div>
         </div>
+        </motion.div>
       </MemberLayout>
     );
   }
@@ -308,6 +320,12 @@ export default function Biblia() {
       mobileHeader={{ variant: "back", title: "Bíblia Online", subtitle: "Almeida Corrigida Fiel", backTo: "/" }}
     >
       <PageShell contentClassName="pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
         <PageHero
           eyebrow="Almeida Corrigida Fiel"
           title="Bíblia Sagrada"
@@ -360,6 +378,7 @@ export default function Biblia() {
             </TabsContent>
           </Tabs>
         )}
+        </motion.div>
       </PageShell>
     </MemberLayout>
   );
