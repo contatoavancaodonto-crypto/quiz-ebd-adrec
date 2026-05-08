@@ -126,8 +126,19 @@ const ResultPage = () => {
         if (me) setChurchRank(me.position);
       }
     };
-    // pequeno delay para garantir trigger ter rodado
-    setTimeout(fetchAll, 600);
+
+    fetchAll();
+    
+    // Configura um listener real-time para atualizar o ranking assim que o broadcast chegar
+    const channel = supabase.channel(`result-refresh-${store.attemptId}`)
+      .on('broadcast', { event: 'rankings_update' }, () => {
+        fetchAll();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [store.attemptId, store.churchId, store.trimester, navigate]);
 
   if (showThankYou) {
