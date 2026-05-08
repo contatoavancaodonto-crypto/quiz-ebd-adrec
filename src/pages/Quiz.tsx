@@ -400,7 +400,7 @@ const QuizPage = () => {
                     playSound('ding');
                     setSelectedOption(label);
                     setConfirmed(true);
-                    store.setAnswer(currentQ.id, label);
+                    store.setAnswer(currentQ.id.toString(), label);
 
                     const { data, error } = await supabase.rpc("submit_answer", {
                       p_attempt_id: store.attemptId,
