@@ -16,7 +16,7 @@ function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
     return formatTimeMs(entry.total_time_ms);
   }
-  const s = entry.total_time_seconds;
+  const s = entry.total_time_seconds || 0;
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
@@ -276,7 +276,7 @@ const RankingPage = () => {
         {/* Mode tabs: Semana / Mensal / Trimestral */}
         <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="weekly">Semana</TabsTrigger>
+            <TabsTrigger value="weekly">Semanal</TabsTrigger>
             <TabsTrigger value="monthly">Mensal</TabsTrigger>
             <TabsTrigger value="classic">Trimestral</TabsTrigger>
           </TabsList>
