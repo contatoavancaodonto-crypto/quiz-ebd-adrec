@@ -149,25 +149,25 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
-    const payload = { ...form, status };
+    const payload = { 
+      trimester: form.trimester,
+      lesson_number: form.lesson_number,
+      theme: form.theme,
+      reading_theme: form.reading_theme,
+      scheduled_date: form.scheduled_date || null,
+      description: form.description,
+      verses: form.verses,
+      questions: form.questions,
+      status,
+      class_id: form.class_id || null
+    };
     console.log("Saving lesson payload:", payload);
 
     try {
       if (editingId) {
         const { error, data } = await supabase
           .from("lessons")
-          .update({
-            trimester: payload.trimester,
-            lesson_number: payload.lesson_number,
-            theme: payload.theme,
-            reading_theme: payload.reading_theme,
-            scheduled_date: payload.scheduled_date || null,
-            description: payload.description,
-            verses: payload.verses as any,
-            questions: payload.questions as any,
-            status: payload.status,
-            class_id: payload.class_id || null
-          })
+          .update(payload as any)
           .eq("id", editingId)
           .select();
         
@@ -182,18 +182,7 @@ export default function AdminVerses() {
       } else {
         const { error, data } = await supabase
           .from("lessons")
-          .insert([{
-            trimester: payload.trimester,
-            lesson_number: payload.lesson_number,
-            theme: payload.theme,
-            reading_theme: payload.reading_theme,
-            scheduled_date: payload.scheduled_date || null,
-            description: payload.description,
-            verses: payload.verses as any,
-            questions: payload.questions as any,
-            status: payload.status,
-            class_id: payload.class_id || null
-          }])
+          .insert([payload as any])
           .select();
           
         if (error) {
@@ -271,6 +260,9 @@ export default function AdminVerses() {
         ? data.questions.map((q: any) => ({
             ...q,
             id: q.id || Math.random().toString(36).substr(2, 9),
+            tipo: q.tipo || 'multipla_escolha',
+            alternativas: q.alternativas || { a: "", b: "", c: "", d: "" },
+            respostaCorreta: q.respostaCorreta || "a"
           }))
         : prev.questions,
     }));
