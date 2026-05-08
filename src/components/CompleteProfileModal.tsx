@@ -62,6 +62,16 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
   };
 
   const handleChurchRequestSubmit = (data: ChurchRequest) => {
+    const { churchName } = data;
+    const isDuplicate = CHURCHES.some(
+      (c) => c.toLowerCase() === churchName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      toast.error("Esta igreja já existe em nosso banco de dados.");
+      return;
+    }
+
     setChurch(OTHER_CHURCH);
     setChurchRequested(true);
     setPendingChurchRequest(data);
@@ -95,12 +105,11 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
         const { data: inserted, error: insErr } = await supabase
           .from("churches")
           .insert({
-            name: `SOLICITAÇÃO - ${pendingChurchRequest.pastorName}`,
+            name: pendingChurchRequest.churchName,
             requested: true,
             approved: false,
             requester_pastor_name: pendingChurchRequest.pastorName,
             requester_phone: pendingChurchRequest.pastorPhone.replace(/\D/g, ""),
-            // requester_area is removed from DB, so we don't send it.
           })
           .select("id")
           .single();

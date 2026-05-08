@@ -104,7 +104,17 @@ const Auth = () => {
     if (v === INDIVIDUAL) setChurchRequested(false);
   };
 
-  const handleChurchRequestSubmit = (_data: ChurchRequest) => {
+  const handleChurchRequestSubmit = async (data: ChurchRequest) => {
+    const { churchName } = data;
+    const isDuplicate = CHURCHES.some(
+      (c) => c.toLowerCase() === churchName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      toast.error("Esta igreja já existe em nosso banco de dados.");
+      return;
+    }
+
     setChurch(OTHER_CHURCH);
     setChurchRequested(true);
     setChurchModalOpen(false);

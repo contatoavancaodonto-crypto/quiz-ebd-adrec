@@ -11,9 +11,9 @@ const phoneMask = (v: string) => {
 };
 
 const schema = z.object({
+  churchName: z.string().trim().min(1, "Digite o nome da Igreja"),
   pastorName: z.string().trim().min(1, "Digite o nome do Pastor"),
   pastorPhone: z.string().trim().min(14, "Telefone inválido"),
-  // pastorArea is no longer used
 });
 
 export type ChurchRequest = z.infer<typeof schema>;
@@ -25,15 +25,15 @@ interface Props {
 }
 
 export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
+  const [churchName, setChurchName] = useState("");
   const [pastorName, setPastorName] = useState("");
   const [pastorPhone, setPastorPhone] = useState("");
-  // pastorArea state removed
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse({ pastorName, pastorPhone });
+    const parsed = schema.safeParse({ churchName, pastorName, pastorPhone });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
       parsed.error.issues.forEach((i) => (fe[i.path[0] as string] = i.message));
@@ -43,7 +43,7 @@ export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
     setSubmitting(true);
     setTimeout(() => {
       onSubmit(parsed.data);
-      setPastorName(""); setPastorPhone(""); setErrors({});
+      setChurchName(""); setPastorName(""); setPastorPhone(""); setErrors({});
       setSubmitting(false);
     }, 300);
   };
@@ -86,6 +86,13 @@ export const AddChurchModal = ({ open, onClose, onSubmit }: Props) => {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              <ModalField
+                label="Nome da Igreja"
+                value={churchName}
+                onChange={setChurchName}
+                placeholder="Ex.: Assembleia de Deus - Sede"
+                error={errors.churchName}
+              />
               <ModalField
                 label="Nome do Pastor Presidente"
                 value={pastorName}
