@@ -317,41 +317,10 @@ const Auth = () => {
                 className="space-y-3"
               >
                 <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleChurchChange(ADD_CHURCH)}
-                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 group ${
-                      church === ADD_CHURCH || (church === OTHER_CHURCH && churchRequested)
-                        ? "border-primary bg-primary/5 shadow-sm shadow-primary/20"
-                        : "border-primary/30 hover:border-primary/50 bg-background"
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <Plus className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-bold text-foreground text-center uppercase tracking-tight">Adicionar Igreja</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleChurchChange(INDIVIDUAL)}
-                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 group ${
-                      church === INDIVIDUAL
-                        ? "border-primary bg-primary/5 shadow-sm shadow-primary/20"
-                        : "border-primary/30 hover:border-primary/50 bg-background"
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-bold text-foreground text-center uppercase tracking-tight">Individual</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
                   <Field label="Nome" value={firstName} onChange={setFirstName} placeholder="João" error={errors.firstName} />
                   <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
                 </div>
+
                 <Select
                   label="Qual sua classe?" value={classId} onChange={setClassId}
                   placeholder="Selecione sua classe" error={errors.class_id}
@@ -364,8 +333,9 @@ const Auth = () => {
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
                     ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
                     { value: INDIVIDUAL, label: INDIVIDUAL },
-                    { value: ADD_CHURCH, label: `+ ${ADD_CHURCH}` },
                   ]}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL}
+                  onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
                 />
                 <Field
@@ -450,9 +420,10 @@ const Select = ({ label, value, onChange, placeholder, options, error, hint }: {
   </div>
 );
 
-const SearchableSelect = ({ label, value, onChange, placeholder, options, error, hint }: {
+const SearchableSelect = ({ label, value, onChange, placeholder, options, error, hint, showAddButton, onAddClick }: {
   label: string; value: string; onChange: (v: string) => void; placeholder: string;
   options: { value: string; label: string }[]; error?: string; hint?: string;
+  showAddButton?: boolean; onAddClick?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -499,18 +470,30 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
             {filtered.length === 0 ? (
               <div className="px-3.5 py-2.5 text-sm text-muted-foreground">Nenhuma igreja encontrada</div>
             ) : (
-              filtered.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}
-                  className={`w-full text-left px-3.5 py-2.5 text-sm hover:bg-muted transition-colors ${
-                    o.value === value ? "bg-muted text-primary font-semibold" : "text-foreground"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))
+              <>
+                {filtered.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}
+                    className={`w-full text-left px-3.5 py-2.5 text-sm hover:bg-muted transition-colors ${
+                      o.value === value ? "bg-muted text-primary font-semibold" : "text-foreground"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+                {showAddButton && (
+                  <button
+                    type="button"
+                    onClick={() => { onAddClick?.(); setOpen(false); }}
+                    className="w-full text-left px-3.5 py-2.5 text-sm text-primary font-bold hover:bg-primary/5 transition-colors border-t border-border flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    ADICIONAR IGREJA
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
