@@ -250,7 +250,11 @@ export default function AdminVerses() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "parse_weekly_lesson", text: aiText },
+        body: { 
+          mode: "parse_weekly_lesson", 
+          text: aiText,
+          available_classes: classes.map(c => ({ id: c.id, name: c.name }))
+        },
       });
       if (error) throw error;
       setAiPreviewData(data);
