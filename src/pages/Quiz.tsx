@@ -121,14 +121,18 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
+            console.log("Resultado da busca por lessonQuiz:", lessonQuiz);
+
             let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
 
             if (lessonQuiz && Array.isArray(lessonQuiz.questions) && lessonQuiz.questions.length > 0) {
               quizId = lessonQuiz.id;
               store.setQuizId(quizId);
               quizSource = 'lesson_table';
+              console.log("Quiz detectado na tabela lessons:", { quizId, questionsCount: lessonQuiz.questions.length });
               store.setQuizMetadata("weekly", lessonQuiz.questions.length);
             } else {
+              console.log("Nenhum quiz válido na tabela lessons, buscando na tabela quizzes tradicional...");
               // Prioridade 2: Tabela de quizzes tradicional
               const { data: openQuizzes } = await supabase
                 .from("quizzes")
