@@ -843,14 +843,42 @@ export default function AdminVerses() {
                         className="h-9 bg-white/5"
                       />
                     </div>
-                    <div className="space-y-1 col-span-2">
-                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Agendamento</Label>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Data Início</Label>
                       <Input
                         type="date"
                         value={aiPreviewData.scheduled_date || ""}
                         onChange={e => setAiPreviewData({ ...aiPreviewData, scheduled_date: e.target.value })}
                         className="h-9 bg-white/5"
                       />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Data Fim</Label>
+                      <Input
+                        type="date"
+                        value={aiPreviewData.scheduled_end_date?.split('T')[0] || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, scheduled_end_date: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-3 mt-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Turma Identificada</Label>
+                      <Select 
+                        value={aiPreviewData.class_id || "global"} 
+                        onValueChange={(val) => setAiPreviewData({ ...aiPreviewData, class_id: val === "global" ? null : val })}
+                      >
+                        <SelectTrigger className="h-9 bg-white/5">
+                          <SelectValue placeholder="Selecione a turma ou deixe Global" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/10 text-white">
+                          <SelectItem value="global">Global (Todas as turmas)</SelectItem>
+                          {classes.map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="space-y-1">
