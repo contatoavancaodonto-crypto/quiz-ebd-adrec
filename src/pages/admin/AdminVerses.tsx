@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Sparkles, BookOpen, Trash2, CalendarDays, HelpCircle, CheckCircle2, AlertCircle, Pencil, ChevronRight } from "lucide-react";
+import { Plus, Sparkles, BookOpen, Trash2, CalendarDays, HelpCircle, CheckCircle2, AlertCircle, Pencil, ChevronRight, Users } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { cn } from "@/lib/utils";
 
@@ -471,10 +471,18 @@ export default function AdminVerses() {
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               
               <CardHeader className="relative z-10 pb-3">
-                <div className="flex justify-between items-start mb-2">
-                  <Badge variant="outline" className="bg-white/5 border-white/10 text-white">
-                    Lição {lesson.lesson_number} • {lesson.trimester}º TRI
-                  </Badge>
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-white/5 border-white/10 text-white">
+                      Lição {lesson.lesson_number} • {lesson.trimester}º TRI
+                    </Badge>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {lesson.class_id 
+                        ? (classes.find(c => c.id === lesson.class_id)?.name || "Turma") 
+                        : "Todas as Turmas"}
+                    </Badge>
+                  </div>
                   {lesson.status === 'completo' ? (
                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Completo
