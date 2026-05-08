@@ -305,7 +305,7 @@ const Auth = () => {
                   />
                   Manter conectado
                 </label>
-                <button type="button" className="text-xs text-primary hover:underline">
+                <button type="button" className="text-xs text-primary hover:underline" onClick={() => toast.info("Funcionalidade de recuperação de senha em desenvolvimento.")}>
                   Esqueci minha senha
                 </button>
                 <SubmitButton submitting={submitting} disabled={false}>Acessar minha conta</SubmitButton>
