@@ -117,10 +117,7 @@ const QuizPage = () => {
               .from("lessons")
               .select("id, questions")
               .eq("class_id", store.classId)
-              .not("questions", "is", null)
-              .not("questions", "eq", "[]")
               .lte("scheduled_date", today)
-              .or(`scheduled_end_date.gte.${nowIso},scheduled_end_date.is.null`)
               .order("scheduled_date", { ascending: false })
               .limit(1)
               .maybeSingle();
