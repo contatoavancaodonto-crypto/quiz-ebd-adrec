@@ -28,12 +28,13 @@ const phoneMask = (v: string) => {
 
 const detectIdentifier = (v: string) => (/^[\d\s()-]+$/.test(v) ? "phone" : "email");
 
-const passwordStrength = (pwd: string): { score: 0 | 1 | 2 | 3; label: string } => {
+const passwordStrength = (pwd: string): { score: 0 | 1 | 2 | 3 | 4; label: string } => {
   let s = 0;
   if (pwd.length >= 8) s++;
   if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) s++;
-  if (/\d/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) s++;
-  return { score: s as 0 | 1 | 2 | 3, label: ["Fraca", "Fraca", "Média", "Forte"][s] };
+  if (/\d/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  return { score: s as 0 | 1 | 2 | 3 | 4, label: ["Fraca", "Fraca", "Média", "Forte", "Muito Forte"][s] };
 };
 
 const loginSchema = z.object({
@@ -100,12 +101,16 @@ const Auth = () => {
       return;
     }
     setChurch(v);
-    if (v !== OTHER_CHURCH && v !== INDIVIDUAL) setChurchRequested(false);
-    if (v === INDIVIDUAL) setChurchRequested(false);
+    if (v !== INDIVIDUAL) {
+      const isApproved = CHURCHES.some(c => c === v);
+      if (isApproved) setChurchRequested(false);
+    } else {
+      setChurchRequested(false);
+    }
   };
 
   const handleChurchRequestSubmit = async (data: ChurchRequest) => {
-    const { churchName } = data;
+    const { churchName, pastorName, pastorPhone } = data;
     const isDuplicate = CHURCHES.some(
       (c) => c.toLowerCase() === churchName.toLowerCase()
     );
@@ -115,10 +120,26 @@ const Auth = () => {
       return;
     }
 
-    setChurch(OTHER_CHURCH);
-    setChurchRequested(true);
-    setChurchModalOpen(false);
-    toast.success("Solicitação enviada!");
+    try {
+      const { error } = await supabase.from("churches").insert({
+        name: churchName,
+        pastor_president: pastorName,
+        requester_phone: pastorPhone.replace(/\D/g, ""),
+        approved: false,
+        active: true,
+        requested: true,
+      });
+
+      if (error) throw error;
+
+      setChurch(churchName);
+      setChurchRequested(true);
+      setChurchModalOpen(false);
+      toast.success("Solicitação enviada! Ela aparecerá após aprovação.");
+    } catch (error: any) {
+      console.error("Erro ao solicitar igreja:", error);
+      toast.error("Erro ao enviar solicitação.");
+    }
   };
 
   useEffect(() => {
@@ -342,9 +363,9 @@ const Auth = () => {
                   options={[
                     { value: INDIVIDUAL, label: INDIVIDUAL },
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
-                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    ...(churchRequested ? [{ value: church, label: church }] : []),
                   ]}
-                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL && !churchRequested}
                   onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
                 />
@@ -363,10 +384,10 @@ const Auth = () => {
                 />
                 {password && (
                   <div className="flex gap-1 items-center">
-                    {[0, 1, 2].map((i) => (
+                    {[0, 1, 2, 3].map((i) => (
                       <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
                         i < pwdStrength.score
-                          ? pwdStrength.score === 1 ? "bg-destructive" : pwdStrength.score === 2 ? "bg-primary/70" : "bg-primary"
+                          ? pwdStrength.score <= 2 ? "bg-destructive" : pwdStrength.score === 3 ? "bg-primary/70" : "bg-primary"
                           : "bg-muted"
                       }`} />
                     ))}
@@ -452,7 +473,13 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return options;
-    return options.filter((o) => o.label.toLowerCase().includes(q));
+    const isExactMatchInOptions = options.some(o => o.label.toLowerCase() === q);
+    
+    let result = options.filter((o) => o.label.toLowerCase().includes(q));
+    
+    // Se não houver match exato e não estiver na lista filtrada, 
+    // e o usuário digitou algo substancial, poderíamos adicionar um feedback visual
+    return result;
   }, [options, query]);
 
   const selectedLabel = options.find((o) => o.value === value)?.label ?? "";
@@ -464,7 +491,16 @@ const SearchableSelect = ({ label, value, onChange, placeholder, options, error,
         <input
           type="text"
           value={open ? query : selectedLabel}
-          onChange={(e) => { setQuery(e.target.value); if (!open) setOpen(true); }}
+          onChange={(e) => { 
+            const val = e.target.value;
+            setQuery(val); 
+            if (!open) setOpen(true);
+            // If the user is typing, we might want to update the parent state if they just stop there
+            // but usually we wait for a selection. However, the requirement says "when user starts writing"
+            // we show the option. The parent already controls showAddButton via the 'church' state.
+            // So we should sync query to parent if we want it to react.
+            onChange(val);
+          }}
           onFocus={() => { setOpen(true); setQuery(""); }}
           placeholder={placeholder}
           className={`w-full px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-text ${
