@@ -671,7 +671,7 @@ const Index = () => {
                   Provões trimestrais
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Acesse o provão de 13 perguntas de cada trimestre.
+                  Acesse o provão de 20 perguntas de cada trimestre.
                 </p>
               </div>
 
@@ -717,7 +717,7 @@ const Index = () => {
                               {t}º
                             </div>
                             <div className="text-[9px] text-muted-foreground">
-                              {closed ? "Encerrado" : available ? "Tri." : (t === 2 ? `${provaoStatus.daysToOpen} dias` : "Em breve")}
+                              {closed ? "Encerrado" : available ? "Tri." : (t === 2 ? `em ${provaoStatus.daysToOpen} dias` : "Em breve")}
                             </div>
                           </motion.button>
                         );
@@ -772,7 +772,7 @@ const Index = () => {
                         <Lock className="w-4 h-4" />
                         {provaoSelectedTri === 2 && !provaoStatus.available 
                           ? `Disponível em ${provaoStatus.daysToOpen} dias` 
-                          : `${provaoSelectedTri}º Tri. Encerrado`}
+                          : `${provaoSelectedTri}º Tri. indisponível`}
                       </>
                     ) : (
                       <>
