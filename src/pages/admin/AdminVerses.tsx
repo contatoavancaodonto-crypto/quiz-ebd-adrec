@@ -196,6 +196,7 @@ export default function AdminVerses() {
       }
       toast.success("Lição salva com sucesso!");
       setOpen(false);
+      setEditingId(null);
     } catch (err: any) {
       console.error("Error saving lesson:", err);
       toast.error(err.message || "Erro inesperado ao salvar lição");
@@ -289,7 +290,7 @@ export default function AdminVerses() {
     setAiPreviewOpen(false);
     setAiPreviewData(null);
     setAiText("");
-    setOpen(true);
+    if (!open) setOpen(true);
     toast.success("Dados aplicados ao editor. Revise e clique em Salvar Lição.");
   };
 
@@ -346,6 +347,7 @@ export default function AdminVerses() {
       setAiPreviewData(null);
       setAiText("");
       setOpen(false);
+      setEditingId(null);
       toast.success("Lição salva com sucesso!");
     } catch (err: any) {
       console.error("[IA] Error saving lesson:", err);
