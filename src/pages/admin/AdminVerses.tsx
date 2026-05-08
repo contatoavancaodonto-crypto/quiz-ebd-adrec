@@ -153,16 +153,21 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
-    // Auto-calculate end date if not provided (Sunday 23:59)
+    // Ensure end date is Sunday 23:59 if not provided or if it's just a date
     let finalEndDate = form.scheduled_end_date;
-    if (!finalEndDate && form.scheduled_date) {
-      const date = new Date(form.scheduled_date + "T12:00:00");
-      const day = date.getDay();
-      const diff = (7 - day) % 7;
-      const nextSunday = new Date(date);
-      nextSunday.setDate(date.getDate() + diff);
-      nextSunday.setHours(23, 59, 59, 999);
-      finalEndDate = nextSunday.toISOString();
+    if (form.scheduled_date) {
+      if (!finalEndDate) {
+        const date = new Date(form.scheduled_date + "T12:00:00");
+        const day = date.getDay();
+        const diff = (7 - day) % 7;
+        const nextSunday = new Date(date);
+        nextSunday.setDate(date.getDate() + diff);
+        nextSunday.setHours(23, 59, 59, 999);
+        finalEndDate = nextSunday.toISOString();
+      } else if (finalEndDate.length <= 10) {
+        // If it's just YYYY-MM-DD, add the time
+        finalEndDate = `${finalEndDate}T23:59:59.999Z`;
+      }
     }
 
     const payload = { 
@@ -250,7 +255,11 @@ export default function AdminVerses() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("community-ai", {
-        body: { mode: "parse_weekly_lesson", text: aiText },
+        body: { 
+          mode: "parse_weekly_lesson", 
+          text: aiText,
+          available_classes: classes.map(c => ({ id: c.id, name: c.name }))
+        },
       });
       if (error) throw error;
       setAiPreviewData(data);
@@ -293,7 +302,7 @@ export default function AdminVerses() {
       verses: sanitizedVerses,
       questions: sanitizedQuestions,
       status: 'incompleto',
-      class_id: form.class_id,
+      class_id: data.class_id || form.class_id,
     };
   };
 
@@ -330,16 +339,21 @@ export default function AdminVerses() {
       const hasQuestions = newForm.questions && newForm.questions.length > 0;
       const status = (hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
-      // Auto-calculate end date if not provided (Sunday 23:59)
+      // Ensure end date is Sunday 23:59 if not provided or if it's just a date
       let finalEndDate = newForm.scheduled_end_date;
-      if (!finalEndDate && newForm.scheduled_date) {
-        const date = new Date(newForm.scheduled_date + "T12:00:00");
-        const day = date.getDay();
-        const diff = (7 - day) % 7;
-        const nextSunday = new Date(date);
-        nextSunday.setDate(date.getDate() + diff);
-        nextSunday.setHours(23, 59, 59, 999);
-        finalEndDate = nextSunday.toISOString();
+      if (newForm.scheduled_date) {
+        if (!finalEndDate) {
+          const date = new Date(newForm.scheduled_date + "T12:00:00");
+          const day = date.getDay();
+          const diff = (7 - day) % 7;
+          const nextSunday = new Date(date);
+          nextSunday.setDate(date.getDate() + diff);
+          nextSunday.setHours(23, 59, 59, 999);
+          finalEndDate = nextSunday.toISOString();
+        } else if (finalEndDate.length <= 10) {
+          // If it's just YYYY-MM-DD, add the time
+          finalEndDate = `${finalEndDate}T23:59:59.999Z`;
+        }
       }
 
       const payload = {
@@ -829,14 +843,42 @@ export default function AdminVerses() {
                         className="h-9 bg-white/5"
                       />
                     </div>
-                    <div className="space-y-1 col-span-2">
-                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Agendamento</Label>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Data Início</Label>
                       <Input
                         type="date"
                         value={aiPreviewData.scheduled_date || ""}
                         onChange={e => setAiPreviewData({ ...aiPreviewData, scheduled_date: e.target.value })}
                         className="h-9 bg-white/5"
                       />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Data Fim</Label>
+                      <Input
+                        type="date"
+                        value={aiPreviewData.scheduled_end_date?.split('T')[0] || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, scheduled_end_date: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-3 mt-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Turma Identificada</Label>
+                      <Select 
+                        value={aiPreviewData.class_id || "global"} 
+                        onValueChange={(val) => setAiPreviewData({ ...aiPreviewData, class_id: val === "global" ? null : val })}
+                      >
+                        <SelectTrigger className="h-9 bg-white/5">
+                          <SelectValue placeholder="Selecione a turma ou deixe Global" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/10 text-white">
+                          <SelectItem value="global">Global (Todas as turmas)</SelectItem>
+                          {classes.map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="space-y-1">

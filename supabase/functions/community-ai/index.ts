@@ -36,7 +36,7 @@ serve(async (req) => {
     }
     const callerId = claimsData.claims.sub as string;
 
-    const { mode, text, imageUrl, type, id, userId } = await req.json();
+    const { mode, text, imageUrl, type, id, userId, available_classes } = await req.json();
 
     // Admin-gated modes: moderation + admin parsing flows
     const ADMIN_MODES = new Set([
@@ -247,6 +247,7 @@ serve(async (req) => {
     }
 
     if (mode === "parse_weekly_lesson") {
+      const classesList = available_classes ? JSON.stringify(available_classes) : "Nenhuma turma informada";
       const messages = [
         {
           role: "system",
@@ -259,6 +260,8 @@ serve(async (req) => {
             "reading_theme": "Tema da Leitura (ex: Fé e Obras)",
             "description": "Breve descrição opcional",
             "scheduled_date": "YYYY-MM-DD",
+            "scheduled_end_date": "YYYY-MM-DD",
+            "class_id": "UUID",
             "verses": {
               "segunda": { "referencia": "...", "texto": "...", "observacao": "" },
               "terca": { "referencia": "...", "texto": "...", "observacao": "" },
@@ -281,12 +284,14 @@ serve(async (req) => {
           Regras:
           1. Extraia 6 versículos (de segunda a sábado). O domingo será reservado apenas para o Quiz.
           2. EXTRAIA o tema da leitura (reading_theme) se presente.
-          3. EXTRAIA a data de agendamento (scheduled_date) se houver alguma data clara para o início da lição.
-          4. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.
-          5. NUNCA invente ou crie perguntas novas que não estejam no texto.
-          6. Se não houver perguntas no texto, retorne "questions": [].
-          7. "trimester" deve ser uma string (ex: "1", "2").
-          8. "lesson_number" deve ser um número inteiro.`,
+          3. DATA DE ENTRADA (scheduled_date): Identifique a menor data (início) mencionada para esta lição. Formato YYYY-MM-DD.
+          4. DATA DE SAÍDA (scheduled_end_date): Identifique a maior data (fim) mencionada. Se não houver, use o domingo seguinte ao início às 23:59 (formato ISO 8601 ou YYYY-MM-DD).
+          5. TURMA (class_id): Identifique qual turma o texto se refere comparando com esta lista: ${classesList}. Retorne apenas o ID (UUID). Se não encontrar, retorne null.
+          6. EXTRAIA perguntas APENAS se elas estiverem explicitamente presentes no texto enviado.
+          7. NUNCA invente ou crie perguntas novas que não estejam no texto.
+          8. Se não houver perguntas no texto, retorne "questions": [].
+          9. "trimester" deve ser uma string (ex: "1", "2").
+          10. "lesson_number" deve ser um número inteiro.`,
         },
         { role: "user", content: text },
       ];
