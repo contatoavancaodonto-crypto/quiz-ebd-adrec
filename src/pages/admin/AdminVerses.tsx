@@ -297,7 +297,7 @@ export default function AdminVerses() {
       verses: sanitizedVerses,
       questions: sanitizedQuestions,
       status: 'incompleto',
-      class_id: form.class_id,
+      class_id: data.class_id || form.class_id,
     };
   };
 
