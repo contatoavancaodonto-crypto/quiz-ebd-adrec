@@ -675,17 +675,22 @@ export default function AdminVerses() {
                   </div>
                   <div className="space-y-1.5">
                     <Label>Data de Início</Label>
-                    <Input type="date" value={form.scheduled_date} onChange={e => setForm({...form, scheduled_date: e.target.value})} className="bg-white/5" />
+                    <Input 
+                      type="date" 
+                      value={form.scheduled_date ? form.scheduled_date.slice(0, 10) : ""} 
+                      onChange={e => setForm({...form, scheduled_date: e.target.value})} 
+                      className="bg-white/5" 
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Data Final (Opcional)</Label>
                     <Input 
-                      type="datetime-local" 
-                      value={form.scheduled_end_date ? new Date(new Date(form.scheduled_end_date).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""} 
-                      onChange={e => setForm({...form, scheduled_end_date: e.target.value ? new Date(e.target.value).toISOString() : ""})} 
+                      type="date" 
+                      value={form.scheduled_end_date ? form.scheduled_end_date.slice(0, 10) : ""} 
+                      onChange={e => setForm({...form, scheduled_end_date: e.target.value})} 
                       className="bg-white/5" 
                     />
-                    <p className="text-[10px] text-muted-foreground italic">Padrão: Domingo às 23:59</p>
+                    <p className="text-[10px] text-muted-foreground italic text-center">Saída automática às 23:59</p>
                   </div>
                 </div>
                 <div className="space-y-1.5">
