@@ -982,8 +982,11 @@ export default function AdminVerses() {
             >
               Voltar e editar texto
             </Button>
-            <Button onClick={applyAiPreview} className="bg-primary hover:bg-primary/90 min-w-[160px]">
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Aplicar ao formulário
+            <Button onClick={applyAiPreview} variant="outline" className="border-primary/30 text-primary min-w-[180px]">
+              <Pencil className="w-4 h-4 mr-2" /> Aplicar e revisar
+            </Button>
+            <Button onClick={applyAndSaveAi} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[180px]">
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {saving ? "Salvando..." : "Salvar lição agora"}
             </Button>
           </DialogFooter>
         </DialogContent>
