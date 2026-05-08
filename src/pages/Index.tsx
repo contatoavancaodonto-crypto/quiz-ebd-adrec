@@ -471,8 +471,15 @@ const Index = () => {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl border border-border bg-card p-5 text-center"
+                className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 text-center"
               >
+                {/* Alerta de Lançamento Próximo (Menos de 6h para 00:00) */}
+                {!nextOpen.expired && nextOpen.days === 0 && nextOpen.hours < 6 && (
+                  <div className="absolute top-0 left-0 right-0 py-1 px-3 bg-indigo-600 text-white text-[9px] font-bold text-center flex items-center justify-center gap-1.5 animate-pulse z-20">
+                    <Timer className="w-3 h-3" />
+                    PREPARE-SE: Nova lição libera hoje à meia-noite!
+                  </div>
+                )}
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mb-2">
                   <CalendarClock className="w-6 h-6 text-primary" />
                 </div>
