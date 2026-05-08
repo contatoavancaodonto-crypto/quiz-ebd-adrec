@@ -105,7 +105,7 @@ const Auth = () => {
   };
 
   const handleChurchRequestSubmit = async (data: ChurchRequest) => {
-    const { churchName } = data;
+    const { churchName, pastorName, pastorPhone } = data;
     const isDuplicate = CHURCHES.some(
       (c) => c.toLowerCase() === churchName.toLowerCase()
     );
@@ -115,10 +115,26 @@ const Auth = () => {
       return;
     }
 
-    setChurch(OTHER_CHURCH);
-    setChurchRequested(true);
-    setChurchModalOpen(false);
-    toast.success("Solicitação enviada!");
+    try {
+      const { error } = await supabase.from("churches").insert({
+        name: churchName,
+        pastor_president: pastorName,
+        requester_phone: pastorPhone.replace(/\D/g, ""),
+        approved: false,
+        active: true,
+        requested: true,
+      });
+
+      if (error) throw error;
+
+      setChurch(churchName);
+      setChurchRequested(true);
+      setChurchModalOpen(false);
+      toast.success("Solicitação enviada! Ela aparecerá após aprovação.");
+    } catch (error: any) {
+      console.error("Erro ao solicitar igreja:", error);
+      toast.error("Erro ao enviar solicitação.");
+    }
   };
 
   useEffect(() => {
