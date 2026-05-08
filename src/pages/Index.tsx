@@ -19,6 +19,8 @@ import {
   FileText,
   History,
   ArrowRight,
+  AlertCircle,
+  Timer,
 } from "lucide-react";
 import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
@@ -383,9 +385,17 @@ const Index = () => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
-                className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5"
+                className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5 relative overflow-hidden"
               >
-                <div className="flex items-start gap-3 mb-3">
+                {/* Alerta de Expiração Próxima (Menos de 6h para dom 23:59) */}
+                {!weekClose.expired && weekClose.days === 0 && weekClose.hours < 6 && (
+                  <div className="absolute top-0 left-0 right-0 py-1.5 px-3 bg-amber-500 text-white text-[10px] font-bold text-center flex items-center justify-center gap-1.5 animate-pulse z-20">
+                    <AlertCircle className="w-3 h-3" />
+                    ATENÇÃO: O quiz encerra hoje às 23:59!
+                  </div>
+                )}
+
+                <div className="flex items-start gap-3 mb-3 mt-2">
                   <div className="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
                     <Sparkles className="w-6 h-6 text-primary-foreground" />
                   </div>
