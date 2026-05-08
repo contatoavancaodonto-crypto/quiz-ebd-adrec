@@ -67,6 +67,8 @@ export default function AdminVerses() {
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
+  const [aiPreviewOpen, setAiPreviewOpen] = useState(false);
+  const [aiPreviewData, setAiPreviewData] = useState<any>(null);
 
   const [form, setForm] = useState<Omit<LicaoSemanal, 'id'>>({
     trimester: "1",
@@ -198,34 +200,38 @@ export default function AdminVerses() {
         body: { mode: "parse_weekly_lesson", text: aiText },
       });
       if (error) throw error;
-      
-      setForm(prev => {
-        const updatedForm = {
-          ...prev,
-          theme: data.theme || prev.theme,
-          reading_theme: data.reading_theme || prev.reading_theme,
-          description: data.description || prev.description,
-          lesson_number: data.lesson_number || prev.lesson_number,
-          trimester: data.trimester ? data.trimester.toString() : prev.trimester,
-          verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
-          questions: data.questions && data.questions.length > 0 
-            ? data.questions.map((q: any) => ({
-                ...q,
-                id: q.id || Math.random().toString(36).substr(2, 9)
-              })) 
-            : prev.questions
-        };
-        console.log("IA data applied to form:", updatedForm);
-        return updatedForm;
-      });
+      setAiPreviewData(data);
       setAiImportOpen(false);
-      setAiText("");
-      toast.success("Informações extraídas com sucesso!");
+      setAiPreviewOpen(true);
     } catch (err: any) {
       toast.error("Erro na IA: " + err.message);
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const applyAiPreview = () => {
+    const data = aiPreviewData;
+    if (!data) return;
+    setForm(prev => ({
+      ...prev,
+      theme: data.theme || prev.theme,
+      reading_theme: data.reading_theme || prev.reading_theme,
+      description: data.description || prev.description,
+      lesson_number: data.lesson_number || prev.lesson_number,
+      trimester: data.trimester ? data.trimester.toString() : prev.trimester,
+      verses: data.verses ? { ...prev.verses, ...data.verses } : prev.verses,
+      questions: data.questions && data.questions.length > 0
+        ? data.questions.map((q: any) => ({
+            ...q,
+            id: q.id || Math.random().toString(36).substr(2, 9),
+          }))
+        : prev.questions,
+    }));
+    setAiPreviewOpen(false);
+    setAiPreviewData(null);
+    setAiText("");
+    toast.success("Informações aplicadas ao formulário!");
   };
 
   const addQuestion = () => {
@@ -610,6 +616,158 @@ export default function AdminVerses() {
             <Button variant="ghost" onClick={() => setAiImportOpen(false)}>Cancelar</Button>
             <Button onClick={handleAiImport} disabled={aiLoading} className="bg-primary hover:bg-primary/90">
               {aiLoading ? "Processando..." : "Gerar Lição"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL DE PRÉVIA DA IA */}
+      <Dialog open={aiPreviewOpen} onOpenChange={setAiPreviewOpen}>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 overflow-hidden bg-slate-950 border-white/10 flex flex-col">
+          <DialogHeader className="p-6 pb-3 border-b border-white/10">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="w-5 h-5 text-primary" /> Prévia da Extração da IA
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Confira o que a IA extraiu antes de preencher o formulário. Você pode aplicar ou descartar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="flex-1 px-6 py-4">
+            {aiPreviewData && (
+              <div className="space-y-6 pb-6">
+                {/* Informações Gerais */}
+                <section className="space-y-3">
+                  <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">1</span>
+                    Informações Gerais
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                      <p className="text-xs text-muted-foreground mb-1">Trimestre</p>
+                      <p className="text-sm font-bold">{aiPreviewData.trimester ?? "—"}º</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                      <p className="text-xs text-muted-foreground mb-1">Lição Nº</p>
+                      <p className="text-sm font-bold">{aiPreviewData.lesson_number ?? "—"}</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">Agendamento</p>
+                      <p className="text-sm font-bold">
+                        {aiPreviewData.scheduled_date
+                          ? new Date(aiPreviewData.scheduled_date + "T00:00:00").toLocaleDateString("pt-BR")
+                          : "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground mb-1">Tema da Lição</p>
+                    <p className="text-sm font-semibold text-white">{aiPreviewData.theme || "—"}</p>
+                  </div>
+                  {aiPreviewData.reading_theme && (
+                    <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-primary mb-1">Tema da Leitura</p>
+                      <p className="text-sm font-semibold text-primary">{aiPreviewData.reading_theme}</p>
+                    </div>
+                  )}
+                  {aiPreviewData.description && (
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                      <p className="text-xs text-muted-foreground mb-1">Descrição</p>
+                      <p className="text-sm text-white/90">{aiPreviewData.description}</p>
+                    </div>
+                  )}
+                </section>
+
+                {/* Versículos */}
+                <section className="space-y-3">
+                  <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">2</span>
+                    Versículos da Semana
+                  </div>
+                  <div className="space-y-2">
+                    {(["segunda", "terca", "quarta", "quinta", "sexta", "sabado"] as const).map(day => {
+                      const v = aiPreviewData.verses?.[day];
+                      const labels: Record<string, string> = { segunda: "Segunda", terca: "Terça", quarta: "Quarta", quinta: "Quinta", sexta: "Sexta", sabado: "Sábado" };
+                      return (
+                        <div key={day} className={cn("p-3 rounded-xl border", v?.referencia || v?.texto ? "bg-white/5 border-white/10" : "bg-white/[0.02] border-dashed border-white/10")}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="outline" className="bg-white/5 border-white/10 text-xs">{labels[day]}</Badge>
+                            <span className="text-xs font-medium text-primary">{v?.referencia || "—"}</span>
+                          </div>
+                          <p className="text-sm text-white/90 leading-snug">{v?.texto || <span className="text-muted-foreground italic">Sem texto extraído</span>}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* Perguntas */}
+                <section className="space-y-3">
+                  <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">3</span>
+                    Perguntas Extraídas
+                    <Badge variant="outline" className="bg-white/5 border-white/10 text-xs ml-1">
+                      {aiPreviewData.questions?.length || 0}
+                    </Badge>
+                  </div>
+                  {(!aiPreviewData.questions || aiPreviewData.questions.length === 0) ? (
+                    <div className="p-4 rounded-xl bg-white/[0.02] border border-dashed border-white/10 text-sm text-muted-foreground italic text-center">
+                      Nenhuma pergunta foi encontrada no texto.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {aiPreviewData.questions.map((q: any, idx: number) => (
+                        <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                          <div className="flex items-start gap-2">
+                            <Badge className="bg-primary/20 text-primary border-primary/20 shrink-0">{idx + 1}</Badge>
+                            <p className="text-sm font-medium text-white">{q.pergunta}</p>
+                          </div>
+                          {q.alternativas && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-2">
+                              {(["a", "b", "c", "d"] as const).map(letter => (
+                                <div
+                                  key={letter}
+                                  className={cn(
+                                    "text-xs p-2 rounded-md border flex items-start gap-2",
+                                    q.respostaCorreta === letter
+                                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                                      : "bg-white/5 border-white/10 text-white/80"
+                                  )}
+                                >
+                                  <span className="font-bold uppercase">{letter})</span>
+                                  <span className="flex-1">{q.alternativas[letter] || "—"}</span>
+                                  {q.respostaCorreta === letter && <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5" />}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {q.comentario && (
+                            <p className="text-xs text-muted-foreground italic pl-2 pt-1 border-t border-white/5">
+                              💡 {q.comentario}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </div>
+            )}
+          </ScrollArea>
+
+          <DialogFooter className="p-6 border-t border-white/10 bg-black/40">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setAiPreviewOpen(false);
+                setAiPreviewData(null);
+                setAiImportOpen(true);
+              }}
+            >
+              Voltar e editar texto
+            </Button>
+            <Button onClick={applyAiPreview} className="bg-primary hover:bg-primary/90 min-w-[160px]">
+              <CheckCircle2 className="w-4 h-4 mr-2" /> Aplicar ao formulário
             </Button>
           </DialogFooter>
         </DialogContent>
