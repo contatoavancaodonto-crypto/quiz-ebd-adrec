@@ -711,13 +711,13 @@ const Index = () => {
                                 : selectable
                                 ? "border-border bg-muted/50 hover:border-primary/40"
                                 : "border-border bg-muted/30 opacity-60"
-                            }`}
+                            } ${!available && t === 2 ? "relative" : ""}`}
                           >
                             <div className="text-sm font-bold text-foreground">
                               {t}º
                             </div>
                             <div className="text-[9px] text-muted-foreground">
-                              {closed ? "Encerrado" : available ? "Tri." : "Em breve"}
+                              {closed ? "Encerrado" : available ? "Tri." : (t === 2 ? `${provaoStatus.daysToOpen} dias` : "Em breve")}
                             </div>
                           </motion.button>
                         );
@@ -770,7 +770,9 @@ const Index = () => {
                     ) : provaoIsDisabled ? (
                       <>
                         <Lock className="w-4 h-4" />
-                        {provaoSelectedTri}º Tri. Encerrado
+                        {provaoSelectedTri === 2 && !provaoStatus.available 
+                          ? `Disponível em ${provaoStatus.daysToOpen} dias` 
+                          : `${provaoSelectedTri}º Tri. Encerrado`}
                       </>
                     ) : (
                       <>
