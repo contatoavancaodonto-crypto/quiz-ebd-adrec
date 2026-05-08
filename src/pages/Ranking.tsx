@@ -11,6 +11,7 @@ import { MemberLayout } from "@/components/membro/MemberLayout";
 import { useProfile } from "@/hooks/useProfile";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero } from "@/components/ui/page-hero";
+import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {
@@ -50,6 +51,7 @@ const RankingPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
+  const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
   const trimesterParam = parseInt(searchParams.get("trimester") || "1", 10);
   const [trimester, setTrimester] = useState<number>(
@@ -235,7 +237,7 @@ const RankingPage = () => {
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
       <PageShell contentClassName="px-4 py-4 max-w-lg mx-auto w-full space-y-4">
         <PageHero
-          eyebrow="Classificação · 1º TRI. 2026 - ADREC"
+          eyebrow={periodEyebrow("Classificação")}
           title="Ranking"
           description={
             mode === "weekly"
