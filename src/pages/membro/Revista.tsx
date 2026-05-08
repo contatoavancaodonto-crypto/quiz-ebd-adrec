@@ -107,66 +107,39 @@ const STATIC_PROFESSORES: RevistaItem[] = [
 ];
 
 function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!item.downloadUrl) {
       toast.info("Em breve disponível para download.");
       return;
     }
     
-    // Verificação de URL do Google Drive para download direto
-    let downloadUrl = item.downloadUrl;
-    if (downloadUrl.includes("drive.google.com") && !downloadUrl.includes("export=download")) {
-      const fileIdMatch = downloadUrl.match(/\/d\/([^\/]+)/) || downloadUrl.match(/id=([^\&]+)/);
+    // Preparar URL para visualização direta se for Google Drive
+    let finalUrl = item.downloadUrl;
+    if (finalUrl.includes("drive.google.com")) {
+      // Tentar converter links de visualização para links de exportação direta se possível
+      const fileIdMatch = finalUrl.match(/\/d\/([^\/]+)/) || finalUrl.match(/id=([^\&]+)/);
       if (fileIdMatch && fileIdMatch[1]) {
-        downloadUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+        // Usando a rota de visualização que é mais estável para abertura em nova aba
+        finalUrl = `https://drive.google.com/file/d/${fileIdMatch[1]}/view?usp=sharing`;
       }
     }
 
-    const toastId = toast.loading(`Iniciando download...`, {
-      description: `Acessando ${item.title}`
+    toast.info("Abrindo revista...", {
+      description: "O material será aberto em uma nova aba para visualização e download."
     });
 
-    try {
-      // Tentar download direto via fetch (funciona se CORS permitir)
-      const response = await fetch(downloadUrl, { mode: 'no-cors' });
-      
-      // Se for no-cors, não conseguimos ler o blob, então vamos para o fallback direto
-      if (response.type === 'opaque') {
-        throw new Error('CORS restriction');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${item.title.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      toast.dismiss(toastId);
-      toast.success("Download iniciado!");
-      
-      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
-    } catch (error) {
-      console.log("Download via fetch falhou ou restrito por CORS, usando abertura direta:", error);
-      toast.dismiss(toastId);
-      
-      // Fallback: abrir em nova aba
-      // A maioria dos navegadores bloqueia window.open se não for disparado diretamente por clique
-      // Como estamos dentro de um async handler disparado por clique, deve funcionar
-      const win = window.open(downloadUrl, "_blank", "noopener,noreferrer");
-      if (win) {
-        toast.success("Abrindo revista em nova aba...");
-      } else {
-        toast.error("O bloqueador de popups impediu o download", {
-          description: "Clique em 'Abrir Manualmente' para baixar.",
-          action: {
-            label: "Abrir Manualmente",
-            onClick: () => window.open(downloadUrl, "_blank")
-          }
-        });
-      }
+    // Abertura direta em nova aba é o método mais confiável para Google Drive
+    // Evita problemas de CORS e bloqueios de download direto por navegadores
+    const win = window.open(finalUrl, "_blank", "noopener,noreferrer");
+    
+    if (!win) {
+      toast.error("O bloqueador de popups impediu a abertura", {
+        description: "Permita popups para este site ou clique no botão abaixo.",
+        action: {
+          label: "Abrir Agora",
+          onClick: () => window.open(finalUrl, "_blank")
+        }
+      });
     }
   };
 
