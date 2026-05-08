@@ -113,57 +113,60 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       return;
     }
     
-    const toastId = toast.loading(`Baixando ${item.title}...`, {
-      description: "Aguarde enquanto preparamos seu arquivo."
+    // Verificação de URL do Google Drive para download direto
+    let downloadUrl = item.downloadUrl;
+    if (downloadUrl.includes("drive.google.com") && !downloadUrl.includes("export=download")) {
+      const fileIdMatch = downloadUrl.match(/\/d\/([^\/]+)/) || downloadUrl.match(/id=([^\&]+)/);
+      if (fileIdMatch && fileIdMatch[1]) {
+        downloadUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+      }
+    }
+
+    const toastId = toast.loading(`Iniciando download...`, {
+      description: `Acessando ${item.title}`
     });
 
     try {
-      const response = await fetch(item.downloadUrl);
+      // Tentar download direto via fetch (funciona se CORS permitir)
+      const response = await fetch(downloadUrl, { mode: 'no-cors' });
       
-      if (!response.ok) throw new Error('Falha na resposta do servidor');
+      // Se for no-cors, não conseguimos ler o blob, então vamos para o fallback direto
+      if (response.type === 'opaque') {
+        throw new Error('CORS restriction');
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${item.title} - ${item.subtitle}.pdf`);
+      link.setAttribute('download', `${item.title.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       
       toast.dismiss(toastId);
+      toast.success("Download iniciado!");
       
-      // Popup de confirmação após o download
-      toast.success("Download concluído!", {
-        description: "O arquivo foi salvo. Deseja abrir agora?",
-        duration: 5000,
-        action: {
-          label: "Abrir Arquivo",
-          onClick: () => {
-            window.open(url, "_blank");
-          }
-        },
-        onAutoClose: () => {
-          window.URL.revokeObjectURL(url);
-        }
-      });
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
     } catch (error) {
-      console.error("Erro no download:", error);
+      console.log("Download via fetch falhou ou restrito por CORS, usando abertura direta:", error);
       toast.dismiss(toastId);
       
-      // Se falhar o download direto (CORS), tenta abrir em nova aba como fallback
-      toast.error("Não foi possível baixar automaticamente", {
-        description: "Vamos abrir o arquivo em uma nova aba para você.",
-        action: {
-          label: "Abrir Manualmente",
-          onClick: () => window.open(item.downloadUrl, "_blank")
-        }
-      });
-      
-      // Delay pequeno antes do fallback automático
-      setTimeout(() => {
-        window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
-      }, 2000);
+      // Fallback: abrir em nova aba
+      // A maioria dos navegadores bloqueia window.open se não for disparado diretamente por clique
+      // Como estamos dentro de um async handler disparado por clique, deve funcionar
+      const win = window.open(downloadUrl, "_blank", "noopener,noreferrer");
+      if (win) {
+        toast.success("Abrindo revista em nova aba...");
+      } else {
+        toast.error("O bloqueador de popups impediu o download", {
+          description: "Clique em 'Abrir Manualmente' para baixar.",
+          action: {
+            label: "Abrir Manualmente",
+            onClick: () => window.open(downloadUrl, "_blank")
+          }
+        });
+      }
     }
   };
 
