@@ -1,4 +1,4 @@
-import { Home, Trophy, BookOpen, User, Sparkles } from "lucide-react";
+import { Home, Trophy, BookOpen, User, Sparkles, Award } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { prefetchBiblia } from "@/hooks/useBibliaData";
@@ -7,7 +7,9 @@ const items = [
   { label: "Início", icon: Home, path: "/" },
   { label: "Ranking", icon: Trophy, path: "/ranking" },
   { label: "Bíblia", icon: BookOpen, path: "/membro/biblia", prefetch: prefetchBiblia },
+  { label: "Conquistas", icon: Award, path: "/membro/conquistas" },
   { label: "Perfil", icon: User, path: "/membro/perfil" },
+
 ];
 
 interface Props {

@@ -59,3 +59,31 @@ export function useBadgesForAttempt(attemptId: string | null | undefined, partic
     },
   });
 }
+
+export function useAllBadges(participantId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["all-badges", participantId],
+    enabled: !!participantId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_badges")
+        .select("id, earned_at, badge:badges(id, code, name, description, emoji, type)")
+        .eq("participant_id", participantId!);
+
+      if (error) throw error;
+
+      // Usar Map para garantir unicidade por badge.id caso haja duplicatas em temporadas diferentes
+      const merged = new Map<string, UserBadge>();
+      (data || []).forEach((b: any) => {
+        if (b.badge) {
+          // Se já existe, mantemos o mais recente ou o primeiro encontrado
+          if (!merged.has(b.badge.id)) {
+            merged.set(b.badge.id, b as UserBadge);
+          }
+        }
+      });
+
+      return Array.from(merged.values());
+    },
+  });
+}
