@@ -95,13 +95,15 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
     const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     const trimester = Math.floor((new Date().getMonth()) / 3) + 1;
     
-    console.log("Iniciando quiz para:", { fullName, classId: profile.class_id, className: profile.class_name });
+    console.log("Iniciando quiz para lição:", { fullName, classId: profile.class_id, lessonId: lesson.id });
     
     setParticipant(fullName, profile.class_id, profile.class_name, trimester);
     if (profile.church_id && profile.church_name) {
       setChurch(profile.church_id, profile.church_name);
     }
-    useQuizStore.getState().setQuizId(""); // Garante que limpamos o ID anterior para buscar o atual da lição
+    
+    // Define o ID da lição no store para que a página de Quiz saiba qual carregar
+    useQuizStore.getState().setQuizId(lesson.id);
     navigate("/quiz");
   };
 
