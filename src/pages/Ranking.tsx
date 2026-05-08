@@ -126,8 +126,8 @@ const RankingPage = () => {
     enabled: classicEnabled,
     queryFn: async () => {
       let query = supabase
-        .from("ranking_general")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, is_retry, trimester, avatar_url")
+        .from("ranking_trimester_consolidated")
+        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, quizzes_completed, trimester, avatar_url")
         .eq("trimester", trimester)
         .order("position")
         .limit(500);
@@ -135,7 +135,13 @@ const RankingPage = () => {
         query = query.eq("church_id", selectedChurchId);
       }
       const { data } = await query;
-      return (data as any[]) || [];
+      
+      // Mapear para o formato RankEntry esperado pelo componente
+      return (data || []).map(item => ({
+        ...item,
+        score: item.total_score,
+        total_time_seconds: Math.round((item.total_time_ms || 0) / 1000)
+      }));
     },
   });
 

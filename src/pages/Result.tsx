@@ -104,27 +104,49 @@ const ResultPage = () => {
 
       const churchId = store.churchId || (gr as any)?.church_id;
 
-      // Top 5 geral
+      // Top 5 geral do trimestre (usando a nova view consolidada)
       const { data: top } = await supabase
-        .from("ranking_general")
-        .select("attempt_id, position, participant_name, score, total_time_seconds, total_time_ms, church_name, class_name")
+        .from("ranking_trimester_consolidated")
+        .select("position, participant_name, total_score, total_time_ms, church_name, class_name")
         .eq("trimester", store.trimester)
         .order("position")
         .limit(5);
-      setGeneralTop((top as MiniRankEntry[]) || []);
+      
+      const mappedTop = (top || []).map(item => ({
+        position: item.position,
+        participant_name: item.participant_name,
+        score: item.total_score,
+        total_time_ms: item.total_time_ms,
+        total_time_seconds: Math.round((item.total_time_ms || 0) / 1000),
+        church_name: item.church_name,
+        class_name: item.class_name,
+        attempt_id: "" // View consolidada não tem attempt_id único
+      }));
+      setGeneralTop(mappedTop);
 
       // Ranking da Igreja
       if (churchId) {
         const { data: ch } = await supabase
-          .from("ranking_general")
-          .select("attempt_id, position, participant_name, score, total_time_seconds, total_time_ms, church_name")
+          .from("ranking_trimester_consolidated")
+          .select("position, participant_name, total_score, total_time_ms, church_name")
           .eq("trimester", store.trimester)
           .eq("church_id", churchId)
           .order("position")
           .limit(10);
-        const list = (ch as MiniRankEntry[]) || [];
+        
+        const list = (ch || []).map(item => ({
+          position: item.position,
+          participant_name: item.participant_name,
+          score: item.total_score,
+          total_time_ms: item.total_time_ms,
+          total_time_seconds: Math.round((item.total_time_ms || 0) / 1000),
+          church_name: item.church_name,
+          attempt_id: ""
+        }));
         setChurchTop(list);
-        const me = list.find((e) => e.attempt_id === store.attemptId);
+        
+        // Encontrar minha posição na igreja (baseado no nome já que é consolidado)
+        const me = list.find((e) => e.participant_name.toLowerCase().trim() === store.participantName.toLowerCase().trim());
         if (me) setChurchRank(me.position);
       }
     };
