@@ -11,7 +11,9 @@ export interface NotaSemanal {
   status: 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
   observacao?: string;
   tempo_ms?: number;
+  attempt_id?: string;
 }
+
 
 export interface ProvaoFinal {
   nota?: number;
@@ -132,15 +134,18 @@ export function useAcademicHistory() {
             tema: quiz.lesson_title || quiz.title || "Sem tema",
             nota: attempt ? Number(attempt.accuracy_percentage) : undefined,
             status: attempt ? 'concluido' : 'pendente',
-            tempo_ms: attempt ? Number(attempt.total_time_ms) : 0
+            tempo_ms: attempt ? Number(attempt.total_time_ms) : 0,
+            attempt_id: attempt?.id
           });
         } else if (quiz.quiz_kind === 'trimestral') {
           tri.provaFinal = {
             nota: attempt ? Number(attempt.accuracy_percentage) : undefined,
             status: attempt ? 'concluido' : 'pendente',
-            peso: 0.3
-          };
+            peso: 0.3,
+            attempt_id: attempt?.id
+          } as any;
         }
+
       });
 
       // 5. Calculate stats for each trimester

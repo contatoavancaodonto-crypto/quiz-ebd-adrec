@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Trophy, 
@@ -16,7 +17,8 @@ import {
   Filter,
   ArrowRight,
   Loader2,
-  Check
+  Check,
+  Eye
 } from "lucide-react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -30,6 +32,8 @@ import { useFullProfile } from "@/hooks/useFullProfile";
 import { useAcademicHistory } from "@/hooks/useAcademicHistory";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuizStore } from "@/stores/quizStore";
+
 
 // Types
 type Status = 'concluido' | 'pendente' | 'nao_enviado' | 'em_analise';
@@ -50,10 +54,13 @@ const formatTime = (ms: number) => {
 };
 
 export default function Historico() {
+  const navigate = useNavigate();
+  const store = useQuizStore();
   const { data: profile } = useFullProfile();
   const { data: academicData, isLoading } = useAcademicHistory();
   const [selectedAno, setSelectedAno] = useState("2026");
   const [selectedTri, setSelectedTri] = useState("1º TRI");
+
 
   const currentTri = useMemo(() => {
     if (!academicData) return null;
@@ -359,7 +366,9 @@ export default function Historico() {
                         <TableHead className="text-[10px] font-bold uppercase tracking-wider">Tema da Lição</TableHead>
                         <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-center">Nota</TableHead>
                         <TableHead className="w-[140px] text-[10px] font-bold uppercase tracking-wider text-center">Status</TableHead>
+                        <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider text-center">Gabarito</TableHead>
                         <TableHead className="text-[10px] font-bold uppercase tracking-wider">Observações</TableHead>
+
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -385,9 +394,43 @@ export default function Historico() {
                               {statusMap[s.status as Status].label}
                             </Badge>
                           </TableCell>
+                          <TableCell className="text-center">
+                            {s.attempt_id ? (
+                              <button
+                                onClick={async () => {
+                                  const { data, error } = await supabase
+                                    .from('quiz_attempts')
+                                    .select('score, total_time_seconds, total_time_ms, participant_id, quiz_id')
+                                    .eq('id', s.attempt_id)
+                                    .maybeSingle();
+                                  
+                                  if (data) {
+                                    store.setAttempt(
+                                      s.attempt_id,
+                                      data.quiz_id,
+                                      data.score,
+                                      data.total_time_seconds,
+                                      data.total_time_ms,
+                                      data.participant_id,
+                                      'weekly'
+                                    );
+                                    navigate("/gabarito");
+                                  }
+                                }}
+                                className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto hover:bg-primary/20 transition-colors"
+                                title="Ver Gabarito"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-[10px]">—</span>
+                            )}
+                          </TableCell>
+
                           <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                             {s.observacao || "—"}
                           </TableCell>
+
                         </TableRow>
                       ))}
                       
@@ -416,6 +459,40 @@ export default function Historico() {
                               {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
                             </Badge>
                           </TableCell>
+                          <TableCell className="text-center">
+                            {(currentTri.provaFinal as any).attempt_id ? (
+                              <button
+                                onClick={async () => {
+                                  const attId = (currentTri.provaFinal as any).attempt_id;
+                                  const { data } = await supabase
+                                    .from('quiz_attempts')
+                                    .select('score, total_time_seconds, total_time_ms, participant_id, quiz_id')
+                                    .eq('id', attId)
+                                    .maybeSingle();
+                                  
+                                  if (data) {
+                                    store.setAttempt(
+                                      attId,
+                                      data.quiz_id,
+                                      data.score,
+                                      data.total_time_seconds,
+                                      data.total_time_ms,
+                                      data.participant_id,
+                                      'trimestral'
+                                    );
+                                    navigate("/gabarito");
+                                  }
+                                }}
+                                className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center mx-auto hover:bg-primary/30 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-[10px]">—</span>
+                            )}
+                          </TableCell>
+
+
                           <TableCell className="text-xs text-muted-foreground">
                             {currentTri.provaFinal.observacao || "Avaliação final acumulativa."}
                           </TableCell>
