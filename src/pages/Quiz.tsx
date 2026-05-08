@@ -117,7 +117,6 @@ const QuizPage = () => {
               .from("lessons")
               .select("id, questions")
               .eq("class_id", store.classId)
-              .not("questions", "is", null)
               .lte("scheduled_date", today)
               .order("scheduled_date", { ascending: false })
               .limit(1)
