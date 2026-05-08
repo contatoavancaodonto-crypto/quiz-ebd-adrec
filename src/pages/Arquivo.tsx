@@ -20,6 +20,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero, HeroChip } from "@/components/ui/page-hero";
+import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
 
 const classIcons: Record<string, string> = {
   Adultos: "🤵🏻‍♂️🤵🏻‍♀️",

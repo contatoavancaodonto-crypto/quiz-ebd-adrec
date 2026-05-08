@@ -11,6 +11,7 @@ import { MemberLayout } from "@/components/membro/MemberLayout";
 import { useProfile } from "@/hooks/useProfile";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero } from "@/components/ui/page-hero";
+import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
 
 function formatRankingTime(entry: RankEntry) {
   if (entry.total_time_ms && entry.total_time_ms > 0) {

@@ -11,6 +11,7 @@ import { WeeklyRankings } from "@/components/WeeklyRankings";
 import { formatTimeMs } from "@/hooks/useTimer";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero, HeroChip } from "@/components/ui/page-hero";
+import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
 
 function getPerformanceMessage(pct: number) {
   if (pct >= 90) return { text: "Excelente! 🌟", color: "text-green-500" };

@@ -8,6 +8,7 @@ import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHero, HeroChip } from "@/components/ui/page-hero";
+import { useCurrentPeriodLabel } from "@/hooks/useCurrentPeriodLabel";
 
 interface GabaritoItem {
   order_index: number;
