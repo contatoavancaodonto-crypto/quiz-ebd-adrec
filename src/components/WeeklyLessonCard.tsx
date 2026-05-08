@@ -80,9 +80,26 @@ const parseBibleReference = (reference: string | null) => {
 
 export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const { setParticipant, setChurch, setQuizId } = useQuizStore();
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [readDays, setReadDays] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const handleStartQuiz = () => {
+    if (!lesson.has_quiz) return;
+    if (!profile?.first_name || !profile?.class_id || !profile?.class_name) {
+      return toast.error("Complete seu perfil para iniciar o quiz.");
+    }
+    const fullName = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    const trimester = Math.floor((new Date().getMonth()) / 3) + 1;
+    setParticipant(fullName, profile.class_id, profile.class_name, trimester);
+    if (profile.church_id && profile.church_name) {
+      setChurch(profile.church_id, profile.church_name);
+    }
+    setQuizId("");
+    navigate("/quiz");
+  };
 
   // Chave baseada no ID da lição para persistir o progresso
   const storageKey = `lesson-read-${lesson.id}`;
