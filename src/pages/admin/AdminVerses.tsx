@@ -271,6 +271,9 @@ export default function AdminVerses() {
         ? data.questions.map((q: any) => ({
             ...q,
             id: q.id || Math.random().toString(36).substr(2, 9),
+            tipo: q.tipo || 'multipla_escolha',
+            alternativas: q.alternativas || { a: "", b: "", c: "", d: "" },
+            respostaCorreta: q.respostaCorreta || "a"
           }))
         : prev.questions,
     }));
