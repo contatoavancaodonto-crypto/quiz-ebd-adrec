@@ -1106,13 +1106,14 @@ export type Database = {
           created_at: string
           explanation: string | null
           id: string
+          lesson_id: string | null
           option_a: string
           option_b: string
           option_c: string
           option_d: string
           order_index: number
           question_text: string
-          quiz_id: string
+          quiz_id: string | null
         }
         Insert: {
           active?: boolean
@@ -1120,13 +1121,14 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           id?: string
+          lesson_id?: string | null
           option_a: string
           option_b: string
           option_c: string
           option_d: string
           order_index: number
           question_text: string
-          quiz_id: string
+          quiz_id?: string | null
         }
         Update: {
           active?: boolean
@@ -1134,15 +1136,23 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           id?: string
+          lesson_id?: string | null
           option_a?: string
           option_b?: string
           option_c?: string
           option_d?: string
           order_index?: number
           question_text?: string
-          quiz_id?: string
+          quiz_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_quiz_id_fkey"
             columns: ["quiz_id"]
@@ -1166,8 +1176,9 @@ export type Database = {
           final_score: number | null
           finished_at: string | null
           id: string
+          lesson_id: string | null
           participant_id: string
-          quiz_id: string
+          quiz_id: string | null
           score: number
           season_id: string | null
           source_type: string | null
@@ -1185,8 +1196,9 @@ export type Database = {
           final_score?: number | null
           finished_at?: string | null
           id?: string
+          lesson_id?: string | null
           participant_id: string
-          quiz_id: string
+          quiz_id?: string | null
           score?: number
           season_id?: string | null
           source_type?: string | null
@@ -1204,8 +1216,9 @@ export type Database = {
           final_score?: number | null
           finished_at?: string | null
           id?: string
+          lesson_id?: string | null
           participant_id?: string
-          quiz_id?: string
+          quiz_id?: string | null
           score?: number
           season_id?: string | null
           source_type?: string | null
@@ -1218,6 +1231,13 @@ export type Database = {
           week_number?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quiz_attempts_participant_id_fkey"
             columns: ["participant_id"]
