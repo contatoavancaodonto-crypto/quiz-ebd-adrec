@@ -66,6 +66,14 @@ export function useRealtimeRanking(
             debounceRef.current = window.setTimeout(triggerRefresh, 600);
           }
         )
+        .on(
+          "broadcast",
+          { event: "rankings_update" },
+          () => {
+            if (debounceRef.current) window.clearTimeout(debounceRef.current);
+            debounceRef.current = window.setTimeout(triggerRefresh, 300);
+          }
+        )
         .subscribe((sbStatus) => {
           if (cancelledRef.current) return;
           if (sbStatus === "SUBSCRIBED") {
