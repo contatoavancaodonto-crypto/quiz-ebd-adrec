@@ -1170,6 +1170,7 @@ export type Database = {
           quiz_id: string
           score: number
           season_id: string | null
+          source_type: string | null
           started_at: string
           streak_at_attempt: number
           streak_bonus: number
@@ -1188,6 +1189,7 @@ export type Database = {
           quiz_id: string
           score?: number
           season_id?: string | null
+          source_type?: string | null
           started_at?: string
           streak_at_attempt?: number
           streak_bonus?: number
@@ -1206,6 +1208,7 @@ export type Database = {
           quiz_id?: string
           score?: number
           season_id?: string | null
+          source_type?: string | null
           started_at?: string
           streak_at_attempt?: number
           streak_bonus?: number
@@ -2227,17 +2230,29 @@ export type Database = {
         Args: { p_note?: string; p_request_id: string }
         Returns: undefined
       }
-      submit_answer: {
-        Args: {
-          p_attempt_id: string
-          p_question_id: string
-          p_selected_option: string
-        }
-        Returns: {
-          correct_option: string
-          is_correct: boolean
-        }[]
-      }
+      submit_answer:
+        | {
+            Args: {
+              p_attempt_id: string
+              p_question_id: string
+              p_selected_option: string
+            }
+            Returns: {
+              correct_option: string
+              is_correct: boolean
+            }[]
+          }
+        | {
+            Args: {
+              p_attempt_id: string
+              p_question_id: string
+              p_selected_option: string
+            }
+            Returns: {
+              correct_option: string
+              is_correct: boolean
+            }[]
+          }
       tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
     }
     Enums: {
