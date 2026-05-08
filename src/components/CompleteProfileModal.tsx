@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, Loader2 } from "lucide-react";
+import { Check, ChevronDown, Loader2, Plus } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -175,8 +175,9 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   options={[
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
                     ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
-                    { value: ADD_CHURCH, label: `+ ${ADD_CHURCH}` },
                   ]}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2}
+                  onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   error={errors.church}
                   hint={
                     churchRequested
@@ -270,9 +271,10 @@ const ModalSelect = ({ label, value, onChange, placeholder, options, error }: {
   </div>
 );
 
-const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error, hint }: {
+const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error, hint, showAddButton, onAddClick }: {
   label: string; value: string; onChange: (v: string) => void; placeholder: string;
   options: { value: string; label: string }[]; error?: string; hint?: string;
+  showAddButton?: boolean; onAddClick?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -315,18 +317,30 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
             {filtered.length === 0 ? (
               <div className="px-3.5 py-2.5 text-sm text-muted-foreground">Nenhuma igreja encontrada</div>
             ) : (
-              filtered.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}
-                  className={`w-full text-left px-3.5 py-2.5 text-sm hover:bg-muted transition-colors ${
-                    o.value === value ? "bg-muted text-primary font-semibold" : "text-foreground"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))
+              <>
+                {filtered.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}
+                    className={`w-full text-left px-3.5 py-2.5 text-sm hover:bg-muted transition-colors ${
+                      o.value === value ? "bg-muted text-primary font-semibold" : "text-foreground"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+                {showAddButton && (
+                  <button
+                    type="button"
+                    onClick={() => { onAddClick?.(); setOpen(false); }}
+                    className="w-full text-left px-3.5 py-2.5 text-sm text-primary font-bold hover:bg-primary/5 transition-colors border-t border-border flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    ADICIONAR IGREJA
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
