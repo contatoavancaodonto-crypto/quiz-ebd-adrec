@@ -28,12 +28,13 @@ const phoneMask = (v: string) => {
 
 const detectIdentifier = (v: string) => (/^[\d\s()-]+$/.test(v) ? "phone" : "email");
 
-const passwordStrength = (pwd: string): { score: 0 | 1 | 2 | 3; label: string } => {
+const passwordStrength = (pwd: string): { score: 0 | 1 | 2 | 3 | 4; label: string } => {
   let s = 0;
   if (pwd.length >= 8) s++;
   if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) s++;
-  if (/\d/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) s++;
-  return { score: s as 0 | 1 | 2 | 3, label: ["Fraca", "Fraca", "Média", "Forte"][s] };
+  if (/\d/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  return { score: s as 0 | 1 | 2 | 3 | 4, label: ["Fraca", "Fraca", "Média", "Forte", "Muito Forte"][s] };
 };
 
 const loginSchema = z.object({
