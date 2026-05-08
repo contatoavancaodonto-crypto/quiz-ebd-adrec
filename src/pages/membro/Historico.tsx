@@ -16,8 +16,10 @@ import {
   Filter,
   ArrowRight,
   Loader2,
-  Check
+  Check,
+  Eye
 } from "lucide-react";
+
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -359,7 +361,9 @@ export default function Historico() {
                         <TableHead className="text-[10px] font-bold uppercase tracking-wider">Tema da Lição</TableHead>
                         <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-center">Nota</TableHead>
                         <TableHead className="w-[140px] text-[10px] font-bold uppercase tracking-wider text-center">Status</TableHead>
+                        <TableHead className="w-[80px] text-[10px] font-bold uppercase tracking-wider text-center">Gabarito</TableHead>
                         <TableHead className="text-[10px] font-bold uppercase tracking-wider">Observações</TableHead>
+
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -385,9 +389,33 @@ export default function Historico() {
                               {statusMap[s.status as Status].label}
                             </Badge>
                           </TableCell>
+                          <TableCell className="text-center">
+                            {s.attempt_id ? (
+                              <button
+                                onClick={() => {
+                                  supabase.from('quiz_attempts').select('score, total_time_seconds, total_time_ms, participant_id, quiz_id, quiz_kind').eq('id', s.attempt_id).single().then(({ data }) => {
+                                    if (data) {
+                                      const store = (window as any).quizStore;
+                                      if (store) {
+                                        store.setAttempt(s.attempt_id, data.quiz_id, data.score, data.total_time_seconds, data.total_time_ms, data.participant_id, data.quiz_kind);
+                                        navigate("/gabarito");
+                                      }
+                                    }
+                                  });
+                                }}
+                                className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto hover:bg-primary/20 transition-colors"
+                                title="Ver Gabarito"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-[10px]">—</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                             {s.observacao || "—"}
                           </TableCell>
+
                         </TableRow>
                       ))}
                       
@@ -416,6 +444,30 @@ export default function Historico() {
                               {currentTri.provaFinal.status === 'concluido' ? 'Concluído' : 'Pendente'}
                             </Badge>
                           </TableCell>
+                          <TableCell className="text-center">
+                            {(currentTri.provaFinal as any).attempt_id ? (
+                              <button
+                                onClick={() => {
+                                  const attId = (currentTri.provaFinal as any).attempt_id;
+                                  supabase.from('quiz_attempts').select('score, total_time_seconds, total_time_ms, participant_id, quiz_id, quiz_kind').eq('id', attId).single().then(({ data }) => {
+                                    if (data) {
+                                      const store = (window as any).quizStore;
+                                      if (store) {
+                                        store.setAttempt(attId, data.quiz_id, data.score, data.total_time_seconds, data.total_time_ms, data.participant_id, data.quiz_kind);
+                                        navigate("/gabarito");
+                                      }
+                                    }
+                                  });
+                                }}
+                                className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center mx-auto hover:bg-primary/30 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-[10px]">—</span>
+                            )}
+                          </TableCell>
+
                           <TableCell className="text-xs text-muted-foreground">
                             {currentTri.provaFinal.observacao || "Avaliação final acumulativa."}
                           </TableCell>
