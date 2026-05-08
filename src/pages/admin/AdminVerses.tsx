@@ -195,7 +195,8 @@ export default function AdminVerses() {
         }
       }
       toast.success("Lição salva com sucesso!");
-      // Não fecha o editor — mantém o card ativo conforme solicitado
+      setOpen(false);
+      setEditingId(null);
     } catch (err: any) {
       console.error("Error saving lesson:", err);
       toast.error(err.message || "Erro inesperado ao salvar lição");
@@ -289,7 +290,7 @@ export default function AdminVerses() {
     setAiPreviewOpen(false);
     setAiPreviewData(null);
     setAiText("");
-    setOpen(true);
+    if (!open) setOpen(true);
     toast.success("Dados aplicados ao editor. Revise e clique em Salvar Lição.");
   };
 
@@ -338,27 +339,16 @@ export default function AdminVerses() {
       if (inserted && inserted[0]) {
         const saved = inserted[0] as unknown as LicaoSemanal;
         setLessons(prev => [saved, ...prev]);
-        // Mantém o card/editor ativo com os dados salvos
-        setEditingId(saved.id);
-        setForm({
-          trimester: saved.trimester,
-          lesson_number: saved.lesson_number,
-          theme: saved.theme,
-          reading_theme: saved.reading_theme || "",
-          scheduled_date: saved.scheduled_date || "",
-          description: saved.description || "",
-          verses: { ...DEFAULT_VERSES, ...(saved.verses as any) },
-          questions: (saved.questions as any) || [],
-          status: saved.status,
-          class_id: saved.class_id,
-        });
-        setOpen(true);
+        // Fechar tudo após salvamento bem-sucedido
+        setEditingId(null);
       }
 
       setAiPreviewOpen(false);
       setAiPreviewData(null);
       setAiText("");
-      toast.success("Lição salva com sucesso! O editor permanece aberto para ajustes.");
+      setOpen(false);
+      setEditingId(null);
+      toast.success("Lição salva com sucesso!");
     } catch (err: any) {
       console.error("[IA] Error saving lesson:", err);
       toast.error(err.message || "Erro inesperado ao salvar lição");
