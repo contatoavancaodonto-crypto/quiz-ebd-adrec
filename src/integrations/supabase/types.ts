@@ -1636,9 +1636,11 @@ export type Database = {
     Views: {
       ranking_by_class: {
         Row: {
+          accuracy_percentage: number | null
           attempt_id: string | null
           class_id: string | null
           class_name: string | null
+          final_score: number | null
           lesson_id: string | null
           participant_name: string | null
           position: number | null
@@ -1747,11 +1749,13 @@ export type Database = {
       }
       ranking_general: {
         Row: {
+          accuracy_percentage: number | null
           attempt_id: string | null
           church_id: string | null
           church_name: string | null
           class_id: string | null
           class_name: string | null
+          final_score: number | null
           lesson_id: string | null
           participant_name: string | null
           position: number | null
