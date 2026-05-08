@@ -155,16 +155,14 @@ export default function AdminVerses() {
       if (editingId) {
         const { error, data } = await supabase.from("lessons").update(payload).eq("id", editingId).select();
         if (error) throw error;
-        // Update local state instead of reloading everything to keep card "active"
         if (data && data[0]) {
-          setLessons(prev => prev.map(l => l.id === editingId ? (data[0] as LicaoSemanal) : l));
+          setLessons(prev => prev.map(l => l.id === editingId ? (data[0] as unknown as LicaoSemanal) : l));
         }
       } else {
         const { error, data } = await supabase.from("lessons").insert(payload).select();
         if (error) throw error;
-        // Prepend new lesson to local state
         if (data && data[0]) {
-          setLessons(prev => [data[0] as LicaoSemanal, ...prev]);
+          setLessons(prev => [data[0] as unknown as LicaoSemanal, ...prev]);
         }
       }
       toast.success("Lição salva com sucesso!");
