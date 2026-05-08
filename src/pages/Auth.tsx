@@ -45,7 +45,7 @@ const signupSchema = z
   .object({
     firstName: z.string().trim().min(1, "Digite seu nome").max(50),
     lastName: z.string().trim().min(1, "Digite seu sobrenome").max(50),
-    class_id: z.string().min(1, "Selecione sua classe"),
+    class_id: z.string().uuid("Selecione uma classe válida"),
     church: z.string().min(1, "Selecione sua igreja"),
     phone: z.string().trim().min(14, "Telefone inválido"),
     email: z.string().trim().email("Digite um email válido").max(255).or(z.literal("")),
