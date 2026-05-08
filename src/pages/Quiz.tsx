@@ -110,11 +110,10 @@ const QuizPage = () => {
           // Se o quizId não veio do store (veio da Home), tentamos descobrir o quiz aberto
           if (!quizId) {
             const nowIso = new Date().toISOString();
-            const today = nowIso.split("T")[0];
-
+            
             // Prioridade 1: Tabela de lições (novo sistema de versículos/questões juntas)
-            // Filtra pela lição ativa agendada para a turma
-            const { data: lessonQuiz } = await supabase
+            // Filtra pela lição ativa agendada para a turma considerando a janela de tempo
+            const { data: lessonQuiz, error: lessonErr } = await supabase
               .from("lessons")
               .select("id, questions")
               .eq("class_id", store.classId)
@@ -124,7 +123,7 @@ const QuizPage = () => {
               .limit(1)
               .maybeSingle();
 
-            console.log("Resultado da busca por lessonQuiz:", lessonQuiz);
+            console.log("Resultado da busca por lessonQuiz:", { lessonQuiz, lessonErr });
 
             let quizSource: 'quiz_table' | 'lesson_table' = 'quiz_table';
 
@@ -155,8 +154,6 @@ const QuizPage = () => {
                   .select("id")
                   .eq("class_id", store.classId)
                   .eq("active", true)
-                  .eq("trimester", store.trimester)
-                  .is("opens_at", null)
                   .limit(1)
                   .maybeSingle();
                 quiz = legacyQuiz;
