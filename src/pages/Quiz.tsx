@@ -70,6 +70,11 @@ const QuizPage = () => {
 
     const loadQuiz = async () => {
       try {
+        console.log("Iniciando loadQuiz. Store state:", {
+          classId: store.classId,
+          participantName: store.participantName,
+          quizId: store.quizId
+        });
         let participantId = store.participantId;
         let quizId = store.quizId;
 
