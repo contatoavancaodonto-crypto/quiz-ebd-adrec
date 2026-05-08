@@ -100,8 +100,12 @@ const Auth = () => {
       return;
     }
     setChurch(v);
-    if (v !== OTHER_CHURCH && v !== INDIVIDUAL) setChurchRequested(false);
-    if (v === INDIVIDUAL) setChurchRequested(false);
+    if (v !== INDIVIDUAL) {
+      const isApproved = CHURCHES.some(c => c === v);
+      if (isApproved) setChurchRequested(false);
+    } else {
+      setChurchRequested(false);
+    }
   };
 
   const handleChurchRequestSubmit = async (data: ChurchRequest) => {
