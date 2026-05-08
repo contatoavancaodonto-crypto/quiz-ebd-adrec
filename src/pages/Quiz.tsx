@@ -404,7 +404,7 @@ const QuizPage = () => {
 
                     const { data, error } = await supabase.rpc("submit_answer", {
                       p_attempt_id: store.attemptId,
-                      p_question_id: currentQ.id,
+                      p_question_id: currentQ.id.toString(),
                       p_selected_option: label,
                     });
                     if (!error && data && data[0]) {
