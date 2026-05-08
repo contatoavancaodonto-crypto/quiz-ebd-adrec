@@ -159,27 +159,49 @@ const QuizPage = () => {
           }
         }
 
-        // Carrega quiz atual para descobrir quantas perguntas usar
-        const { data: quizMeta, error: qmErr } = await supabase
-          .from("quizzes")
-          .select("total_questions, quiz_kind")
+        // Tenta carregar as perguntas primeiro da tabela 'lessons' (se o quizId for de uma lição)
+        const { data: lessonData } = await supabase
+          .from("lessons")
+          .select("questions")
           .eq("id", quizId)
           .maybeSingle();
-        if (qmErr) throw qmErr;
-        
-        const quizKind = quizMeta?.quiz_kind ?? "weekly";
-        // Lógica: trimestral = 26, semanal = 13 (a menos que o DB diga o contrário)
-        const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
-        const questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
-        
-        store.setQuizMetadata(quizKind, questionsPerQuiz);
 
-        const { data: allQs, error: qsErr } = await supabase
-          .from("questions")
-          .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
-          .eq("quiz_id", quizId)
-          .eq("active", true);
-        if (qsErr) throw qsErr;
+        let allQs: Question[] = [];
+        let questionsPerQuiz = DEFAULT_QUESTIONS_PER_QUIZ;
+
+        if (lessonData && Array.isArray(lessonData.questions)) {
+          allQs = lessonData.questions.map((q: any, index: number) => ({
+            id: q.id || `q-${index}`,
+            question_text: q.question_text || q.text || "",
+            option_a: q.option_a || "",
+            option_b: q.option_b || "",
+            option_c: q.option_c || "",
+            option_d: q.option_d || "",
+            order_index: q.order_index || index
+          }));
+          questionsPerQuiz = allQs.length;
+          store.setQuizMetadata("weekly", questionsPerQuiz);
+        } else {
+          // Fallback para a tabela 'quizzes' e 'questions' tradicional
+          const { data: quizMeta } = await supabase
+            .from("quizzes")
+            .select("total_questions, quiz_kind")
+            .eq("id", quizId)
+            .maybeSingle();
+          
+          const quizKind = quizMeta?.quiz_kind ?? "weekly";
+          const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
+          questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
+          store.setQuizMetadata(quizKind, questionsPerQuiz);
+
+          const { data: dbQs } = await supabase
+            .from("questions")
+            .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
+            .eq("quiz_id", quizId)
+            .eq("active", true);
+          
+          allQs = (dbQs || []) as Question[];
+        }
 
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
         setQuestions(selected);
