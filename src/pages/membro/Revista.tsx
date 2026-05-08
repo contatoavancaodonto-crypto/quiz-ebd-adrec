@@ -240,8 +240,8 @@ export default function Revista() {
   });
 
   const studentsMaterials = useMemo(() => {
-    const list: RevistaItem[] = []; // Inicia vazio para filtrar apenas a classe do usuário
-    if (dbMaterials) {
+    const list: RevistaItem[] = [];
+    if (dbMaterials && dbMaterials.length > 0) {
       dbMaterials.forEach(m => {
         if (!m.title.toLowerCase().includes("professor")) {
           list.push({
@@ -254,12 +254,18 @@ export default function Revista() {
         }
       });
     }
+    
+    // Se não houver materiais no banco ou se o usuário quiser ver todos (padrão anterior)
+    if (list.length === 0) {
+      return STATIC_ALUNOS;
+    }
+    
     return list;
   }, [dbMaterials]);
 
   const professorsMaterials = useMemo(() => {
-    const list: RevistaItem[] = []; // Inicia vazio
-    if (dbMaterials) {
+    const list: RevistaItem[] = [];
+    if (dbMaterials && dbMaterials.length > 0) {
       dbMaterials.forEach(m => {
         if (m.title.toLowerCase().includes("professor")) {
           list.push({
@@ -272,6 +278,11 @@ export default function Revista() {
         }
       });
     }
+
+    if (list.length === 0) {
+      return STATIC_PROFESSORES;
+    }
+
     return list;
   }, [dbMaterials]);
 
