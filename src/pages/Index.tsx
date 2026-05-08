@@ -754,34 +754,47 @@ const Index = () => {
                     </div>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: provaoIsDisabled ? 1 : 1.02 }}
-                    whileTap={{ scale: provaoIsDisabled ? 1 : 0.98 }}
-                    onClick={handleStartProvaoCard}
-                    disabled={provaoLoading || provaoIsDisabled}
-                    className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-shadow disabled:opacity-60 disabled:cursor-not-allowed ${
-                      provaoIsDisabled
-                        ? "bg-muted text-muted-foreground"
-                        : "gradient-primary text-primary-foreground hover:shadow-lg cursor-pointer"
-                    }`}
-                  >
-                    {provaoLoading ? (
-                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    ) : provaoIsDisabled ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        {provaoSelectedTri === 2 && !provaoStatus.available 
-                          ? `Disponível em ${provaoStatus.daysToOpen} dias` 
-                          : `${provaoSelectedTri}º Tri. indisponível`}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        Iniciar {provaoSelectedTri}º Tri.
-                        <ChevronRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </motion.button>
+                  {PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri) ? (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/ranking?trimester=${provaoSelectedTri}`)}
+                      className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md bg-secondary text-secondary-foreground hover:shadow-lg cursor-pointer"
+                    >
+                      <Trophy className="w-4 h-4" />
+                      Ver Ranking do {provaoSelectedTri}º Tri.
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: provaoIsDisabled ? 1 : 1.02 }}
+                      whileTap={{ scale: provaoIsDisabled ? 1 : 0.98 }}
+                      onClick={handleStartProvaoCard}
+                      disabled={provaoLoading || provaoIsDisabled}
+                      className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-shadow disabled:opacity-60 disabled:cursor-not-allowed ${
+                        provaoIsDisabled
+                          ? "bg-muted text-muted-foreground"
+                          : "gradient-primary text-primary-foreground hover:shadow-lg cursor-pointer"
+                      }`}
+                    >
+                      {provaoLoading ? (
+                        <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                      ) : provaoIsDisabled ? (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          {provaoSelectedTri === 2 && !provaoStatus.available 
+                            ? `Disponível em ${provaoStatus.daysToOpen} dias` 
+                            : `${provaoSelectedTri}º Tri. indisponível`}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Iniciar {provaoSelectedTri}º Tri.
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                 </>
               )}
             </motion.div>
