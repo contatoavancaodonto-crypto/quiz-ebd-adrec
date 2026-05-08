@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -116,6 +116,8 @@ const App = () => (
               <Route path="/membro/desempenho" element={<MeuDesempenho />} />
               <Route path="/membro/historico" element={<Historico />} />
               <Route path="/membro/revista" element={<Revista />} />
+              <Route path="/revistas" element={<Navigate to="/membro/revista" replace />} />
+              <Route path="/Revistas" element={<Navigate to="/membro/revista" replace />} />
               <Route path="/membro/comunidade" element={<Comunidade />} />
               <Route path="/membro/biblia" element={<Biblia />} />
               <Route path="/membro/harpa" element={<Harpa />} />
