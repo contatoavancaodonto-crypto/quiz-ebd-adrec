@@ -153,16 +153,21 @@ export default function AdminVerses() {
 
     const status = (isThemeValid && hasDailyVerses && hasQuestions) ? 'completo' : 'incompleto';
 
-    // Auto-calculate end date if not provided (Sunday 23:59)
+    // Ensure end date is Sunday 23:59 if not provided or if it's just a date
     let finalEndDate = form.scheduled_end_date;
-    if (!finalEndDate && form.scheduled_date) {
-      const date = new Date(form.scheduled_date + "T12:00:00");
-      const day = date.getDay();
-      const diff = (7 - day) % 7;
-      const nextSunday = new Date(date);
-      nextSunday.setDate(date.getDate() + diff);
-      nextSunday.setHours(23, 59, 59, 999);
-      finalEndDate = nextSunday.toISOString();
+    if (form.scheduled_date) {
+      if (!finalEndDate) {
+        const date = new Date(form.scheduled_date + "T12:00:00");
+        const day = date.getDay();
+        const diff = (7 - day) % 7;
+        const nextSunday = new Date(date);
+        nextSunday.setDate(date.getDate() + diff);
+        nextSunday.setHours(23, 59, 59, 999);
+        finalEndDate = nextSunday.toISOString();
+      } else if (finalEndDate.length <= 10) {
+        // If it's just YYYY-MM-DD, add the time
+        finalEndDate = `${finalEndDate}T23:59:59.999Z`;
+      }
     }
 
     const payload = { 
