@@ -648,39 +648,59 @@ export default function AdminVerses() {
                     Informações Gerais
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <p className="text-xs text-muted-foreground mb-1">Trimestre</p>
-                      <p className="text-sm font-bold">{aiPreviewData.trimester ?? "—"}º</p>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Trimestre</Label>
+                      <Input
+                        value={aiPreviewData.trimester || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, trimester: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
                     </div>
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <p className="text-xs text-muted-foreground mb-1">Lição Nº</p>
-                      <p className="text-sm font-bold">{aiPreviewData.lesson_number ?? "—"}</p>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Lição Nº</Label>
+                      <Input
+                        type="number"
+                        value={aiPreviewData.lesson_number || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, lesson_number: parseInt(e.target.value) || 0 })}
+                        className="h-9 bg-white/5"
+                      />
                     </div>
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 col-span-2">
-                      <p className="text-xs text-muted-foreground mb-1">Agendamento</p>
-                      <p className="text-sm font-bold">
-                        {aiPreviewData.scheduled_date
-                          ? new Date(aiPreviewData.scheduled_date + "T00:00:00").toLocaleDateString("pt-BR")
-                          : "—"}
-                      </p>
+                    <div className="space-y-1 col-span-2">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Agendamento</Label>
+                      <Input
+                        type="date"
+                        value={aiPreviewData.scheduled_date || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, scheduled_date: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground mb-1">Tema da Lição</p>
-                    <p className="text-sm font-semibold text-white">{aiPreviewData.theme || "—"}</p>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tema da Lição</Label>
+                    <Input
+                      value={aiPreviewData.theme || ""}
+                      onChange={e => setAiPreviewData({ ...aiPreviewData, theme: e.target.value })}
+                      className="h-9 bg-white/5"
+                    />
                   </div>
-                  {aiPreviewData.reading_theme && (
-                    <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                      <p className="text-xs text-primary mb-1">Tema da Leitura</p>
-                      <p className="text-sm font-semibold text-primary">{aiPreviewData.reading_theme}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tema da Leitura</Label>
+                      <Input
+                        value={aiPreviewData.reading_theme || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, reading_theme: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
                     </div>
-                  )}
-                  {aiPreviewData.description && (
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <p className="text-xs text-muted-foreground mb-1">Descrição</p>
-                      <p className="text-sm text-white/90">{aiPreviewData.description}</p>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Descrição Curta</Label>
+                      <Input
+                        value={aiPreviewData.description || ""}
+                        onChange={e => setAiPreviewData({ ...aiPreviewData, description: e.target.value })}
+                        className="h-9 bg-white/5"
+                      />
                     </div>
-                  )}
+                  </div>
                 </section>
 
                 {/* Versículos */}
@@ -689,17 +709,33 @@ export default function AdminVerses() {
                     <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">2</span>
                     Versículos da Semana
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {(["segunda", "terca", "quarta", "quinta", "sexta", "sabado"] as const).map(day => {
-                      const v = aiPreviewData.verses?.[day];
+                      const v = aiPreviewData.verses?.[day] || { referencia: "", texto: "" };
                       const labels: Record<string, string> = { segunda: "Segunda", terca: "Terça", quarta: "Quarta", quinta: "Quinta", sexta: "Sexta", sabado: "Sábado" };
                       return (
-                        <div key={day} className={cn("p-3 rounded-xl border", v?.referencia || v?.texto ? "bg-white/5 border-white/10" : "bg-white/[0.02] border-dashed border-white/10")}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="bg-white/5 border-white/10 text-xs">{labels[day]}</Badge>
-                            <span className="text-xs font-medium text-primary">{v?.referencia || "—"}</span>
+                        <div key={day} className="p-3 rounded-xl border bg-white/5 border-white/10 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="bg-white/5 border-white/10 text-[10px]">{labels[day]}</Badge>
+                            <Input
+                              placeholder="Referência"
+                              value={v.referencia}
+                              onChange={e => {
+                                const newVerses = { ...aiPreviewData.verses, [day]: { ...v, referencia: e.target.value } };
+                                setAiPreviewData({ ...aiPreviewData, verses: newVerses });
+                              }}
+                              className="h-7 w-32 bg-transparent border-none text-right text-xs font-bold text-primary focus-visible:ring-0 px-0"
+                            />
                           </div>
-                          <p className="text-sm text-white/90 leading-snug">{v?.texto || <span className="text-muted-foreground italic">Sem texto extraído</span>}</p>
+                          <Textarea
+                            placeholder="Texto do versículo..."
+                            value={v.texto}
+                            onChange={e => {
+                              const newVerses = { ...aiPreviewData.verses, [day]: { ...v, texto: e.target.value } };
+                              setAiPreviewData({ ...aiPreviewData, verses: newVerses });
+                            }}
+                            className="min-h-[60px] bg-white/5 border-white/5 text-xs leading-snug resize-none"
+                          />
                         </div>
                       );
                     })}
@@ -708,49 +744,96 @@ export default function AdminVerses() {
 
                 {/* Perguntas */}
                 <section className="space-y-3">
-                  <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">3</span>
-                    Perguntas Extraídas
-                    <Badge variant="outline" className="bg-white/5 border-white/10 text-xs ml-1">
-                      {aiPreviewData.questions?.length || 0}
-                    </Badge>
+                  <div className="flex items-center justify-between gap-2 text-primary font-semibold text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-xs">3</span>
+                      Perguntas Extraídas
+                      <Badge variant="outline" className="bg-white/5 border-white/10 text-xs ml-1">
+                        {aiPreviewData.questions?.length || 0}
+                      </Badge>
+                    </div>
                   </div>
+                  
                   {(!aiPreviewData.questions || aiPreviewData.questions.length === 0) ? (
                     <div className="p-4 rounded-xl bg-white/[0.02] border border-dashed border-white/10 text-sm text-muted-foreground italic text-center">
-                      Nenhuma pergunta foi encontrada no texto.
+                      Nenhuma pergunta foi encontrada.
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {aiPreviewData.questions.map((q: any, idx: number) => (
-                        <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                          <div className="flex items-start gap-2">
-                            <Badge className="bg-primary/20 text-primary border-primary/20 shrink-0">{idx + 1}</Badge>
-                            <p className="text-sm font-medium text-white">{q.pergunta}</p>
+                        <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                          <div className="flex gap-2">
+                            <Badge className="bg-primary/20 text-primary border-primary/20 h-6 shrink-0">{idx + 1}</Badge>
+                            <Textarea
+                              value={q.pergunta}
+                              onChange={e => {
+                                const newQuestions = [...aiPreviewData.questions];
+                                newQuestions[idx] = { ...q, pergunta: e.target.value };
+                                setAiPreviewData({ ...aiPreviewData, questions: newQuestions });
+                              }}
+                              className="min-h-[40px] bg-transparent border-none p-0 text-sm font-medium focus-visible:ring-0 resize-none"
+                            />
                           </div>
+                          
                           {q.alternativas && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
                               {(["a", "b", "c", "d"] as const).map(letter => (
                                 <div
                                   key={letter}
                                   className={cn(
-                                    "text-xs p-2 rounded-md border flex items-start gap-2",
+                                    "relative p-2 rounded-lg border group",
                                     q.respostaCorreta === letter
-                                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                                      : "bg-white/5 border-white/10 text-white/80"
+                                      ? "bg-emerald-500/10 border-emerald-500/30"
+                                      : "bg-white/5 border-white/10"
                                   )}
                                 >
-                                  <span className="font-bold uppercase">{letter})</span>
-                                  <span className="flex-1">{q.alternativas[letter] || "—"}</span>
-                                  {q.respostaCorreta === letter && <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5" />}
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newQuestions = [...aiPreviewData.questions];
+                                        newQuestions[idx] = { ...q, respostaCorreta: letter };
+                                        setAiPreviewData({ ...aiPreviewData, questions: newQuestions });
+                                      }}
+                                      className={cn(
+                                        "w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold uppercase transition-colors",
+                                        q.respostaCorreta === letter
+                                          ? "bg-emerald-500 border-emerald-500 text-white"
+                                          : "border-white/20 text-white/40 hover:border-white/40"
+                                      )}
+                                    >
+                                      {letter}
+                                    </button>
+                                    <Input
+                                      value={q.alternativas[letter] || ""}
+                                      onChange={e => {
+                                        const newQuestions = [...aiPreviewData.questions];
+                                        newQuestions[idx] = {
+                                          ...q,
+                                          alternativas: { ...q.alternativas, [letter]: e.target.value }
+                                        };
+                                        setAiPreviewData({ ...aiPreviewData, questions: newQuestions });
+                                      }}
+                                      className="h-7 bg-transparent border-none p-0 text-xs focus-visible:ring-0"
+                                    />
+                                  </div>
                                 </div>
                               ))}
                             </div>
                           )}
-                          {q.comentario && (
-                            <p className="text-xs text-muted-foreground italic pl-2 pt-1 border-t border-white/5">
-                              💡 {q.comentario}
-                            </p>
-                          )}
+                          <div className="pl-2 flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground italic shrink-0">Comentário:</span>
+                            <Input
+                              value={q.comentario || ""}
+                              onChange={e => {
+                                const newQuestions = [...aiPreviewData.questions];
+                                newQuestions[idx] = { ...q, comentario: e.target.value };
+                                setAiPreviewData({ ...aiPreviewData, questions: newQuestions });
+                              }}
+                              className="h-6 bg-transparent border-none p-0 text-[10px] text-muted-foreground focus-visible:ring-0 italic"
+                              placeholder="Opcional..."
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
