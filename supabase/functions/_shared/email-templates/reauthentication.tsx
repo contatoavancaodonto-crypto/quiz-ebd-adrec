@@ -34,7 +34,7 @@ export const ReauthenticationEmail = ({ token }: Props) => (
 
         <Section style={styles.footer}>
           <Text style={styles.footerText}>Enviado por</Text>
-          <Text style={styles.footerBrand}>{BRAND.name} · {BRAND.church}</Text>
+          <Text style={styles.footerBrand}>{BRAND.name}</Text>
         </Section>
       </Container>
     </Body>
