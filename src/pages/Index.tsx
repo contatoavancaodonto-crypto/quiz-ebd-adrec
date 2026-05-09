@@ -432,9 +432,9 @@ const Index = () => {
       mobileHeader={{ variant: "full" }}
       contentPaddingMobile={false}
       bottomNav={{
-        showFab: !!weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired,
-        onFabClick: handleStartWeekly,
-        fabLabel: "Quiz",
+        showFab: (!!weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) || (!!provao && provaoStatus.available),
+        onFabClick: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? handleStartWeekly : handleStartProvao,
+        fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : "Provão",
       }}
     >
       <div className="relative">
@@ -826,15 +826,15 @@ const Index = () => {
             <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </motion.button>
 
-          {/* ===== CTA DO QUIZ NO FINAL ===== */}
-          {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired && (
+          {/* ===== CTA DO QUIZ NO FINAL (Sempre visível se houver algo para fazer) ===== */}
+          {((weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) || (provao && provaoStatus.available)) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="p-1 rounded-3xl bg-gradient-to-r from-primary via-secondary to-primary shadow-xl shadow-primary/20 mt-4"
             >
               <button
-                onClick={handleStartWeekly}
+                onClick={weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired ? handleStartWeekly : handleStartProvao}
                 className="w-full bg-card rounded-[22px] p-4 flex items-center justify-between group transition-all"
               >
                 <div className="flex items-center gap-4">
@@ -843,13 +843,15 @@ const Index = () => {
                   </div>
                   <div className="text-left">
                     <div className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                      Disponível agora
+                      {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired ? "Disponível agora" : "Provão Trimestral"}
                     </div>
                     <div className="text-base font-bold text-foreground leading-tight">
-                      Responder Quiz da Lição
+                      {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired ? "Responder Quiz da Lição" : "Iniciar Provão Trimestral"}
                     </div>
                     <div className="text-[11px] text-muted-foreground">
-                      {weeklyQuiz.total_questions ?? 5} perguntas valendo pontos
+                      {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired 
+                        ? `${weeklyQuiz.total_questions ?? 5} perguntas valendo pontos`
+                        : "20 perguntas sobre as lições do trimestre"}
                     </div>
                   </div>
                 </div>
