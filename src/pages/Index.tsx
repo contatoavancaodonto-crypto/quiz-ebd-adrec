@@ -71,6 +71,7 @@ const TOOL_TILES = [
     icon: BookOpen,
     path: "/membro/biblia",
     bg: "from-indigo-500 to-blue-600",
+    type: 'biblia'
   },
   {
     label: "Harpa",
@@ -78,6 +79,7 @@ const TOOL_TILES = [
     icon: Music2,
     path: "/membro/harpa",
     bg: "from-rose-500 to-red-600",
+    type: 'harpa'
   },
   {
     label: "Revista",

@@ -1,15 +1,17 @@
 import { Home, Trophy, BookOpen, User, Sparkles, Award } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { prefetchBiblia } from "@/hooks/useBibliaData";
+import { useQueryClient } from "@tanstack/react-query";
+import { usePrefetch } from "@/hooks/usePrefetch";
+import { useAuth } from "@/hooks/useAuth";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
 
 const items = [
   { label: "Início", icon: Home, path: "/" },
-  { label: "Ranking", icon: Trophy, path: "/ranking" },
-  { label: "Bíblia", icon: BookOpen, path: "/membro/biblia", prefetch: prefetchBiblia },
+  { label: "Ranking", icon: Trophy, path: "/ranking", type: 'ranking' },
+  { label: "Bíblia", icon: BookOpen, path: "/membro/biblia", type: 'biblia' },
   { label: "Conquistas", icon: Award, path: "/membro/conquistas" },
-  { label: "Perfil", icon: User, path: "/membro/perfil" },
-
+  { label: "Perfil", icon: User, path: "/membro/perfil", type: 'profile' },
 ];
 
 interface Props {
@@ -26,6 +28,16 @@ interface Props {
 export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { data: season } = useActiveSeason();
+  const { prefetchRanking, prefetchBiblia, prefetchProfile } = usePrefetch(queryClient);
+
+  const handlePrefetch = (type: string | undefined) => {
+    if (type === 'ranking') prefetchRanking();
+    if (type === 'biblia') prefetchBiblia();
+    if (type === 'profile') prefetchProfile(user?.id);
+  };
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
@@ -48,8 +60,8 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                onMouseEnter={() => (item as any).prefetch?.()}
-                onTouchStart={() => (item as any).prefetch?.()}
+                onMouseEnter={() => handlePrefetch((item as any).type)}
+                onTouchStart={() => handlePrefetch((item as any).type)}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
               >
                 <Icon
@@ -91,8 +103,8 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                onMouseEnter={() => (item as any).prefetch?.()}
-                onTouchStart={() => (item as any).prefetch?.()}
+                onMouseEnter={() => handlePrefetch((item as any).type)}
+                onTouchStart={() => handlePrefetch((item as any).type)}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
               >
                 <Icon
