@@ -77,7 +77,9 @@ const Auth = () => {
 
   useEffect(() => {
     const saved = localStorage.getItem("last_login_method");
+    const savedIdentifier = localStorage.getItem("last_login_identifier");
     if (saved) setLastLoginMethod(saved);
+    if (savedIdentifier) setIdentifier(savedIdentifier);
   }, []);
 
   // Signup fields
@@ -190,6 +192,7 @@ const Auth = () => {
       return;
     }
     localStorage.setItem("last_login_method", loginType);
+    localStorage.setItem("last_login_identifier", identifier);
     toast.success("Bem-vindo de volta!");
   };
 
@@ -240,6 +243,7 @@ const Auth = () => {
       setMode("login");
     } else {
       localStorage.setItem("last_login_method", method);
+      localStorage.setItem("last_login_identifier", email.trim() || phone.replace(/\D/g, ""));
       toast.success("Conta criada! Bem-vindo!");
       navigate("/", { replace: true });
     }
