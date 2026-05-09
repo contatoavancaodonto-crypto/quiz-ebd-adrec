@@ -49,6 +49,18 @@ export function MemberSidebar() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useRoles();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { data: season } = useActiveSeason();
+  const { prefetchRanking, prefetchBiblia, prefetchProfile, prefetchHarpa, prefetchHistory } = usePrefetch(queryClient);
+
+  const handlePrefetch = (type: string | undefined) => {
+    if (type === 'ranking') prefetchRanking();
+    if (type === 'biblia') prefetchBiblia();
+    if (type === 'harpa') prefetchHarpa();
+    if (type === 'profile') prefetchProfile(user?.id);
+    if (type === 'history') prefetchHistory(user?.id, season?.id);
+  };
 
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);
@@ -89,8 +101,8 @@ export function MemberSidebar() {
                       to={item.url}
                       end
                       onClick={closeOnMobile}
-                      onMouseEnter={() => item.prefetch?.()}
-                      onTouchStart={() => item.prefetch?.()}
+                      onMouseEnter={() => handlePrefetch(item.type)}
+                      onTouchStart={() => handlePrefetch(item.type)}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
