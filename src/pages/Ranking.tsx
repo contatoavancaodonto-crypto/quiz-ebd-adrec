@@ -238,9 +238,9 @@ const RankingPage = () => {
   const isLoading = classicLoading || weeklyLoading || monthlyLoading || interLoading;
 
   // 🔴 Realtime
-  const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
-  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId]);
-  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
+  const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId, selectedClassId]);
+  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId]);
+  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId, selectedClassId]);
   const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
   const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "lesson" ? rt2 : rt3);
   const rtConnected = activeRt.status === "connected";
