@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked, Loader2 } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, ChevronRight, Sparkles, Quote, X, BookMarked, Loader2, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { WeeklyLesson } from "@/hooks/useWeeklyLessons";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useFavoriteVerses } from "@/hooks/useFavoriteVerses";
 
 interface WeeklyLessonCardProps {
   lesson: WeeklyLesson;
