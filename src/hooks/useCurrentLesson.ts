@@ -24,7 +24,7 @@ export function useCurrentLesson() {
       
       let query = supabase
         .from("lessons")
-        .select("lesson_number, theme, scheduled_date, scheduled_end_date")
+        .select("id, lesson_number, theme, scheduled_date, scheduled_end_date")
         .lte("scheduled_date", today)
         .or(`scheduled_end_date.gte.${now},scheduled_end_date.is.null`)
         .order("scheduled_date", { ascending: false });
@@ -54,7 +54,7 @@ export function useNextLesson() {
       
       let query = supabase
         .from("lessons")
-        .select("lesson_number, theme, scheduled_date, scheduled_end_date")
+        .select("id, lesson_number, theme, scheduled_date, scheduled_end_date")
         .gt("scheduled_date", today)
         .order("scheduled_date", { ascending: true });
 
