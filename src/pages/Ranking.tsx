@@ -53,10 +53,25 @@ const RankingPage = () => {
   const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
   const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
-  const trimesterParam = parseInt(searchParams.get("trimester") || "2", 10);
+  const { data: activeSeason } = useQuery({
+    queryKey: ["active-season-meta"],
+    queryFn: async () => {
+      const { data } = await supabase.from("seasons").select("id, name, trimester").eq("status", "active").maybeSingle();
+      return data;
+    },
+  });
+
+  const trimesterParam = parseInt(searchParams.get("trimester") || "", 10);
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 2
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (activeSeason?.trimester || 2)
   );
+
+  // Sincroniza o trimestre quando a season ativa carregar, se não houver param na URL
+  useEffect(() => {
+    if (!trimesterParam && activeSeason?.trimester) {
+      setTrimester(activeSeason.trimester);
+    }
+  }, [activeSeason?.trimester, trimesterParam]);
   const rawModeParam = searchParams.get("mode");
   // Backwards-compat: links antigos com ?mode=season caem em monthly
   const normalizedModeParam: Mode =
