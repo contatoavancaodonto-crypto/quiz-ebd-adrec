@@ -183,6 +183,9 @@ const RankingPage = () => {
       if (scope === "church" && selectedChurchId) {
         query = query.eq("church_id", selectedChurchId);
       }
+      if (selectedClassId) {
+        query = query.eq("class_id", selectedClassId);
+      }
       const { data } = await query;
       return (data as any[]) || [];
     },
