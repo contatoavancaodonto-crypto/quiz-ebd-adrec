@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { BookOpen, Search, Loader2, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { BookOpen, Search, Loader2, ChevronLeft, ChevronRight, ArrowLeft, Heart, Star } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useFavoriteVerses } from "@/hooks/useFavoriteVerses";
 
 const OT_COUNT = 39;
 
