@@ -83,6 +83,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { setParticipant, setChurch, setQuizId } = useQuizStore();
+  const { toggleFavorite, isFavorite } = useFavoriteVerses();
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [readDays, setReadDays] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
