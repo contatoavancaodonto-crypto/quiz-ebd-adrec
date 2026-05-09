@@ -826,7 +826,41 @@ const Index = () => {
             <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </motion.button>
 
+          {/* ===== CTA DO QUIZ NO FINAL ===== */}
+          {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-1 rounded-3xl bg-gradient-to-r from-primary via-secondary to-primary shadow-xl shadow-primary/20 mt-4"
+            >
+              <button
+                onClick={handleStartWeekly}
+                className="w-full bg-card rounded-[22px] p-4 flex items-center justify-between group transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                      Disponível agora
+                    </div>
+                    <div className="text-base font-bold text-foreground leading-tight">
+                      Responder Quiz da Lição
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {weeklyQuiz.total_questions ?? 5} perguntas valendo pontos
+                    </div>
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </button>
+            </motion.div>
+          )}
         </div>
+
       </div>
     </MemberLayout>
   );
