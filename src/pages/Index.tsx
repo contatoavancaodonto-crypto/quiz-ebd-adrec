@@ -160,11 +160,9 @@ const Index = () => {
   const userClassId = profile?.class_id ?? null;
 
   const handleRefresh = useCallback(() => {
+    // Apenas invalidações necessárias, evitando sobrecarga
     queryClient.invalidateQueries({ queryKey: ["weekly-quiz"] });
     queryClient.invalidateQueries({ queryKey: ["next-quiz"] });
-    queryClient.invalidateQueries({ queryKey: ["current-lesson"] });
-    queryClient.invalidateQueries({ queryKey: ["next-lesson"] });
-    queryClient.invalidateQueries({ queryKey: ["weekly-lessons"] });
     queryClient.invalidateQueries({ queryKey: ["weekly-attempt"] });
   }, [queryClient]);
 
