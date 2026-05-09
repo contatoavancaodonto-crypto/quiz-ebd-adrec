@@ -385,9 +385,10 @@ export default function Biblia() {
           </div>
         ) : (
           <Tabs defaultValue="at" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="at">Antigo Test.</TabsTrigger>
-              <TabsTrigger value="nt">Novo Test.</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="at">Antigo</TabsTrigger>
+              <TabsTrigger value="nt">Novo</TabsTrigger>
+              <TabsTrigger value="fav">Favoritos</TabsTrigger>
             </TabsList>
             <TabsContent value="at" className="mt-4">
               {isLoading ? (
