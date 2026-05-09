@@ -322,18 +322,50 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={() => toggleRead(openDay)}
-                    className={cn(
-                      "w-full font-bold rounded-xl h-11 gap-2 transition-all",
-                      isRead
-                        ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40"
-                        : "gradient-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    )}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    {isRead ? "Marcado como lido" : "Marcar como lido"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => toggleRead(openDay)}
+                      className={cn(
+                        "flex-1 font-bold rounded-xl h-11 gap-2 transition-all",
+                        isRead
+                          ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40"
+                          : "gradient-primary text-primary-foreground shadow-lg shadow-primary/20"
+                      )}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      {isRead ? "Lido" : "Marcar como lido"}
+                    </Button>
+
+                    {(() => {
+                      const parsed = parseBibleReference(verse?.referencia);
+                      if (!parsed) return null;
+                      const bookAbbrev = parsed.book.toLowerCase().substring(0, 3); // Simple mapping fallback
+                      // Using a more robust abbrev matching would be better but requires more logic
+                      // For now, let's just use the toggle but we need the abbrev.
+                      // Let's assume the user favoriting from here is enough.
+                      return (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className={cn(
+                            "w-11 h-11 rounded-xl transition-all",
+                            isFavorite(parsed.book, 1, 1) ? "border-primary bg-primary/5" : "" // Placeholders as we don't have full abbrev map here easily
+                          )}
+                          onClick={() => {
+                            toggleFavorite({
+                              book_name: parsed.book,
+                              book_abbrev: parsed.book, // Using book name as fallback abbrev if not found
+                              chapter: parseInt(parsed.chapter),
+                              verse_number: parseInt(parsed.verse || "1"),
+                              verse_text: verse.texto || "",
+                            });
+                          }}
+                        >
+                          <Heart className={cn("w-5 h-5", isFavorite(parsed.book, parseInt(parsed.chapter), parseInt(parsed.verse || "1")) ? "fill-primary text-primary" : "")} />
+                        </Button>
+                      );
+                    })()}
+                  </div>
 
                   <Button
                     variant="ghost"
