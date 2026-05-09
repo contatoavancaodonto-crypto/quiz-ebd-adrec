@@ -4,7 +4,7 @@
 export const BRAND = {
   name: 'Quiz EBD',
   trimester: '',
-  church: 'Assembleia de Deus em Recife',
+  church: '',
   primary: '#4CC9E0',
   primaryDark: '#2BA8C0',
   dark: '#05070D',
