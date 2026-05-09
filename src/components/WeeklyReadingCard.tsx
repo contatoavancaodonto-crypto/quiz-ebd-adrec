@@ -56,7 +56,7 @@ export const WeeklyReadingCard = () => {
             {isQuizDay ? (
               <div className="space-y-4">
                 <p className="text-base font-medium text-foreground leading-relaxed">
-                  Hoje é dia de testar seus conhecimentos! O quiz semanal está disponível.
+                  Hoje é dia de testar seus conhecimentos! O quiz da lição está disponível.
                 </p>
                 <Button 
                   onClick={() => {
@@ -88,7 +88,7 @@ export const WeeklyReadingCard = () => {
                   <div className={`p-4 rounded-2xl bg-muted/50 border border-border/50`}>
                     <div className="flex items-center gap-2 text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">
                       <BookOpen className="h-3.5 w-3.5" />
-                      Leitura Bíblica Semanal
+                      Leitura Bíblica da Lição
                     </div>
                     <p className="text-sm text-foreground">
                       {reading.weeklyBibleReading}

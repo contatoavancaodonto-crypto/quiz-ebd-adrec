@@ -126,7 +126,7 @@ const WeeklyLessonsList = () => {
 
 const WeeklyQuizCardSkeleton = () => (
   <section className="space-y-2">
-    <SectionLabel color="primary" label="Quiz da semana" />
+    <SectionLabel color="primary" label="Quiz da lição" />
     <div className="rounded-3xl border border-primary/30 bg-card p-5 shadow-lg shadow-primary/5 space-y-4">
       <div className="flex items-start gap-3">
         <Skeleton className="shrink-0 w-12 h-12 rounded-2xl" />
@@ -368,10 +368,10 @@ const Index = () => {
   };
 
   const handleStartWeekly = () => {
-    if (!weeklyQuiz) return toast.error("Quiz da semana não está disponível.");
+    if (!weeklyQuiz) return toast.error("Quiz da lição não está disponível.");
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
     if (alreadyAnsweredWeekly) {
-      return toast.info("Você já respondeu o quiz desta semana 🎉");
+      return toast.info("Você já respondeu o quiz desta lição 🎉");
     }
     if (weekClose.expired) return toast.error("Janela do quiz encerrada.");
     startQuiz(userClass.id, userClass.name, 2, weeklyQuiz.id);
@@ -411,11 +411,11 @@ const Index = () => {
   const lessonLabel =
     effectiveLessonNumber != null
       ? `Lição ${effectiveLessonNumber}`
-      : "Quiz da semana";
+      : "Quiz da lição";
 
   const heroTitle =
     effectiveLessonNumber != null && userClass?.name
-      ? `Quiz semanal #${effectiveLessonNumber} - ${userClass.name}`
+      ? `Quiz da lição #${effectiveLessonNumber} - ${userClass.name}`
       : weeklyQuiz?.lesson_title ?? weeklyQuiz?.title ?? "";
 
   const heroSubtitle = currentLesson?.theme ?? weeklyQuiz?.lesson_title ?? null;
@@ -485,7 +485,7 @@ const Index = () => {
 
           {/* ===== PLANO DE LEITURA POR LIÇÃO ===== */}
           <section className="space-y-4">
-            <SectionLabel color="primary" label="Plano de Leitura por Lição" />
+            <SectionLabel color="primary" label="Lições do Trimestre" />
             <WeeklyLessonsList />
           </section>
 
@@ -494,7 +494,7 @@ const Index = () => {
             <WeeklyQuizCardSkeleton />
           ) : weeklyQuiz && !seasonExpired ? (
             <section id="quiz-semanal-section" className="space-y-2">
-              <SectionLabel color="primary" label="Quiz da semana" />
+    <SectionLabel color="primary" label="Quiz da lição" />
 
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -623,7 +623,7 @@ const Index = () => {
             </section>
           ) : !seasonExpired ? (
             <section className="space-y-2">
-              <SectionLabel color="muted" label="Quiz da semana" />
+              <SectionLabel color="muted" label="Quiz da lição" />
               <div className="rounded-3xl border border-border bg-muted/20 p-5 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
                   <Calendar className="w-6 h-6 text-muted-foreground" />

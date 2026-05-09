@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 
 export interface CurrentLesson {
+  id: string;
   lesson_number: number;
   theme: string | null;
   scheduled_date: string | null;
