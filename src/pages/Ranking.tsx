@@ -231,7 +231,7 @@ const RankingPage = () => {
       ? "Selecione uma igreja acima"
       : isInter
       ? "Nenhuma igreja com participantes neste período."
-      : mode === "weekly"
+      : mode === "lesson"
       ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
       : mode === "monthly"
       ? "Nenhum participante ainda neste mês."
@@ -246,7 +246,7 @@ const RankingPage = () => {
           eyebrow={periodEyebrow("Classificação")}
           title="Ranking"
           description={
-            mode === "weekly"
+            mode === "lesson"
               ? "Semana atual"
               : mode === "monthly"
               ? "Mês atual"
