@@ -16,6 +16,7 @@ export interface FavoriteVerse {
 
 export function useFavoriteVerses() {
   const queryClient = useQueryClient();
+  const { data: books } = useBibliaData();
 
   const { data: favorites, isLoading } = useQuery({
     queryKey: ["favorite-verses"],
