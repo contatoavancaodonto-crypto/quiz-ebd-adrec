@@ -148,7 +148,7 @@ const RankingPage = () => {
   const interEnabled = isInter;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
-    queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
+    queryKey: ["ranking-classic", trimester, scope, selectedChurchId, selectedClassId],
     enabled: classicEnabled,
     queryFn: async () => {
       let query = supabase
@@ -160,9 +160,11 @@ const RankingPage = () => {
       if (scope === "church" && selectedChurchId) {
         query = query.eq("church_id", selectedChurchId);
       }
+      if (selectedClassId) {
+        query = query.eq("class_id", selectedClassId);
+      }
       const { data } = await query;
       
-      // Mapear para o formato RankEntry esperado pelo componente
       return (data || []).map(item => ({
         ...item,
         score: item.total_score,
