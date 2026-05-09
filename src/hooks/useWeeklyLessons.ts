@@ -29,6 +29,7 @@ export const useWeeklyLessons = () => {
   return useQuery({
     queryKey: ["weekly-lessons", classId],
     enabled: !!classId,
+    staleTime: 10 * 60 * 1000, // 10 minutos - lições não mudam com frequência
     queryFn: async (): Promise<WeeklyLesson[]> => {
       const today = new Date().toISOString().slice(0, 10);
       const now = new Date().toISOString();
