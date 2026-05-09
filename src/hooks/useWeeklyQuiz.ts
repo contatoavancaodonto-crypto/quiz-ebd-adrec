@@ -21,7 +21,7 @@ const QUIZ_FIELDS =
   "id, title, class_id, week_number, opens_at, closes_at, season_id, lesson_number, lesson_title, lesson_key_verse_ref, lesson_key_verse_text, quiz_kind, total_questions";
 
 /**
- * Quiz semanal aberto agora para a turma do usuário.
+ * Quiz da lição aberto agora para a turma do usuário.
  * Filtra apenas quiz_kind = 'weekly'.
  */
 export function useWeeklyQuiz(classId: string | null | undefined) {
@@ -46,7 +46,7 @@ export function useWeeklyQuiz(classId: string | null | undefined) {
   });
 }
 
-/** Próximo quiz semanal agendado (ainda fechado) para a turma */
+/** Próximo quiz da lição agendado (ainda fechado) para a turma */
 export function useNextScheduledQuiz(classId: string | null | undefined) {
   return useQuery({
     queryKey: ["next-quiz", classId],

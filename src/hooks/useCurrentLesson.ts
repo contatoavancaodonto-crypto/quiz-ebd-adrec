@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 
 export interface CurrentLesson {
+  id: string;
   lesson_number: number;
   theme: string | null;
   scheduled_date: string | null;
@@ -23,7 +24,7 @@ export function useCurrentLesson() {
       
       let query = supabase
         .from("lessons")
-        .select("lesson_number, theme, scheduled_date, scheduled_end_date")
+        .select("id, lesson_number, theme, scheduled_date, scheduled_end_date")
         .lte("scheduled_date", today)
         .or(`scheduled_end_date.gte.${now},scheduled_end_date.is.null`)
         .order("scheduled_date", { ascending: false });
@@ -53,7 +54,7 @@ export function useNextLesson() {
       
       let query = supabase
         .from("lessons")
-        .select("lesson_number, theme, scheduled_date, scheduled_end_date")
+        .select("id, lesson_number, theme, scheduled_date, scheduled_end_date")
         .gt("scheduled_date", today)
         .order("scheduled_date", { ascending: true });
 

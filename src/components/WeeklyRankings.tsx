@@ -159,7 +159,7 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
     return (
       <div className="glass-card p-4 mb-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <Loader2 className="w-4 h-4 animate-spin text-primary" />
-        Carregando ranking da semana...
+        Carregando ranking da lição...
       </div>
     );
   }
@@ -248,7 +248,7 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
             {myClassPos && <span className="text-xs text-primary font-bold">Você: #{myClassPos}</span>}
           </div>
           <p className="text-[10px] text-muted-foreground mb-2">
-            Quiz da semana {lessonNumber ? `· Lição ${lessonNumber}` : ""} · desempate por tempo
+            Ranking da {lessonNumber ? `Lição ${lessonNumber}` : "Semana"} · desempate por tempo
           </p>
           <div className="space-y-1.5">{classRank.slice(0, 5).map(renderRow)}</div>
         </motion.div>
@@ -264,7 +264,7 @@ export function WeeklyRankings({ quizId, attemptId, classId, className }: Props)
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Ranking Geral da Semana</h3>
+              <h3 className="text-sm font-semibold text-foreground">Ranking Geral da Lição</h3>
               <StatusBadge />
             </div>
             {myGeneralPos && <span className="text-xs text-primary font-bold">Você: #{myGeneralPos}</span>}
