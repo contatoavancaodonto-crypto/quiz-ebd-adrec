@@ -509,6 +509,39 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_verses: {
+        Row: {
+          book_abbrev: string
+          book_name: string
+          chapter: number
+          created_at: string
+          id: string
+          user_id: string
+          verse_number: number
+          verse_text: string
+        }
+        Insert: {
+          book_abbrev: string
+          book_name: string
+          chapter: number
+          created_at?: string
+          id?: string
+          user_id: string
+          verse_number: number
+          verse_text: string
+        }
+        Update: {
+          book_abbrev?: string
+          book_name?: string
+          chapter?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+          verse_number?: number
+          verse_text?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           class_id: string | null

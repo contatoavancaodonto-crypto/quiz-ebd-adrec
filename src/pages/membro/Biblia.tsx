@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { BookOpen, Search, Loader2, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { BookOpen, Search, Loader2, ChevronLeft, ChevronRight, ArrowLeft, Heart, Star } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBibliaData, type BibliaBook } from "@/hooks/useBibliaData";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useFavoriteVerses } from "@/hooks/useFavoriteVerses";
 
 const OT_COUNT = 39;
 
@@ -33,6 +34,7 @@ export default function Biblia() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { data: BOOKS, isLoading, isError, refetch } = useBibliaData();
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteVerses();
   const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -212,19 +214,46 @@ export default function Biblia() {
             const isHighlighted = verseNumber === highlightedVerse;
 
             return (
-              <p
+              <motion.div
                 key={i}
-                ref={isHighlighted ? activeVerseRef : null}
-                className={cn(
-                  "flex gap-2.5 rounded-xl px-3 py-2 transition-all",
-                  isHighlighted && "bg-primary/10 ring-1 ring-primary/30 shadow-sm"
-                )}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.01 }}
+                className="group"
               >
-                <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
-                  {verseNumber}
-                </span>
-                <span className="text-foreground">{verse}</span>
-              </p>
+                <div
+                  ref={isHighlighted ? activeVerseRef : null}
+                  className={cn(
+                    "flex gap-2.5 rounded-xl px-3 py-2 transition-all cursor-pointer relative",
+                    isHighlighted ? "bg-primary/10 ring-1 ring-primary/30 shadow-sm" : "hover:bg-muted/50"
+                  )}
+                  onClick={() => {
+                    toggleFavorite({
+                      book_name: selectedBook.name,
+                      book_abbrev: selectedBook.abbrev,
+                      chapter: selectedChapter + 1,
+                      verse_number: verseNumber,
+                      verse_text: verse,
+                    });
+                  }}
+                >
+                  <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
+                    {verseNumber}
+                  </span>
+                  <span className="text-foreground flex-1">{verse}</span>
+                  <div className={cn(
+                    "shrink-0 transition-opacity",
+                    isFavorite(selectedBook.abbrev, selectedChapter + 1, verseNumber) ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                  )}>
+                    <Heart 
+                      className={cn(
+                        "w-4 h-4 mt-0.5",
+                        isFavorite(selectedBook.abbrev, selectedChapter + 1, verseNumber) ? "fill-primary text-primary" : "text-muted-foreground"
+                      )} 
+                    />
+                  </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>
@@ -356,9 +385,10 @@ export default function Biblia() {
           </div>
         ) : (
           <Tabs defaultValue="at" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="at">Antigo Test.</TabsTrigger>
-              <TabsTrigger value="nt">Novo Test.</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="at">Antigo</TabsTrigger>
+              <TabsTrigger value="nt">Novo</TabsTrigger>
+              <TabsTrigger value="fav">Favoritos</TabsTrigger>
             </TabsList>
             <TabsContent value="at" className="mt-4">
               {isLoading ? (
@@ -375,6 +405,68 @@ export default function Biblia() {
             </TabsContent>
             <TabsContent value="nt" className="mt-4">
               {isLoading ? renderSkeleton() : renderBooks(filteredNT)}
+            </TabsContent>
+
+            <TabsContent value="fav" className="mt-4">
+              <div className="space-y-4">
+                {favorites && favorites.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3">
+                    {favorites.map((fav) => (
+                      <motion.div
+                        key={fav.id}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="rounded-2xl border border-border bg-card p-4 space-y-2 hover:border-primary/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedBook(resolveBibleBook(BOOKS || [], fav.book_abbrev) || null);
+                          setSelectedChapter(fav.chapter - 1);
+                          setSearchParams({
+                            book: fav.book_abbrev,
+                            chapter: fav.chapter.toString(),
+                            verse: fav.verse_number.toString(),
+                          });
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                            {fav.book_name} {fav.chapter}:{fav.verse_number}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite({
+                                book_name: fav.book_name,
+                                book_abbrev: fav.book_abbrev,
+                                chapter: fav.chapter,
+                                verse_number: fav.verse_number,
+                                verse_text: fav.verse_text,
+                              });
+                            }}
+                            className="p-1.5 rounded-full hover:bg-muted"
+                          >
+                            <Heart className="w-4 h-4 fill-primary text-primary" />
+                          </button>
+                        </div>
+                        <p className="text-sm italic text-foreground leading-relaxed">
+                          "{fav.verse_text}"
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                      <Star className="w-8 h-8 text-muted-foreground/40" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-bold text-foreground">Nenhum favorito ainda</p>
+                      <p className="text-sm text-muted-foreground max-w-[200px] mx-auto">
+                        Pressione um versículo durante a leitura para salvá-lo aqui.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
         )}
