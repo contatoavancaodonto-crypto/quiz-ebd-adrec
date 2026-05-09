@@ -87,10 +87,10 @@ const TOOL_TILES = [
     bg: "from-amber-500 to-orange-600",
   },
   {
-    label: "Histórico",
-    desc: "Suas tentativas",
-    icon: History,
-    path: "/membro/historico",
+    label: "Quiz",
+    desc: "Responder agora",
+    icon: Sparkles,
+    path: "/quiz",
     bg: "from-emerald-500 to-green-600",
   },
 ];
