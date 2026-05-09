@@ -256,9 +256,8 @@ const RankingPage = () => {
       mode === "lesson" ? weeklyData :
       monthlyData;
     if (!raw) return [];
-    const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
-    return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [isInter, interData, mode, classicData, weeklyData, monthlyData, selectedClassId]);
+    return raw.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+  }, [isInter, interData, mode, classicData, weeklyData, monthlyData]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
