@@ -78,9 +78,22 @@ export function useFavoriteVerses() {
   });
 
   const toggleFavorite = async (verse: Omit<FavoriteVerse, "id" | "user_id" | "created_at">) => {
+    // Try to find correct abbrev if book_name is full name
+    let bookAbbrev = verse.book_abbrev;
+    if (books && (verse.book_name.length > 5 || verse.book_abbrev.length > 5)) {
+      const found = books.find(b => 
+        b.name.toLowerCase() === verse.book_name.toLowerCase() || 
+        b.abbrev.toLowerCase() === verse.book_abbrev.toLowerCase() ||
+        b.name.toLowerCase() === verse.book_abbrev.toLowerCase()
+      );
+      if (found) {
+        bookAbbrev = found.abbrev;
+      }
+    }
+
     const existing = favorites?.find(
       (f) =>
-        f.book_abbrev === verse.book_abbrev &&
+        (f.book_abbrev.toLowerCase() === bookAbbrev.toLowerCase()) &&
         f.chapter === verse.chapter &&
         f.verse_number === verse.verse_number
     );
@@ -88,14 +101,27 @@ export function useFavoriteVerses() {
     if (existing) {
       await removeFavorite.mutateAsync(existing.id);
     } else {
-      await addFavorite.mutateAsync(verse);
+      await addFavorite.mutateAsync({
+        ...verse,
+        book_abbrev: bookAbbrev
+      });
     }
   };
 
   const isFavorite = (bookAbbrev: string, chapter: number, verseNumber: number) => {
+    // Try to find correct abbrev to compare
+    let targetAbbrev = bookAbbrev;
+    if (books && bookAbbrev.length > 5) {
+      const found = books.find(b => 
+        b.name.toLowerCase() === bookAbbrev.toLowerCase() || 
+        b.abbrev.toLowerCase() === bookAbbrev.toLowerCase()
+      );
+      if (found) targetAbbrev = found.abbrev;
+    }
+
     return !!favorites?.find(
       (f) =>
-        f.book_abbrev === bookAbbrev &&
+        (f.book_abbrev.toLowerCase() === targetAbbrev.toLowerCase() || f.book_name.toLowerCase() === targetAbbrev.toLowerCase()) &&
         f.chapter === chapter &&
         f.verse_number === verseNumber
     );
