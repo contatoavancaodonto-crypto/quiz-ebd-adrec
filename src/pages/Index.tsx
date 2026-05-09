@@ -826,15 +826,6 @@ const Index = () => {
             <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </motion.button>
 
-          {/* ===== ARQUIVO TRIMESTRAL ===== */}
-          <button
-            onClick={() => navigate("/arquivo")}
-            className="w-full py-3 rounded-xl text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 flex items-center justify-center gap-2 transition-colors"
-          >
-            <Archive className="w-3.5 h-3.5" />
-            Arquivo trimestral (provões anteriores)
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </MemberLayout>
