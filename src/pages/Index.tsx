@@ -466,9 +466,9 @@ const Index = () => {
               </h1>
               <p className="text-sm text-white/85 mt-2 max-w-[80%]">
                 {alreadyAnsweredWeekly
-                  ? "Você já respondeu o quiz desta semana. Continue firme!"
+                  ? "Você já respondeu o quiz desta lição. Continue firme!"
                   : weeklyQuiz
-                  ? "O quiz da semana está aberto. Bora estudar?"
+                  ? "O quiz da lição está aberto. Bora estudar?"
                   : "Continue sua jornada de fé com a EBD."}
               </p>
 

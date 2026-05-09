@@ -61,7 +61,7 @@ const RankingPage = () => {
   // Backwards-compat: links antigos com ?mode=season caem em monthly
   const normalizedModeParam: Mode =
     rawModeParam === "season" ? "monthly" :
-    (["weekly", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
+    (["lesson", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
     "classic";
   const [mode, setMode] = useState<Mode>(normalizedModeParam);
   const { profile } = useProfile();
@@ -472,7 +472,7 @@ const RankingPage = () => {
 
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
                   const isMonthly = mode === "monthly";
-                  const isWeekly = mode === "weekly";
+                  const isWeekly = mode === "lesson";
                   const isClassic = mode === "classic";
                   // Para weekly e classic agora usamos final_score (acertos + bônus de streak)
                   const mainScore = isMonthly
