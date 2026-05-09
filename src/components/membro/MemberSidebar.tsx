@@ -16,27 +16,28 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { prefetchBiblia } from "@/hooks/useBibliaData";
-import { prefetchHarpa } from "@/hooks/useHarpaData";
+import { usePrefetch } from "@/hooks/usePrefetch";
+import { useQueryClient } from "@tanstack/react-query";
+import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { Badge } from "@/components/ui/badge";
 
 const items: Array<{
   title: string;
   url: string;
   icon: typeof User;
-  prefetch?: () => void;
+  type?: 'profile' | 'ranking' | 'biblia' | 'harpa' | 'history';
   comingSoon?: boolean;
 }> = [
-  { title: "Meu Perfil", url: "/membro/perfil", icon: User },
+  { title: "Meu Perfil", url: "/membro/perfil", icon: User, type: 'profile' },
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Conquistas", url: "/membro/conquistas", icon: Award },
-  { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap },
+  { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap, type: 'history' },
 
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
-  { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, prefetch: prefetchBiblia },
-  { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, prefetch: prefetchHarpa },
+  { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, type: 'biblia' },
+  { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, type: 'harpa' },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
   { title: "Loja", url: "/membro/loja", icon: ShoppingBag, comingSoon: true },
   { title: "Suporte", url: "/membro/suporte", icon: LifeBuoy },
