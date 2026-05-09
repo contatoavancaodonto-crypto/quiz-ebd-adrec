@@ -174,7 +174,7 @@ const RankingPage = () => {
   });
 
   const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
-    queryKey: ["ranking-weekly", scope, selectedChurchId],
+    queryKey: ["ranking-weekly", scope, selectedChurchId, selectedClassId],
     enabled: weeklyEnabled,
     queryFn: async () => {
       let query = supabase
@@ -194,7 +194,7 @@ const RankingPage = () => {
   });
 
   const { data: monthlyData, isLoading: monthlyLoading } = useQuery({
-    queryKey: ["ranking-monthly", scope, selectedChurchId],
+    queryKey: ["ranking-monthly", scope, selectedChurchId, selectedClassId],
     enabled: monthlyEnabled,
     queryFn: async () => {
       let query = supabase
