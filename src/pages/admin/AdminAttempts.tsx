@@ -24,35 +24,63 @@ const norm = (s: string | null | undefined) =>
 export default function AdminAttempts() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
   const [rows, setRows] = useState<Attempt[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
   const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("quiz_attempts")
-      .select(
-        "id, score, total_questions, total_time_seconds, finished_at, participants(name, class_id)"
-      )
-      .order("finished_at", { ascending: false, nullsFirst: false })
-      .limit(500);
-    setRows((data as any) ?? []);
-
+    
+    // 1. Primeiro, carregar os nomes permitidos se for admin local
+    let currentAllowedNames: Set<string> | null = null;
     if (!isSuperadmin && churchId) {
       const { data: profs } = await supabase
         .from("profiles")
         .select("first_name, last_name")
         .eq("church_id", churchId);
-      const set = new Set(
+      currentAllowedNames = new Set(
         (profs ?? []).map((p: any) =>
           norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`)
         )
       );
-      setAllowedNames(set);
+      setAllowedNames(currentAllowedNames);
     } else {
       setAllowedNames(null);
     }
+
+    // 2. Construir a query base
+    let query = supabase
+      .from("quiz_attempts")
+      .select(
+        "id, score, total_questions, total_time_seconds, finished_at, participants(name, class_id)",
+        { count: "exact" }
+      );
+
+    // 3. Aplicar filtros
+    if (q) {
+      query = query.ilike("participants.name", `%${q}%`);
+    }
+
+    // 4. Paginação e Ordenação
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, count } = await query
+      .order("finished_at", { ascending: false, nullsFirst: false })
+      .range(from, to);
+
+    let attempts = (data as any) ?? [];
+
+    // 5. Filtragem por igreja (admin local)
+    if (currentAllowedNames) {
+      attempts = attempts.filter((r: any) => currentAllowedNames?.has(norm(r.participants?.name)));
+    }
+
+    setRows(attempts);
+    setTotalCount(count ?? 0);
     setLoading(false);
   };
 
@@ -60,7 +88,7 @@ export default function AdminAttempts() {
     if (rolesLoading) return;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, isSuperadmin, churchId]);
+  }, [rolesLoading, isSuperadmin, churchId, page, q]);
 
   const remove = async (id: string) => {
     if (!confirm("Excluir esta tentativa? Essa ação é permanente.")) return;
@@ -70,22 +98,17 @@ export default function AdminAttempts() {
     load();
   };
 
-  const filtered = useMemo(() => {
-    let list = rows;
-    if (allowedNames) {
-      list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
-    }
-    if (q) list = list.filter((r) => (r.participants?.name ?? "").toLowerCase().includes(q.toLowerCase()));
-    return list;
-  }, [rows, allowedNames, q]);
+  const filtered = rows;
+
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
     <AdminPage
       title="Tentativas"
       description={
         isSuperadmin
-          ? "Últimas 500 tentativas · exclusão permanente."
-          : "Tentativas dos membros da sua igreja · exclusão permanente."
+          ? `Total de ${totalCount} tentativas encontradas · exclusão permanente.`
+          : `Tentativas dos membros da sua igreja (${totalCount}) · exclusão permanente.`
       }
       Icon={ListChecks}
       variant="amber"
@@ -123,6 +146,32 @@ export default function AdminAttempts() {
           </TableBody>
         </Table>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+      )}
     </AdminPage>
   );
 }
