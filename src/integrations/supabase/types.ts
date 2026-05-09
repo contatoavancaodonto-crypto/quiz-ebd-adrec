@@ -2132,6 +2132,9 @@ export type Database = {
           class_id: string | null
           class_name: string | null
           final_score: number | null
+          finished_at: string | null
+          lesson_id: string | null
+          lesson_theme: string | null
           participant_name: string | null
           position: number | null
           quiz_id: string | null
@@ -2149,6 +2152,13 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
           {
