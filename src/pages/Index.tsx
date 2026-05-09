@@ -624,16 +624,29 @@ const Index = () => {
           ) : !seasonExpired ? (
             <section className="space-y-2">
               <SectionLabel color="muted" label="Quiz da lição" />
-              <div className="rounded-3xl border border-border bg-muted/20 p-5 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
-                  <Calendar className="w-6 h-6 text-muted-foreground" />
+              <div className="rounded-3xl border border-border bg-muted/20 p-5 text-center space-y-4">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-muted mb-2">
+                    <Calendar className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-sm font-bold text-foreground mb-1">
+                    Aguarde o próximo quiz
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground">
+                    Toda <strong>segunda às 00h00</strong> abrimos a próxima lição.
+                  </p>
                 </div>
-                <h2 className="text-sm font-bold text-foreground mb-1">
-                  Aguarde o próximo quiz
-                </h2>
-                <p className="text-[11px] text-muted-foreground">
-                  Toda <strong>segunda às 00h00</strong> abrimos a próxima lição.
-                </p>
+                
+                {provao && provaoStatus.available && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handleStartProvao}
+                    className="w-full rounded-2xl border-primary/30 text-primary hover:bg-primary/5 font-bold"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Responder Provão Trimestral
+                  </Button>
+                )}
               </div>
             </section>
           ) : null}
