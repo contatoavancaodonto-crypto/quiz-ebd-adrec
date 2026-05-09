@@ -44,7 +44,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church" | "interchurch";
-type Mode = "weekly" | "monthly" | "classic";
+type Mode = "lesson" | "monthly" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -116,7 +116,7 @@ const RankingPage = () => {
   const enabled = scope === "general" || (scope === "church" && !!selectedChurchId);
   const seasonId = activeSeason?.id;
   const isInter = scope === "interchurch";
-  const weeklyEnabled = mode === "weekly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
+  const weeklyEnabled = mode === "lesson" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
   const monthlyEnabled = mode === "monthly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
   const classicEnabled = mode === "classic" && !isInter && enabled;
   const interEnabled = isInter;
@@ -150,7 +150,7 @@ const RankingPage = () => {
     enabled: weeklyEnabled,
     queryFn: async () => {
       let query = supabase
-        .from("ranking_weekly")
+        .from("ranking_lesson")
         .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, week_number, avatar_url")
         .order("position")
         .limit(500);
@@ -185,7 +185,7 @@ const RankingPage = () => {
     enabled: interEnabled,
     queryFn: async () => {
       const view =
-        mode === "weekly" ? "ranking_churches_weekly" :
+        mode === "lesson" ? "ranking_churches_weekly" :
         mode === "monthly" ? "ranking_churches_monthly" :
         "ranking_churches_classic";
       let query = supabase
@@ -205,10 +205,10 @@ const RankingPage = () => {
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
-  const rt2 = useRealtimeRanking(["ranking-weekly", scope, selectedChurchId]);
+  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId]);
   const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
   const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
-  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "weekly" ? rt2 : rt3);
+  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "lesson" ? rt2 : rt3);
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
 
@@ -219,7 +219,7 @@ const RankingPage = () => {
     }
     const raw =
       mode === "classic" ? classicData :
-      mode === "weekly" ? weeklyData :
+      mode === "lesson" ? weeklyData :
       monthlyData;
     if (!raw) return [];
     const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
@@ -237,7 +237,7 @@ const RankingPage = () => {
       ? "Nenhum participante ainda neste mês."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = isInter ? interEnabled : (mode === "weekly" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled);
+  const enabledForMode = isInter ? interEnabled : (mode === "lesson" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled);
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
@@ -284,7 +284,7 @@ const RankingPage = () => {
         {/* Mode tabs: Semana / Mensal / Trimestral */}
         <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="weekly">Semanal</TabsTrigger>
+            <TabsTrigger value="lesson">Lição</TabsTrigger>
             <TabsTrigger value="monthly">Mensal</TabsTrigger>
             <TabsTrigger value="classic">Trimestral</TabsTrigger>
           </TabsList>
