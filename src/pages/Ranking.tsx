@@ -148,7 +148,7 @@ const RankingPage = () => {
   const interEnabled = isInter;
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
-    queryKey: ["ranking-classic", trimester, scope, selectedChurchId],
+    queryKey: ["ranking-classic", trimester, scope, selectedChurchId, selectedClassId],
     enabled: classicEnabled,
     queryFn: async () => {
       let query = supabase
@@ -160,9 +160,11 @@ const RankingPage = () => {
       if (scope === "church" && selectedChurchId) {
         query = query.eq("church_id", selectedChurchId);
       }
+      if (selectedClassId) {
+        query = query.eq("class_id", selectedClassId);
+      }
       const { data } = await query;
       
-      // Mapear para o formato RankEntry esperado pelo componente
       return (data || []).map(item => ({
         ...item,
         score: item.total_score,
@@ -172,7 +174,7 @@ const RankingPage = () => {
   });
 
   const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
-    queryKey: ["ranking-weekly", scope, selectedChurchId],
+    queryKey: ["ranking-weekly", scope, selectedChurchId, selectedClassId],
     enabled: weeklyEnabled,
     queryFn: async () => {
       let query = supabase
@@ -183,13 +185,16 @@ const RankingPage = () => {
       if (scope === "church" && selectedChurchId) {
         query = query.eq("church_id", selectedChurchId);
       }
+      if (selectedClassId) {
+        query = query.eq("class_id", selectedClassId);
+      }
       const { data } = await query;
       return (data as any[]) || [];
     },
   });
 
   const { data: monthlyData, isLoading: monthlyLoading } = useQuery({
-    queryKey: ["ranking-monthly", scope, selectedChurchId],
+    queryKey: ["ranking-monthly", scope, selectedChurchId, selectedClassId],
     enabled: monthlyEnabled,
     queryFn: async () => {
       let query = supabase
@@ -199,6 +204,9 @@ const RankingPage = () => {
         .limit(500);
       if (scope === "church" && selectedChurchId) {
         query = query.eq("church_id", selectedChurchId);
+      }
+      if (selectedClassId) {
+        query = query.eq("class_id", selectedClassId);
       }
       const { data } = await query;
       return (data as any[]) || [];
@@ -230,9 +238,9 @@ const RankingPage = () => {
   const isLoading = classicLoading || weeklyLoading || monthlyLoading || interLoading;
 
   // 🔴 Realtime
-  const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId]);
-  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId]);
-  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId]);
+  const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId, selectedClassId]);
+  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId]);
+  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId, selectedClassId]);
   const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
   const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "lesson" ? rt2 : rt3);
   const rtConnected = activeRt.status === "connected";
@@ -248,9 +256,8 @@ const RankingPage = () => {
       mode === "lesson" ? weeklyData :
       monthlyData;
     if (!raw) return [];
-    const filtered = selectedClassId ? raw.filter((e: any) => e.class_id === selectedClassId) : raw;
-    return filtered.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [isInter, interData, mode, classicData, weeklyData, monthlyData, selectedClassId]);
+    return raw.map((e: any, i: number) => ({ ...e, position: i + 1 }));
+  }, [isInter, interData, mode, classicData, weeklyData, monthlyData]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
