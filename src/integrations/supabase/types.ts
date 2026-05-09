@@ -2170,6 +2170,30 @@ export type Database = {
           },
         ]
       }
+      view_audit_duplicate_attempts: {
+        Row: {
+          attempts_count: number | null
+          best_score: number | null
+          church_name: string | null
+          class_name: string | null
+          lesson_key: string | null
+          lesson_theme: string | null
+          participant_id: string | null
+          participant_name: string | null
+          points_saved_by_fix: number | null
+          total_inflated_sum: number | null
+          worst_score: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_get_questions_with_answer: {
