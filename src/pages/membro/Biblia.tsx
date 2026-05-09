@@ -34,6 +34,7 @@ export default function Biblia() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { data: BOOKS, isLoading, isError, refetch } = useBibliaData();
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteVerses();
   const [selectedBook, setSelectedBook] = useState<BibliaBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [search, setSearch] = useState("");
