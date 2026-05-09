@@ -9,6 +9,7 @@ export interface WeeklyQuiz {
   opens_at: string | null;
   closes_at: string | null;
   season_id: string | null;
+  lesson_id: string | null;
   lesson_number: number | null;
   lesson_title: string | null;
   lesson_key_verse_ref: string | null;
@@ -18,10 +19,10 @@ export interface WeeklyQuiz {
 }
 
 const QUIZ_FIELDS =
-  "id, title, class_id, week_number, opens_at, closes_at, season_id, lesson_number, lesson_title, lesson_key_verse_ref, lesson_key_verse_text, quiz_kind, total_questions";
+  "id, title, class_id, week_number, opens_at, closes_at, season_id, lesson_id, lesson_number, lesson_title, lesson_key_verse_ref, lesson_key_verse_text, quiz_kind, total_questions";
 
 /**
- * Quiz semanal aberto agora para a turma do usuário.
+ * Quiz da lição aberto agora para a turma do usuário.
  * Filtra apenas quiz_kind = 'weekly'.
  */
 export function useWeeklyQuiz(classId: string | null | undefined) {
