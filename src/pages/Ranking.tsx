@@ -53,25 +53,45 @@ const RankingPage = () => {
   const state = location.state as { classId?: string; className?: string; churchId?: string } | null;
   const { eyebrow: periodEyebrow } = useCurrentPeriodLabel();
 
+  // Active season (para o modo season/weekly)
   const { data: activeSeason } = useQuery({
-    queryKey: ["active-season-meta"],
+    queryKey: ["active-season"],
     queryFn: async () => {
-      const { data } = await supabase.from("seasons").select("id, name, trimester").eq("status", "active").maybeSingle();
+      // Buscamos a temporada ativa. Como não há coluna trimester na tabela seasons,
+      // usaremos uma lógica de fallback ou inferência baseada no nome se necessário,
+      // mas por ora mantemos a integridade da tabela.
+      const { data } = await supabase.from("seasons").select("id, name").eq("status", "active").maybeSingle();
       return data;
     },
   });
 
+  // Tenta buscar o trimestre atual das lições (mais confiável que fixar 2)
+  const { data: inferredTrimester } = useQuery({
+    queryKey: ["inferred-trimester"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("lessons")
+        .select("trimester")
+        .is("class_id", null)
+        .order("scheduled_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data?.trimester ? parseInt(data.trimester, 10) : 2;
+    }
+  });
+
   const trimesterParam = parseInt(searchParams.get("trimester") || "", 10);
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (activeSeason?.trimester || 2)
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 2
   );
 
-  // Sincroniza o trimestre quando a season ativa carregar, se não houver param na URL
+  // Sincroniza o trimestre inicial baseado nas lições recentes se não houver na URL
   useEffect(() => {
-    if (!trimesterParam && activeSeason?.trimester) {
-      setTrimester(activeSeason.trimester);
+    if (!trimesterParam && inferredTrimester) {
+      setTrimester(inferredTrimester);
     }
-  }, [activeSeason?.trimester, trimesterParam]);
+  }, [inferredTrimester, trimesterParam]);
+
   const rawModeParam = searchParams.get("mode");
   // Backwards-compat: links antigos com ?mode=season caem em monthly
   const normalizedModeParam: Mode =
@@ -108,15 +128,6 @@ const RankingPage = () => {
       return p;
     });
   };
-
-  // Active season (para o modo season/weekly)
-  const { data: activeSeason } = useQuery({
-    queryKey: ["active-season"],
-    queryFn: async () => {
-      const { data } = await supabase.from("seasons").select("id, name").eq("status", "active").maybeSingle();
-      return data;
-    },
-  });
 
   const { data: classes } = useQuery({
     queryKey: ["classes-list"],
