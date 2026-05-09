@@ -679,7 +679,7 @@ const Index = () => {
                   Provões trimestrais
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Acesse o provão de 20 perguntas de cada trimestre.
+                  Acesse o provão de 20 perguntas de cada trimestre e garanta uma melhor posição.
                 </p>
               </div>
 
