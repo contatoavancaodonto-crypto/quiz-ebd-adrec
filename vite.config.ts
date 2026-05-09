@@ -19,4 +19,16 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          'ui': ['lucide-react', 'framer-motion', 'clsx', 'tailwind-merge'],
+          'supabase': ['@supabase/supabase-js'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+  },
 }));

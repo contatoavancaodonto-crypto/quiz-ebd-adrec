@@ -7,56 +7,53 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileGate } from "./components/ProfileGate";
 import { RolesProvider } from "./hooks/useRoles";
 import { PageSkeleton } from "./components/PageSkeleton";
+import { AdminLayout } from "./components/admin/AdminLayout";
 
-// Páginas — imports diretos (eager) para navegação instantânea entre rotas.
-// Mantemos lazy APENAS para Bíblia e Harpa (carregam JSONs grandes).
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import QuizPage from "./pages/Quiz";
-import Arquivo from "./pages/Arquivo";
-import ResultPage from "./pages/Result";
-import RankingPage from "./pages/Ranking";
-import GabaritoPage from "./pages/Gabarito";
-import PreviewTelas from "./pages/PreviewTelas";
-import NotFound from "./pages/NotFound";
-import Unsubscribe from "./pages/Unsubscribe";
-import Oferta from "./pages/Oferta";
-
+// Páginas — imports dinâmicos (lazy) para reduzir o bundle inicial e otimizar o carregamento.
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const QuizPage = lazy(() => import("./pages/Quiz"));
+const Arquivo = lazy(() => import("./pages/Arquivo"));
+const ResultPage = lazy(() => import("./pages/Result"));
+const RankingPage = lazy(() => import("./pages/Ranking"));
+const GabaritoPage = lazy(() => import("./pages/Gabarito"));
+const PreviewTelas = lazy(() => import("./pages/PreviewTelas"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Oferta = lazy(() => import("./pages/Oferta"));
 
 // Membro
-import MeuPerfil from "./pages/membro/MeuPerfil";
-import MeuDesempenho from "./pages/membro/MeuDesempenho";
-import Historico from "./pages/membro/Historico";
-import Configuracoes from "./pages/membro/Configuracoes";
-import Revista from "./pages/membro/Revista";
-import Suporte from "./pages/membro/Suporte";
-import Comunidade from "./pages/membro/Comunidade";
-import Conquistas from "./pages/membro/Conquistas";
-import { EmBreve } from "./pages/membro/EmBreve";
-
+const MeuPerfil = lazy(() => import("./pages/membro/MeuPerfil"));
+const MeuDesempenho = lazy(() => import("./pages/membro/MeuDesempenho"));
+const Historico = lazy(() => import("./pages/membro/Historico"));
+const Configuracoes = lazy(() => import("./pages/membro/Configuracoes"));
+const Revista = lazy(() => import("./pages/membro/Revista"));
+const Suporte = lazy(() => import("./pages/membro/Suporte"));
+const Comunidade = lazy(() => import("./pages/membro/Comunidade"));
+const Conquistas = lazy(() => import("./pages/membro/Conquistas"));
+const EmBreve = lazy(() => import("./pages/membro/EmBreve").then(m => ({ default: m.EmBreve })));
 
 // Admin
-import { AdminLayout } from "./components/admin/AdminLayout";
-import AdminOverview from "./pages/admin/AdminOverview";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminChurches from "./pages/admin/AdminChurches";
-import AdminClasses from "./pages/admin/AdminClasses";
-import AdminQuizzes from "./pages/admin/AdminQuizzes";
-import AdminSeasons from "./pages/admin/AdminSeasons";
-import AdminAttempts from "./pages/admin/AdminAttempts";
-import AdminMemberAnswers from "./pages/admin/AdminMemberAnswers";
-import AdminMyChurch from "./pages/admin/AdminMyChurch";
-import AdminChurchMembers from "./pages/admin/AdminChurchMembers";
-import AdminLocalAdmins from "./pages/admin/AdminLocalAdmins";
-import AdminBadges from "./pages/admin/AdminBadges";
-import AdminVerses from "./pages/admin/AdminVerses";
-import AdminMaterials from "./pages/admin/AdminMaterials";
-import AdminAuditLog from "./pages/admin/AdminAuditLog";
-import AdminNotifications from "./pages/admin/AdminNotifications";
-import AdminSupport from "./pages/admin/AdminSupport";
-import AdminCommunity from "./pages/admin/AdminCommunity";
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminChurches = lazy(() => import("./pages/admin/AdminChurches"));
+const AdminClasses = lazy(() => import("./pages/admin/AdminClasses"));
+const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
+const AdminSeasons = lazy(() => import("./pages/admin/AdminSeasons"));
+const AdminAttempts = lazy(() => import("./pages/admin/AdminAttempts"));
+const AdminMemberAnswers = lazy(() => import("./pages/admin/AdminMemberAnswers"));
+const AdminMyChurch = lazy(() => import("./pages/admin/AdminMyChurch"));
+const AdminChurchMembers = lazy(() => import("./pages/admin/AdminChurchMembers"));
+const AdminLocalAdmins = lazy(() => import("./pages/admin/AdminLocalAdmins"));
+const AdminBadges = lazy(() => import("./pages/admin/AdminBadges"));
+const AdminVerses = lazy(() => import("./pages/admin/AdminVerses"));
+const AdminMaterials = lazy(() => import("./pages/admin/AdminMaterials"));
+const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
+const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 
-// Lazy SOMENTE para páginas pesadas (JSONs grandes da Bíblia/Harpa)
+// Bíblia e Harpa
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
 const Harpa = lazy(() => import("./pages/membro/Harpa"));
 
