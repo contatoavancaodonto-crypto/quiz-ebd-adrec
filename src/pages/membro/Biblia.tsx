@@ -214,19 +214,46 @@ export default function Biblia() {
             const isHighlighted = verseNumber === highlightedVerse;
 
             return (
-              <p
+              <motion.div
                 key={i}
-                ref={isHighlighted ? activeVerseRef : null}
-                className={cn(
-                  "flex gap-2.5 rounded-xl px-3 py-2 transition-all",
-                  isHighlighted && "bg-primary/10 ring-1 ring-primary/30 shadow-sm"
-                )}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.01 }}
+                className="group"
               >
-                <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
-                  {verseNumber}
-                </span>
-                <span className="text-foreground">{verse}</span>
-              </p>
+                <div
+                  ref={isHighlighted ? activeVerseRef : null}
+                  className={cn(
+                    "flex gap-2.5 rounded-xl px-3 py-2 transition-all cursor-pointer relative",
+                    isHighlighted ? "bg-primary/10 ring-1 ring-primary/30 shadow-sm" : "hover:bg-muted/50"
+                  )}
+                  onClick={() => {
+                    toggleFavorite({
+                      book_name: selectedBook.name,
+                      book_abbrev: selectedBook.abbrev,
+                      chapter: selectedChapter + 1,
+                      verse_number: verseNumber,
+                      verse_text: verse,
+                    });
+                  }}
+                >
+                  <span className="font-bold text-primary shrink-0 min-w-[1.75rem] tabular-nums text-sm pt-0.5">
+                    {verseNumber}
+                  </span>
+                  <span className="text-foreground flex-1">{verse}</span>
+                  <div className={cn(
+                    "shrink-0 transition-opacity",
+                    isFavorite(selectedBook.abbrev, selectedChapter + 1, verseNumber) ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                  )}>
+                    <Heart 
+                      className={cn(
+                        "w-4 h-4 mt-0.5",
+                        isFavorite(selectedBook.abbrev, selectedChapter + 1, verseNumber) ? "fill-primary text-primary" : "text-muted-foreground"
+                      )} 
+                    />
+                  </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>
