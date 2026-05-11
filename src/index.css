@@ -113,10 +113,14 @@
   }
 }
 
-/* Animações de carregamento desativadas globalmente para deixar o app mais rápido */
-.animate-pulse,
+/* Animações de carregamento desativadas globalmente para deixar o app mais rápido 
+   Nota: Restauramos spin e pulse apenas para elementos que não sejam botões ou ícones interativos pesados */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+}
+
 .animate-spin {
-  animation: none !important;
+  animation: spin 1s linear infinite !important;
 }
 
 /* Bloqueia scroll lateral e zoom por pinça (mobile) */
