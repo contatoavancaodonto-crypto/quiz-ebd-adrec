@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, KeyRound, Eye, Settings as SettingsIcon, Mail } from "lucide-react";
+import { LogOut, KeyRound, Eye, Settings as SettingsIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -43,25 +43,6 @@ export default function Configuracoes() {
     });
     if (error) toast.error("Erro ao enviar email");
     else toast.success("Email de redefinição enviado!");
-  };
-
-  const handleTestEmail = async () => {
-    if (!profile?.email) return;
-    setSaving(true);
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: profile.email,
-    });
-    setSaving(false);
-    if (error) {
-      if (error.message.includes("Email domain not verified")) {
-        toast.error("O domínio notify.quizebd.com ainda não foi verificado no DNS.");
-      } else {
-        toast.error(`Erro: ${error.message}`);
-      }
-    } else {
-      toast.success("E-mail de teste enviado! Verifique sua caixa de entrada.");
-    }
   };
 
   const handleLogout = async () => {
@@ -122,19 +103,6 @@ export default function Configuracoes() {
                 <KeyRound className="w-4 h-4" />
               </div>
               <span className="flex-1 text-sm font-semibold text-foreground">Alterar senha</span>
-            </button>
-            <button
-              onClick={handleTestEmail}
-              className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-muted/60 transition-colors text-left"
-              disabled={saving}
-            >
-              <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-                <Mail className="w-4 h-4" />
-              </div>
-              <div className="flex-1">
-                <span className="block text-sm font-semibold text-foreground">Testar e-mail</span>
-                <span className="block text-[10px] text-muted-foreground">Valida o domínio notify.quizebd.com</span>
-              </div>
             </button>
             <button
               onClick={handleLogout}
