@@ -126,26 +126,44 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 1. Look up template from registry (early — needed to resolve recipient)
-  const template = TEMPLATES[templateName]
+  // 1. Look up template from DB or registry
+  let html: string | null = null;
+  let resolvedSubject: string | null = null;
+  const template = TEMPLATES[templateName];
 
-  if (!template) {
-    console.error('Template not found in registry', { templateName })
-    return new Response(
-      JSON.stringify({
-        error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-      }),
-      {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+  const { data: dbTemplate } = await authClient
+    .from('email_templates')
+    .select('content_html, subject')
+    .eq('name', templateName)
+    .maybeSingle();
+
+  if (dbTemplate) {
+    html = dbTemplate.content_html;
+    resolvedSubject = dbTemplate.subject;
+    // Replace variables {{name}}, {{title}}, etc.
+    Object.entries(templateData).forEach(([key, value]) => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      if (html) html = html.replace(regex, String(value));
+      if (resolvedSubject) resolvedSubject = resolvedSubject.replace(regex, String(value));
+    });
+  } else if (template) {
+    // Fallback to React Email if not in DB
+    html = await renderAsync(React.createElement(template.component, templateData));
+    resolvedSubject = typeof template.subject === 'function' 
+      ? template.subject(templateData) 
+      : template.subject;
+  } else {
+    console.error('Template not found', { templateName });
+    return new Response(JSON.stringify({ error: `Template '${templateName}' not found.` }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  const effectiveRecipient = (template as any)?.to || recipientEmail;
 
   if (!effectiveRecipient) {
     return new Response(
@@ -343,20 +361,11 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 4. Render React Email template to HTML and plain text
-  const html = await renderAsync(
-    React.createElement(template.component, templateData)
-  )
+  // 4. Render React Email template to HTML and plain text (already done above if needed)
   const plainText = await renderAsync(
-    React.createElement(template.component, templateData),
+    React.createElement(template?.component || TEMPLATES[templateName].component, templateData),
     { plainText: true }
   )
-
-  // Resolve subject — supports static string or dynamic function
-  const resolvedSubject =
-    typeof template.subject === 'function'
-      ? template.subject(templateData)
-      : template.subject
 
   // 5. Enqueue the pre-rendered email for async processing by the dispatcher.
   // The dispatcher (process-email-queue) handles sending, retries, and rate-limit backoff.
