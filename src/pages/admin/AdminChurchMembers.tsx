@@ -181,20 +181,11 @@ export default function AdminChurchMembers() {
   }, [rows, q]);
 
   return (
+    <AdminPage
       title="Membros da Igreja"
       description={`${rows.length} ${rows.length === 1 ? "membro cadastrado" : "membros cadastrados"} · gerencie membros e comunicados.`}
       Icon={UsersRound}
       variant="primary"
-      actions={isSuperadmin && (
-        <Select value={churchId || ""} onValueChange={(v) => {
-          // Se for superadmin, permitimos trocar a igreja visualizada
-          // Mas como o hook useRoles é global, precisamos de um estado local aqui
-          // se quisermos manter a navegação fluida.
-          // Por enquanto, vamos apenas garantir que ele veja os membros.
-        }}>
-          {/* Futura implementação de seletor global para superadmin */}
-        </Select>
-      )}
     >
       <Tabs defaultValue="members" className="w-full">
         <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-6">
