@@ -1031,6 +1031,7 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          provider: string | null
           show_avatar_in_ranking: boolean
           updated_at: string
         }
@@ -1046,6 +1047,7 @@ export type Database = {
           id: string
           last_name?: string | null
           phone?: string | null
+          provider?: string | null
           show_avatar_in_ranking?: boolean
           updated_at?: string
         }
@@ -1061,6 +1063,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          provider?: string | null
           show_avatar_in_ranking?: boolean
           updated_at?: string
         }
