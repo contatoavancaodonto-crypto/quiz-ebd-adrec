@@ -402,11 +402,7 @@ const Auth = () => {
                     <span className="text-[10px] text-muted-foreground ml-1">{pwdStrength.label}</span>
                   </div>
                 )}
-                <PasswordField
-                  label="Confirmar senha" value={confirmPassword} onChange={setConfirmPassword}
-                  show={showPwd} toggle={() => setShowPwd(!showPwd)} error={errors.confirmPassword}
-                  success={confirmPassword.length >= 8 && confirmPassword === password}
-                />
+                {/* confirmPassword field removed */}
 
                 <Checkbox
                   checked={acceptTerms} onChange={setAcceptTerms} error={errors.acceptTerms}
