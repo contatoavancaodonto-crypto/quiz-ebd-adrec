@@ -1020,6 +1020,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          area: number | null
           avatar_url: string | null
           church_id: string | null
           class_id: string | null
@@ -1036,6 +1037,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          area?: number | null
           avatar_url?: string | null
           church_id?: string | null
           class_id?: string | null
@@ -1052,6 +1054,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          area?: number | null
           avatar_url?: string | null
           church_id?: string | null
           class_id?: string | null
