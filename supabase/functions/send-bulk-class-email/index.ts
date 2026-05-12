@@ -62,31 +62,41 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Busca participantes da turma que tenham email
-    // Usamos profiles diretamente se o user_id estiver preenchido
+    // Busca participantes da turma
     const { data: participants, error: pError } = await supabase
       .from("participants")
-      .select(`
-        user_id,
-        name,
-        profiles!participants_user_id_fkey (
-          id,
-          email,
-          first_name
-        )
-      `)
+      .select("user_id, name")
       .eq("class_id", classId)
       .not("user_id", "is", null);
 
     if (pError) throw pError;
 
-    const recipients = participants
-      .filter((p: any) => p.profiles?.email)
-      .map((p: any) => ({
-        email: p.profiles.email,
-        name: p.profiles.first_name || p.name || "Membro",
-        userId: p.profiles.id
-      }));
+    if (!participants || participants.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, message: "Nenhum participante vinculado a um usuário encontrado.", total: 0 }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const userIds = participants.map(p => p.user_id);
+
+    // Busca os perfis (emails) dos usuários
+    const { data: profiles, error: profError } = await supabase
+      .from("profiles")
+      .select("id, email, first_name")
+      .in("id", userIds)
+      .not("email", "is", null);
+
+    if (profError) throw profError;
+
+    const recipients = profiles.map(profile => {
+      const participant = participants.find(p => p.user_id === profile.id);
+      return {
+        email: profile.email,
+        name: profile.first_name || participant?.name || "Membro",
+        userId: profile.id
+      };
+    });
 
     if (recipients.length === 0) {
       return new Response(
