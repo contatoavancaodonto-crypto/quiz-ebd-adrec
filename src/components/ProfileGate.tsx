@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useFullProfile } from "@/hooks/useFullProfile";
@@ -12,6 +13,7 @@ import { CompleteProfileModal } from "@/components/CompleteProfileModal";
 export const ProfileGate = () => {
   const { user, loading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useFullProfile();
+  const [forceClose, setForceClose] = useState(false);
   const location = useLocation();
 
   if (!user || loading || profileLoading) return null;
@@ -21,15 +23,13 @@ export const ProfileGate = () => {
   const incomplete = !profile.phone || !profile.class_id || !profile.church_id;
   const isGoogleUser = profile.provider === "google";
 
-  if (!incomplete || !isGoogleUser) return null;
+  if (!incomplete || !isGoogleUser || forceClose) return null;
 
   return (
     <CompleteProfileModal
-      open
+      open={!forceClose}
       userId={user.id}
-      onCompleted={() => {
-        // Cache será invalidado pelo próprio modal após salvar
-      }}
+      onCompleted={() => setForceClose(true)}
     />
   );
 };
