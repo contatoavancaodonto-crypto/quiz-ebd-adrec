@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface EmailLog {
-  id: number;
+  id: string | number;
   message_id: string;
   template_name: string;
   recipient_email: string;
