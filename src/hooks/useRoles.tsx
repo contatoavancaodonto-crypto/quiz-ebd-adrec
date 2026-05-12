@@ -50,7 +50,19 @@ export function RolesProvider({ children }: { children: ReactNode }) {
       setIsSuperadmin(rows.some((r) => r.role === "superadmin"));
       const adminRow = rows.find((r) => r.role === "admin");
       setIsChurchAdmin(!!adminRow);
-      setChurchId(adminRow?.church_id ?? null);
+      
+      // Se for superadmin, prioriza o church_id do perfil para ele ver os membros da própria igreja
+      // caso contrário usa o church_id da role admin
+      if (rows.some(r => r.role === "superadmin")) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("church_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        setChurchId(profile?.church_id ?? null);
+      } else {
+        setChurchId(adminRow?.church_id ?? null);
+      }
       setLoading(false);
     };
 
