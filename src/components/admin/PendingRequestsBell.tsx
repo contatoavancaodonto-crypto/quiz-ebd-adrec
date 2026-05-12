@@ -14,11 +14,18 @@ export function PendingRequestsBell() {
     let cancelled = false;
 
     const refresh = async () => {
-      const { count: c } = await supabase
-        .from("church_edit_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending");
-      if (!cancelled) setCount(c ?? 0);
+      const [{ count: editReqs }, { count: newChurches }] = await Promise.all([
+        supabase
+          .from("church_edit_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabase
+          .from("churches")
+          .select("id", { count: "exact", head: true })
+          .eq("approved", false)
+          .eq("requested", true)
+      ]);
+      if (!cancelled) setCount((editReqs ?? 0) + (newChurches ?? 0));
     };
     refresh();
 
@@ -27,6 +34,11 @@ export function PendingRequestsBell() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "church_edit_requests" },
+        () => refresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "churches" },
         () => refresh()
       )
       .subscribe();
@@ -47,13 +59,13 @@ export function PendingRequestsBell() {
       className="relative"
       title={
         count > 0
-          ? `${count} solicitação${count === 1 ? "" : "ões"} de edição pendente${
+          ? `${count} solicitação${count === 1 ? "" : "ões"} pendente${
               count === 1 ? "" : "s"
             }`
           : "Sem solicitações pendentes"
       }
     >
-      <Link to="/painel-ebd-2025/igrejas?tab=solicitacoes">
+      <Link to="/painel/igrejas">
         <Bell className="w-5 h-5" />
         {count > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
