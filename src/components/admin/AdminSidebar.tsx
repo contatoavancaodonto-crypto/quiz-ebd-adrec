@@ -19,6 +19,7 @@ import {
   Megaphone,
   LifeBuoy,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
