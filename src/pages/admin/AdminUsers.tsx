@@ -36,7 +36,7 @@ interface ProfileRow {
   last_name: string | null;
   email: string | null;
   phone: string | null;
-  area: number | null;
+  area?: number | null;
   profile_church_id: string | null;
   role: "superadmin" | "admin" | null;
   role_church_id: string | null;
