@@ -14,11 +14,18 @@ export function PendingRequestsBell() {
     let cancelled = false;
 
     const refresh = async () => {
-      const { count: c } = await supabase
-        .from("church_edit_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending");
-      if (!cancelled) setCount(c ?? 0);
+      const [{ count: editReqs }, { count: newChurches }] = await Promise.all([
+        supabase
+          .from("church_edit_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabase
+          .from("churches")
+          .select("id", { count: "exact", head: true })
+          .eq("approved", false)
+          .eq("requested", true)
+      ]);
+      if (!cancelled) setCount((editReqs ?? 0) + (newChurches ?? 0));
     };
     refresh();
 
