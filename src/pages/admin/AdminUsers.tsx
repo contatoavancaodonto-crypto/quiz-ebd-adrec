@@ -70,7 +70,7 @@ export default function AdminUsers() {
     const [profilesRes, rolesRes, churchesRes] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, area, church_id, hidden_at")
+        .select("id, first_name, last_name, email, phone, church_id, hidden_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, church_id"),
       supabase.from("churches").select("id, name").eq("active", true).order("name"),
