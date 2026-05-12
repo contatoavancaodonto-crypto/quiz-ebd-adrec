@@ -65,7 +65,7 @@ export default function AdminChurchMembers() {
     const [{ data: profs }, { data: roles }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, phone, area")
+        .select("id, first_name, last_name, email, phone")
         .eq("church_id", churchId)
         .order("first_name", { ascending: true }),
       supabase
