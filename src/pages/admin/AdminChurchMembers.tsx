@@ -145,7 +145,7 @@ export default function AdminChurchMembers() {
   }, [rolesLoading, churchId]);
 
   if (rolesLoading) return null;
-  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel" replace />;
+  if (!isChurchAdmin && !isSuperadmin) return <Navigate to="/painel" replace />;
 
   const promote = async (m: Member) => {
     if (!churchId) return;
