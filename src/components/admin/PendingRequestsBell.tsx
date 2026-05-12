@@ -59,7 +59,7 @@ export function PendingRequestsBell() {
       className="relative"
       title={
         count > 0
-          ? `${count} solicitação${count === 1 ? "" : "ões"} de edição pendente${
+          ? `${count} solicitação${count === 1 ? "" : "ões"} pendente${
               count === 1 ? "" : "s"
             }`
           : "Sem solicitações pendentes"
