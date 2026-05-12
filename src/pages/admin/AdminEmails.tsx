@@ -84,10 +84,15 @@ export default function AdminEmails() {
       }
     } catch (error: any) {
       console.error("Erro ao carregar templates:", error);
-      // Fallback para templates básicos se a função falhar
+      toast.error("Erro ao carregar templates do servidor. Usando fallback local.");
+      // Fallback para todos os templates conhecidos se a função falhar
       setTemplates([
         { name: 'new-class-material', displayName: 'Nova Revista', subject: '📖 Nova revista disponível', html: '<p>Template de nova revista</p>' },
-        { name: 'support-ticket-created', displayName: 'Suporte Criado', subject: '🎫 Seu chamado foi recebido', html: '<p>Template de suporte</p>' }
+        { name: 'welcome', displayName: 'Boas-vindas', subject: '🎉 Bem-vindo ao Quiz EBD', html: '<p>Template de boas-vindas</p>' },
+        { name: 'quiz-result', displayName: 'Resultado de Quiz', subject: '📊 Seu desempenho no quiz', html: '<p>Template de resultado</p>' },
+        { name: 'new-quiz-available', displayName: 'Novo Quiz Disponível', subject: '💡 Novo quiz liberado', html: '<p>Template de novo quiz</p>' },
+        { name: 'notification', displayName: 'Notificação Geral', subject: '🔔 Aviso importante', html: '<p>Template de notificação</p>' },
+        { name: 'support-ticket-created', displayName: 'Suporte', subject: '🎫 Chamado recebido', html: '<p>Template de suporte</p>' }
       ]);
     }
   };
