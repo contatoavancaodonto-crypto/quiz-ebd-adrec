@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users } from "lucide-react";
+import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
@@ -51,6 +52,10 @@ export default function AdminEmails() {
   const [sendingTest, setSendingTest] = useState(false);
   const [sendingBulk, setSendingBulk] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [editedSubject, setEditedSubject] = useState("");
+  const [editedHtml, setEditedHtml] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
   const refreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchLogs = async () => {
@@ -464,11 +469,18 @@ export default function AdminEmails() {
                 <CardContent>
                   <p className="text-sm text-muted-foreground line-clamp-1">Assunto: {template.subject}</p>
                   <div className="mt-4 flex gap-2">
-                    <Button variant="outline" size="sm" className="w-full">Visualizar</Button>
-                    <Button size="sm" className="w-full" onClick={(e) => {
+                    <Button variant="outline" size="sm" className="w-full" onClick={(e) => {
                       e.stopPropagation();
                       setSelectedTemplate(template);
-                    }}>Testar</Button>
+                    }}>Visualizar</Button>
+                    <Button variant="secondary" size="sm" className="w-full" onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingTemplate(template);
+                      setEditedSubject(template.subject);
+                      setEditedHtml(template.html);
+                    }}>
+                      <Edit3 className="w-3 h-3 mr-1" /> Editar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -631,6 +643,43 @@ export default function AdminEmails() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedTemplate(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Modal de Edição de Template */}
+      <Dialog open={!!editingTemplate} onOpenChange={(open) => !open && setEditingTemplate(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Editar Template: {editingTemplate?.displayName}</DialogTitle>
+            <DialogDescription>Altere o assunto e o conteúdo do e-mail. Use {"{{name}}"} para o nome do usuário.</DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 min-h-0 space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Assunto do E-mail</Label>
+              <Input 
+                value={editedSubject} 
+                onChange={(e) => setEditedSubject(e.target.value)} 
+                placeholder="Digite o assunto..."
+              />
+            </div>
+            <div className="flex-1 flex flex-col space-y-2 min-h-[300px]">
+              <Label>Conteúdo (HTML/Texto)</Label>
+              <Textarea 
+                className="flex-1 font-mono text-sm resize-none" 
+                value={editedHtml} 
+                onChange={(e) => setEditedHtml(e.target.value)}
+                placeholder="Digite o conteúdo do e-mail..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setEditingTemplate(null)}>Cancelar</Button>
+            <Button onClick={handleUpdateTemplate} disabled={savingTemplate}>
+              {savingTemplate ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Salvar Alterações
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
