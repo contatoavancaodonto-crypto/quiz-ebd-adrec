@@ -7,6 +7,7 @@ interface RolesValue {
   isChurchAdmin: boolean;
   isAdmin: boolean;
   churchId: string | null;
+  setChurchId: (id: string | null) => void;
   loading: boolean;
 }
 
@@ -15,6 +16,7 @@ const RolesContext = createContext<RolesValue>({
   isChurchAdmin: false,
   isAdmin: false,
   churchId: null,
+  setChurchId: () => {},
   loading: true,
 });
 
@@ -47,10 +49,26 @@ export function RolesProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       const rows = data ?? [];
-      setIsSuperadmin(rows.some((r) => r.role === "superadmin"));
+      const superadmin = rows.some((r) => r.role === "superadmin");
+      setIsSuperadmin(superadmin);
       const adminRow = rows.find((r) => r.role === "admin");
       setIsChurchAdmin(!!adminRow);
-      setChurchId(adminRow?.church_id ?? null);
+      
+      // Para superadmin, tentamos pegar a igreja do perfil como padrão se não houver role admin
+      if (superadmin) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("church_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        if (!cancelled) {
+          setChurchId(adminRow?.church_id || profile?.church_id || null);
+        }
+      } else {
+        setChurchId(adminRow?.church_id ?? null);
+      }
+      
       setLoading(false);
     };
 
@@ -81,6 +99,7 @@ export function RolesProvider({ children }: { children: ReactNode }) {
         isChurchAdmin,
         isAdmin: isSuperadmin || isChurchAdmin,
         churchId,
+        setChurchId,
         loading,
       }}
     >
