@@ -32,7 +32,7 @@ const items: Array<{
   { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Conquistas", url: "/membro/conquistas", icon: Award },
-  { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap, type: 'history' },
+  { title: "Meu Histórico", url: "/membro/historico", icon: GraduationCap, type: 'history' },
 
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
@@ -78,7 +78,7 @@ export function MemberSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Área de Membros</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
