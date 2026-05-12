@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Trash2 } from "lucide-react";
+import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
@@ -44,6 +45,8 @@ export default function AdminEmails() {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const refreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchLogs = async () => {
     try {
