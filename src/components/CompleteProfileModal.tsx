@@ -313,7 +313,12 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
         <input
           type="text"
           value={open ? query : selectedLabel}
-          onChange={(e) => { setQuery(e.target.value); if (!open) setOpen(true); }}
+          onChange={(e) => { 
+            const val = e.target.value;
+            setQuery(val); 
+            if (!open) setOpen(true);
+            onChange(val);
+          }}
           onFocus={() => { setOpen(true); setQuery(""); }}
           placeholder={placeholder}
           className={`w-full px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-text ${
