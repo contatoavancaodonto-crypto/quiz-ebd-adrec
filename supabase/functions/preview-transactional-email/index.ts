@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
   const token = authHeader?.replace(/^Bearer\s+/i, '')
   
   let isAuthorized = false
+  console.log('Verifying token:', token ? 'Token present' : 'Token missing')
 
   // 1. Check if it's the internal LOVABLE_API_KEY
   if (apiKey && token === apiKey) {
