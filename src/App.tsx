@@ -110,6 +110,7 @@ const App = () => (
                 <Route path="notificacoes" element={<AdminNotifications />} />
                 <Route path="suporte" element={<AdminSupport />} />
                 <Route path="comunidade" element={<AdminCommunity />} />
+                <Route path="emails" element={<AdminEmails />} />
               </Route>
               <Route path="/membro" element={<MeuPerfil />} />
               <Route path="/membro/perfil" element={<MeuPerfil />} />
