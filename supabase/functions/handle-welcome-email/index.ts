@@ -27,11 +27,12 @@ Deno.serve(async (req) => {
         "send-transactional-email",
         {
           body: {
-            templateName: "welcome",
+            templateName: "Boas-vindas",
             recipientEmail: record.email,
             templateData: {
-              name: record.first_name || "Membro",
-              dashboardUrl: "https://quizebd.com/painel"
+              name: record.display_name || record.first_name || "Membro",
+              provider: record.provider || "manual",
+              link_do_app: "https://quizebd.com/painel"
             },
           },
         },
