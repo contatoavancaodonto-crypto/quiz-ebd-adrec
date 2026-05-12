@@ -1,44 +1,35 @@
-Remodelar o sistema de rankings para substituir o conceito de "Ranking Semanal" por "Ranking da Lição", garantindo compatibilidade retroativa e atualização visual no frontend.
+# Plano para estabilizar o domínio quizebd.com
 
-### Análise de Impacto
+## Objetivo
+Identificar por que o domínio caiu mesmo após ter ficado ativo e definir a correção exata no provedor de DNS.
 
-#### Views Afetadas
-- `ranking_weekly`: Será preservada como alias para a nova view `ranking_lesson` para manter compatibilidade com queries existentes.
-- `ranking_monthly` e `ranking_trimester_consolidated`: Serão atualizadas para garantir que a lógica de pontuação use `final_score` ou o cálculo de fallback (`score + streak_bonus`).
+## O que já foi confirmado
+- O site publicado está no ar e responde normalmente.
+- A publicação está pública.
+- `www.quizebd.com` está resolvendo para um IP compatível com a hospedagem.
+- O domínio raiz `quizebd.com` está resolvendo para dois IPs ao mesmo tempo:
+  - `185.158.133.1`
+  - `2.57.91.91`
 
-#### Componentes Afetados
-- `WeeklyRankings.tsx`: Atualização de textos de "Semana" para "Lição".
-- `WeeklyReadingCard.tsx`: Atualização de "Leitura Semanal" para "Leitura da Lição".
-- `Index.tsx`: Atualização de labels de "Quiz da Semana" para "Quiz da Lição".
-- `membro/Historico.tsx`: Ajuste de labels em tabelas e gráficos.
+## Diagnóstico provável
+Há um registro DNS conflitante no domínio raiz. Quando parte dos resolvedores entrega `2.57.91.91` em vez do IP correto, o acesso oscila ou cai. Isso explica o comportamento de “indo e voltando” e depois ficar offline.
 
-#### Hooks e Queries Afetados
-- `useWeeklyQuiz.ts`: Renomear logicamente para refletir lições, mas manter nomes de exportação para evitar quebras imediatas.
-- `useAcademicHistory.ts`: Ajustar interfaces que usam `semana` para suportar `lesson_number`.
+## Próximos passos recomendados
+1. Revisar os registros DNS do domínio raiz no seu provedor.
+2. Remover qualquer registro `A`, `AAAA` ou redirecionamento antigo que faça `quizebd.com` apontar para `2.57.91.91`.
+3. Manter apenas a configuração correta para a raiz e para `www` conforme o setup atual do domínio.
+4. Após salvar, aguardar a propagação e validar novamente a resolução do domínio.
 
-### Plano de Implementação
+## O que deve existir no DNS
+- `A` para `@` apontando para `185.158.133.1`
+- `A` para `www` apontando para `185.158.133.1`
+- O TXT de verificação do domínio, se a plataforma ainda exigir
+- Nenhum outro `A`/`AAAA` concorrente para `@`
 
-#### Fase 1: Database (Migrations)
-1. Criar a nova view `ranking_lesson` baseada no `lesson_id` e `lesson_number`.
-2. Criar uma view temporária `ranking_weekly` que aponta para `ranking_lesson` (compatibilidade).
-3. Atualizar `ranking_monthly` e `ranking_trimester_consolidated` para refletir as novas regras de pontuação consolidada.
-4. Adicionar colunas de suporte se necessário (ex: garantir que `quiz_attempts` sempre tenha `lesson_id`).
+## Detalhes técnicos
+- O comportamento atual indica split de resolução DNS.
+- `www.quizebd.com` responde com redirecionamento para `https://quizebd.com/`, então se a raiz falha, a experiência inteira aparenta estar offline.
+- O problema não parece estar no app nem na publicação, e sim no apontamento do domínio raiz.
 
-#### Fase 2: Hooks e Lógica de Dados
-1. Atualizar `src/hooks/useWeeklyQuiz.ts` e `src/hooks/useCurrentLesson.ts` para centralizar a busca baseada na lição agendada.
-2. Garantir que as chamadas ao Supabase usem a nova view onde possível, mas aceitem a antiga.
-
-#### Fase 3: Frontend e UI
-1. Realizar a substituição textual estratégica:
-   - "Ranking Semanal" -> "Ranking da Lição"
-   - "Quiz Semanal" -> "Quiz da Lição / Versículos"
-   - "Semana" -> "Lição" (contextual)
-2. Atualizar componentes de exibição de ranking para mostrar o tema da lição se disponível.
-
-#### Fase 4: Verificação
-1. Validar se o ranking continua carregando na página inicial.
-2. Verificar se o histórico do membro reflete as notas corretamente.
-3. Testar o desempate por milissegundos nas novas views.
-
-### Breaking Changes Potenciais
-- Mudança na granularidade: Se um quiz não estiver associado a uma lição, ele pode sumir do "Ranking da Lição" se a regra for estrita. Solução: fallback para `week_number` se `lesson_id` for nulo.
+## Resultado esperado
+Depois de remover o IP conflitante e deixar apenas o apontamento correto, o domínio deve voltar a ficar estável sem alternância entre online e offline.
