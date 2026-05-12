@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
 
-const ADD_CHURCH = "ADICIONAR IGREJA";
+const ADD_CHURCH = "CADASTRAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
 
 const phoneMask = (v: string) => {
@@ -72,7 +72,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
       return;
     }
 
-    setChurch(OTHER_CHURCH);
+    setChurch(churchName);
     setChurchRequested(true);
     setPendingChurchRequest(data);
     setChurchModalOpen(false);
@@ -352,7 +352,7 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
                     className="w-full text-left px-3.5 py-2.5 text-sm text-primary font-bold hover:bg-primary/5 transition-colors border-t border-border flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    ADICIONAR IGREJA
+                    CADASTRAR IGREJA
                   </button>
                 )}
               </>
