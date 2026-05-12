@@ -29,6 +29,16 @@ Deno.serve(async (req) => {
   
   let isAuthorized = false
   console.log('Verifying token:', token ? 'Token present' : 'Token missing')
+  if (token) {
+    try {
+      const authClient = createClient(supabaseUrl, supabaseServiceKey)
+      const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token)
+      if (claimsError) console.error('Claims error:', claimsError)
+      const claims = claimsData?.claims as any
+      console.log('Token claims role:', claims?.role)
+      // ... rest
+    } catch (e) { console.error(e) }
+  }
 
   // 1. Check if it's the internal LOVABLE_API_KEY
   if (apiKey && token === apiKey) {
