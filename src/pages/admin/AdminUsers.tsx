@@ -118,7 +118,7 @@ export default function AdminUsers() {
   }, []);
 
   if (rolesLoading) return null;
-  if (!isSuperadmin) return <Navigate to="/painel-ebd-2025" replace />;
+  if (!isSuperadmin) return <Navigate to="/painel" replace />;
 
   const openPromote = (row: ProfileRow) => {
     setTarget(row);

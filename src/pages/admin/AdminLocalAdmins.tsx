@@ -84,7 +84,7 @@ export default function AdminLocalAdmins() {
   }, [rolesLoading, churchId]);
 
   if (rolesLoading) return null;
-  if (!isChurchAdmin || isSuperadmin) return <Navigate to="/painel" replace />;
+  if (!isChurchAdmin && !isSuperadmin) return <Navigate to="/painel" replace />;
 
   const revoke = async (a: AdminEntry) => {
     if (!confirm(`Remover ${a.first_name ?? "este admin"} do papel de admin local?`)) return;
