@@ -250,16 +250,16 @@ Deno.serve(async (req) => {
         const resendApiKey = Deno.env.get('RESEND_API_KEY')
         const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
         
-        console.log(`Processing email with label: ${payload.label || 'unknown'}`);
-        console.log(`RESEND_API_KEY present: ${!!resendApiKey}`);
-        console.log(`LOVABLE_API_KEY present: ${!!lovableApiKey}`);
+        console.log(`[DEBUG] Label: ${payload.label || 'none'}`);
+        console.log(`[DEBUG] Resend Key Present: ${!!resendApiKey}`);
+        console.log(`[DEBUG] Lovable Key Present: ${!!lovableApiKey}`);
         
         if (!resendApiKey) {
           throw new Error('Missing RESEND_API_KEY')
         }
 
-        const isLovableGateway = lovableApiKey && (resendApiKey.startsWith('std_') || resendApiKey.length < 30)
-        console.log(`Using Lovable Gateway: ${isLovableGateway}`);
+        const isLovableGateway = (lovableApiKey && (resendApiKey.startsWith('std_') || resendApiKey.length < 30)) || false;
+        console.log(`[DEBUG] Using Lovable Gateway: ${isLovableGateway}`);
         const apiUrl = isLovableGateway 
           ? 'https://connector-gateway.lovable.dev/resend/emails' 
           : 'https://api.resend.com/emails'
