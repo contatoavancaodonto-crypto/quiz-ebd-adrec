@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
   // 1. Look up template from DB or registry
   let html: string | null = null;
   let resolvedSubject: string | null = null;
+  const template = TEMPLATES[templateName];
 
   const { data: dbTemplate } = await authClient
     .from('email_templates')
@@ -136,16 +137,14 @@ Deno.serve(async (req) => {
     .eq('name', templateName)
     .maybeSingle();
 
-  const template = TEMPLATES[templateName];
-
   if (dbTemplate) {
     html = dbTemplate.content_html;
     resolvedSubject = dbTemplate.subject;
     // Replace variables {{name}}, {{title}}, etc.
     Object.entries(templateData).forEach(([key, value]) => {
       const regex = new RegExp(`{{${key}}}`, 'g');
-      html = html!.replace(regex, String(value));
-      resolvedSubject = resolvedSubject!.replace(regex, String(value));
+      if (html) html = html.replace(regex, String(value));
+      if (resolvedSubject) resolvedSubject = resolvedSubject.replace(regex, String(value));
     });
   } else if (template) {
     // Fallback to React Email if not in DB
@@ -164,7 +163,7 @@ Deno.serve(async (req) => {
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  const effectiveRecipient = (template as any)?.to || recipientEmail;
 
   if (!effectiveRecipient) {
     return new Response(
