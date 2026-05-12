@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
 
-const ADD_CHURCH = "ADICIONAR IGREJA";
+const ADD_CHURCH = "CADASTRAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
 
 const phoneMask = (v: string) => {
@@ -72,7 +72,7 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
       return;
     }
 
-    setChurch(OTHER_CHURCH);
+    setChurch(churchName);
     setChurchRequested(true);
     setPendingChurchRequest(data);
     setChurchModalOpen(false);
@@ -184,9 +184,9 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   options={[
                     { value: "INDIVIDUAL", label: "INDIVIDUAL" },
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
-                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    ...(churchRequested ? [{ value: church, label: church }] : []),
                   ]}
-                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== "INDIVIDUAL" && !churchRequested}
                   onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   error={errors.church}
                   hint={
@@ -313,7 +313,12 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
         <input
           type="text"
           value={open ? query : selectedLabel}
-          onChange={(e) => { setQuery(e.target.value); if (!open) setOpen(true); }}
+          onChange={(e) => { 
+            const val = e.target.value;
+            setQuery(val); 
+            if (!open) setOpen(true);
+            onChange(val);
+          }}
           onFocus={() => { setOpen(true); setQuery(""); }}
           placeholder={placeholder}
           className={`w-full px-3.5 py-2.5 pr-9 rounded-lg bg-muted border-2 outline-none transition-all text-sm cursor-text ${
@@ -347,7 +352,7 @@ const ModalSearchSelect = ({ label, value, onChange, placeholder, options, error
                     className="w-full text-left px-3.5 py-2.5 text-sm text-primary font-bold hover:bg-primary/5 transition-colors border-t border-border flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    ADICIONAR IGREJA
+                    CADASTRAR IGREJA
                   </button>
                 )}
               </>
