@@ -65,7 +65,7 @@ export function PendingRequestsBell() {
           : "Sem solicitações pendentes"
       }
     >
-      <Link to="/painel-ebd-2025/igrejas?tab=solicitacoes">
+      <Link to="/painel/igrejas">
         <Bell className="w-5 h-5" />
         {count > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
