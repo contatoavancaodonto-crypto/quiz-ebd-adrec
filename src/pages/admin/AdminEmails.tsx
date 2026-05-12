@@ -152,22 +152,66 @@ export default function AdminEmails() {
 
     setSendingTest(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: selectedTemplate.name,
-          recipientEmail: testEmail,
-          templateData: selectedTemplate.name === 'new-class-material' ? {
+      let templateData = {};
+      
+      // Dados de teste baseados no template
+      switch (selectedTemplate.name) {
+        case 'new-class-material':
+          templateData = {
             name: "Usuário de Teste",
             className: "Classe de Teste",
             trimester: 1,
             year: 2026,
             title: "Revista de Teste",
             fileUrl: "https://example.com"
-          } : {
+          };
+          break;
+        case 'welcome':
+          templateData = {
+            name: "Usuário de Teste",
+            dashboardUrl: window.location.origin + "/painel"
+          };
+          break;
+        case 'quiz-result':
+          templateData = {
+            name: "Usuário de Teste",
+            quizTitle: "Quiz de Teste sobre Gênesis",
+            score: 9,
+            totalQuestions: 10,
+            percentage: 90,
+            rankingPosition: 3,
+            reviewUrl: window.location.origin + "/quizzes"
+          };
+          break;
+        case 'new-quiz-available':
+          templateData = {
+            quizTitle: "Novo Quiz: Os Profetas",
+            description: "Um estudo profundo sobre os profetas maiores e menores.",
+            deadline: "Próximo Domingo",
+            quizUrl: window.location.origin + "/quizzes"
+          };
+          break;
+        case 'notification':
+          templateData = {
+            title: "Aviso de Teste",
+            message: "Esta é uma mensagem de notificação de teste do sistema Quiz EBD.",
+            ctaLabel: "Ir para o Painel",
+            ctaUrl: window.location.origin + "/painel"
+          };
+          break;
+        default:
+          templateData = {
             userName: "Usuário de Teste",
             ticketId: "123",
             subject: "Assunto de Teste"
-          }
+          };
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: selectedTemplate.name,
+          recipientEmail: testEmail,
+          templateData
         }
       });
 
