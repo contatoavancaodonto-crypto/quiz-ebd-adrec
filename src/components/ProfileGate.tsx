@@ -18,7 +18,13 @@ export const ProfileGate = () => {
   if (location.pathname === "/auth") return null;
 
   const incomplete = !profile || !profile.phone || !profile.class_id || !profile.church_id;
-  if (!incomplete) return null;
+  
+  // Só exibe o modal se for cadastro via Google (quando os dados obrigatórios não vieram no signup manual)
+  // No signup manual, o ProfileGate já encontraria os dados preenchidos no banco.
+  // Se mesmo assim o usuário caiu aqui com dados faltando, verificamos se ele é Google.
+  const isGoogleUser = user.app_metadata.provider === "google" || user.identities?.some(id => id.provider === "google");
+
+  if (!incomplete || !isGoogleUser) return null;
 
   return (
     <CompleteProfileModal
