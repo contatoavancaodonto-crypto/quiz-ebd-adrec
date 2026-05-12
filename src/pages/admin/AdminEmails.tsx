@@ -321,6 +321,32 @@ export default function AdminEmails() {
     }
   };
 
+  const handleUpdateTemplate = async () => {
+    if (!editingTemplate) return;
+    
+    setSavingTemplate(true);
+    try {
+      const { error } = await supabase
+        .from('email_templates')
+        .upsert({
+          name: editingTemplate.name,
+          display_name: editingTemplate.displayName,
+          subject: editedSubject,
+          content_html: editedHtml,
+        }, { onConflict: 'name' });
+
+      if (error) throw error;
+      
+      toast.success("Template atualizado com sucesso!");
+      setEditingTemplate(null);
+      fetchTemplates();
+    } catch (error: any) {
+      toast.error("Erro ao salvar template: " + error.message);
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
   const filteredLogs = logs.filter(log => 
     log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.template_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
