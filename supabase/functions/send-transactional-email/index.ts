@@ -126,20 +126,39 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 1. Look up template from registry (early — needed to resolve recipient)
-  const template = TEMPLATES[templateName]
+  // 1. Look up template from DB or registry
+  let html: string | null = null;
+  let resolvedSubject: string | null = null;
 
-  if (!template) {
-    console.error('Template not found in registry', { templateName })
-    return new Response(
-      JSON.stringify({
-        error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-      }),
-      {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+  const { data: dbTemplate } = await authClient
+    .from('email_templates')
+    .select('content_html, subject')
+    .eq('name', templateName)
+    .maybeSingle();
+
+  const template = TEMPLATES[templateName];
+
+  if (dbTemplate) {
+    html = dbTemplate.content_html;
+    resolvedSubject = dbTemplate.subject;
+    // Replace variables {{name}}, {{title}}, etc.
+    Object.entries(templateData).forEach(([key, value]) => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      html = html!.replace(regex, String(value));
+      resolvedSubject = resolvedSubject!.replace(regex, String(value));
+    });
+  } else if (template) {
+    // Fallback to React Email if not in DB
+    html = await renderAsync(React.createElement(template.component, templateData));
+    resolvedSubject = typeof template.subject === 'function' 
+      ? template.subject(templateData) 
+      : template.subject;
+  } else {
+    console.error('Template not found', { templateName });
+    return new Response(JSON.stringify({ error: `Template '${templateName}' not found.` }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   // Resolve effective recipient: template-level `to` takes precedence over
