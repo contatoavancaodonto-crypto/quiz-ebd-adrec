@@ -30,7 +30,7 @@ interface Member {
   last_name: string | null;
   email: string | null;
   phone: string | null;
-  area: number | null;
+  area?: number | null;
   is_admin: boolean;
 }
 
