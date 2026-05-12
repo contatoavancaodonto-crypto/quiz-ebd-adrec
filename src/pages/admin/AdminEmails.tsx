@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -75,30 +75,32 @@ export default function AdminEmails() {
 
   const fetchTemplates = async () => {
     try {
-      // Usamos a edge function de preview para obter os templates renderizados
-      const { data, error } = await supabase.functions.invoke('preview-transactional-email');
+      const { data: dbTemplates, error: dbError } = await supabase
+        .from('email_templates')
+        .select('*');
+
+      if (dbError) throw dbError;
+
+      const { data: previewData, error: previewError } = await supabase.functions.invoke('preview-transactional-email');
       
-      if (error) throw error;
-      if (data?.templates) {
-        setTemplates(data.templates.map((t: any) => ({
-          name: t.templateName,
-          displayName: t.displayName,
-          subject: t.subject,
-          html: t.html
-        })));
+      if (previewError) throw previewError;
+      
+      if (previewData?.templates) {
+        const mergedTemplates = previewData.templates.map((t: any) => {
+          const custom = dbTemplates?.find(dt => dt.name === t.templateName);
+          return {
+            name: t.templateName,
+            displayName: t.displayName,
+            subject: custom?.subject || t.subject,
+            html: custom?.content_html || t.html,
+            isCustom: !!custom
+          };
+        });
+        setTemplates(mergedTemplates);
       }
     } catch (error: any) {
       console.error("Erro ao carregar templates:", error);
-      toast.error("Erro ao carregar templates do servidor. Usando fallback local.");
-      // Fallback para todos os templates conhecidos se a função falhar
-      setTemplates([
-        { name: 'new-class-material', displayName: 'Nova Revista', subject: '📖 Nova revista disponível', html: '<p>Template de nova revista</p>' },
-        { name: 'welcome', displayName: 'Boas-vindas', subject: '🎉 Bem-vindo ao Quiz EBD', html: '<p>Template de boas-vindas</p>' },
-        { name: 'quiz-result', displayName: 'Resultado de Quiz', subject: '📊 Seu desempenho no quiz', html: '<p>Template de resultado</p>' },
-        { name: 'new-quiz-available', displayName: 'Novo Quiz Disponível', subject: '💡 Novo quiz liberado', html: '<p>Template de novo quiz</p>' },
-        { name: 'notification', displayName: 'Notificação Geral', subject: '🔔 Aviso importante', html: '<p>Template de notificação</p>' },
-        { name: 'support-ticket-created', displayName: 'Suporte', subject: '🎫 Chamado recebido', html: '<p>Template de suporte</p>' }
-      ]);
+      toast.error("Erro ao carregar templates do servidor.");
     }
   };
 
