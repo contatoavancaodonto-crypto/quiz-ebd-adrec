@@ -248,16 +248,31 @@ Deno.serve(async (req) => {
 
       try {
         const resendApiKey = Deno.env.get('RESEND_API_KEY')
+        const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+        
         if (!resendApiKey) {
           throw new Error('Missing RESEND_API_KEY')
         }
 
-        const response = await fetch('https://api.resend.com/emails', {
+        const isLovableGateway = lovableApiKey && resendApiKey.startsWith('std_')
+        const apiUrl = isLovableGateway 
+          ? 'https://connector-gateway.lovable.dev/resend/emails' 
+          : 'https://api.resend.com/emails'
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
+
+        if (isLovableGateway) {
+          headers['Authorization'] = `Bearer ${lovableApiKey}`
+          headers['X-Connection-Api-Key'] = resendApiKey
+        } else {
+          headers['Authorization'] = `Bearer ${resendApiKey}`
+        }
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({
             from: payload.from,
             to: payload.to,
