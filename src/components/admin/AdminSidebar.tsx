@@ -19,6 +19,7 @@ import {
   Megaphone,
   LifeBuoy,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,6 +71,7 @@ const allItems: Item[] = [
   { title: "Notificações", url: "/painel/notificacoes", icon: Megaphone, superadminOnly: true },
   { title: "Comunidade", url: "/painel/comunidade", icon: MessageSquare, superadminOnly: true },
   { title: "Suporte", url: "/painel/suporte", icon: LifeBuoy, superadminOnly: true },
+  { title: "E-mails", url: "/painel/emails", icon: Mail, superadminOnly: true },
 ];
 
 export function AdminSidebar() {
