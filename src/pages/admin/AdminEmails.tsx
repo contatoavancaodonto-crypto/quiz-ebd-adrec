@@ -94,6 +94,56 @@ export default function AdminEmails() {
     }
   }, [isSuperadmin]);
 
+  // Polling para autoatualização
+  useEffect(() => {
+    if (autoRefresh && isSuperadmin) {
+      refreshInterval.current = setInterval(() => {
+        fetchLogs();
+      }, 5000); // Atualiza a cada 5 segundos
+      
+      toast.info("Autoatualização ativada (5s)", { 
+        duration: 2000,
+        icon: <Zap className="w-4 h-4 text-amber-500" /> 
+      });
+    } else {
+      if (refreshInterval.current) {
+        clearInterval(refreshInterval.current);
+        refreshInterval.current = null;
+      }
+    }
+
+    return () => {
+      if (refreshInterval.current) {
+        clearInterval(refreshInterval.current);
+      }
+    };
+  }, [autoRefresh, isSuperadmin]);
+
+  // Real-time com Supabase Realtime
+  useEffect(() => {
+    if (!isSuperadmin) return;
+
+    const channel = supabase
+      .channel('email_logs_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'email_send_log'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          fetchLogs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isSuperadmin]);
+
   const handleSendTest = async () => {
     if (!testEmail || !selectedTemplate) {
       toast.error("Informe o e-mail e selecione um template");
