@@ -15,6 +15,7 @@ import { template as supportTicketAdminNotification } from "./support-ticket-adm
 import { template as welcome } from "./welcome.tsx";
 import { template as quizResult } from "./quiz-result.tsx";
 import { template as newQuizAvailable } from "./new-quiz-available.tsx";
+import { template as notification } from "./notification.tsx";
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   "new-class-material": newClassMaterial,
@@ -23,4 +24,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   "welcome": welcome,
   "quiz-result": quizResult,
   "new-quiz-available": newQuizAvailable,
+  "notification": notification,
 };
