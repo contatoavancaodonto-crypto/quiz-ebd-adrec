@@ -52,6 +52,7 @@ const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
 const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
+const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
 
 // Bíblia e Harpa
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
