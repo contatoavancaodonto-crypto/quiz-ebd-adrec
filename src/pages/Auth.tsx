@@ -51,11 +51,9 @@ const signupSchema = z
     phone: z.string().trim().min(14, "Telefone inválido"),
     email: z.string().trim().email("Digite um email válido").max(255).or(z.literal("")),
     password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
-    confirmPassword: z.string(),
     acceptTerms: z.literal(true, { errorMap: () => ({ message: "Você precisa aceitar os termos para continuar" }) }),
     acceptUpdates: z.literal(true, { errorMap: () => ({ message: "É necessário aceitar para prosseguir" }) }),
-  })
-  .refine((d) => d.password === d.confirmPassword, { message: "As senhas não coincidem", path: ["confirmPassword"] });
+  });
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -93,7 +91,7 @@ const Auth = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState(""); // Removed as requested
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptUpdates, setAcceptUpdates] = useState(false);
 
@@ -200,7 +198,7 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     const parsed = signupSchema.safeParse({
-      firstName, lastName, class_id: classId, church, phone, email, password, confirmPassword, acceptTerms, acceptUpdates,
+      firstName, lastName, class_id: classId, church, phone, email, password, acceptTerms, acceptUpdates,
     });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
@@ -252,7 +250,7 @@ const Auth = () => {
   const pwdStrength = passwordStrength(password);
   const signupValid =
     firstName && lastName && classId && church && phone.length >= 14 && password.length >= 8 &&
-    password === confirmPassword && acceptTerms && acceptUpdates;
+    acceptTerms && acceptUpdates;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
