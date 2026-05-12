@@ -223,8 +223,8 @@ export default function AdminEmails() {
         </TabsList>
 
         <TabsContent value="logs" className="mt-6 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="relative flex-1 w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por e-mail, template ou ID..."
@@ -233,17 +233,45 @@ export default function AdminEmails() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
+            
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="flex items-center space-x-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
+                <Switch 
+                  id="auto-refresh" 
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                />
+                <Label htmlFor="auto-refresh" className="text-xs font-medium cursor-pointer flex items-center gap-1.5">
+                  {autoRefresh ? (
+                    <>
+                      <Zap className="w-3 h-3 text-amber-500 fill-amber-500 animate-pulse" />
+                      Auto-Refresh ON
+                    </>
+                  ) : (
+                    <>
+                      <ZapOff className="w-3 h-3 text-muted-foreground" />
+                      Auto-Refresh OFF
+                    </>
+                  )}
+                </Label>
+              </div>
+
+              <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading} className="whitespace-nowrap">
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
           </div>
 
           <Card>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Data/Hora</TableHead>
+                  <TableHead className="w-[150px]">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Data/Hora
+                    </div>
+                  </TableHead>
                   <TableHead>Destinatário</TableHead>
                   <TableHead>Template</TableHead>
                   <TableHead>Status</TableHead>
