@@ -22,7 +22,7 @@ interface EmailLog {
   message_id: string;
   template_name: string;
   recipient_email: string;
-  status: 'pending' | 'sent' | 'failed' | 'rate_limited' | 'suppressed' | 'dlq';
+  status: string;
   error_message?: string;
   created_at: string;
 }
