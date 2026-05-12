@@ -349,11 +349,13 @@ export default function AdminEmails() {
     }
   };
 
-  const filteredLogs = logs.filter(log => 
-    log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.template_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.message_id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLogs = useMemo(() => {
+    return logs.filter(log => 
+      log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.template_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.message_id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [logs, searchTerm]);
 
   const getStatusBadge = (status: EmailLog['status']) => {
     switch (status) {
@@ -489,7 +491,12 @@ export default function AdminEmails() {
               <Card key={template.name} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setSelectedTemplate(template)}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{template.displayName}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {template.displayName}
+                      {(template as any).isCustom && (
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1 bg-amber-500/10 text-amber-500 border-amber-500/20">Personalizado</Badge>
+                      )}
+                    </CardTitle>
                     <Mail className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <CardDescription className="text-xs font-mono">{template.name}</CardDescription>
