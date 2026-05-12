@@ -246,6 +246,71 @@ export default function AdminEmails() {
     }
   };
 
+  const handleSendBulk = async () => {
+    if (!selectedClassId || !selectedBulkTemplate) {
+      toast.error("Selecione uma turma e um template");
+      return;
+    }
+
+    setSendingBulk(true);
+    try {
+      const selectedClass = classes.find(c => c.id === selectedClassId);
+      
+      // Dados padrão para envio em lote
+      let templateData = {};
+      switch (selectedBulkTemplate) {
+        case 'new-class-material':
+          templateData = {
+            className: selectedClass?.name || "Sua Turma",
+            trimester: Math.ceil((new Date().getMonth() + 1) / 3),
+            year: new Date().getFullYear(),
+            title: "Nova Revista",
+            fileUrl: window.location.origin + "/membro/revista"
+          };
+          break;
+        case 'new-quiz-available':
+          templateData = {
+            quizTitle: "Novo Quiz da Semana",
+            description: "Um novo quiz foi liberado para sua classe. Não perca o prazo!",
+            deadline: "Próximo Domingo",
+            quizUrl: window.location.origin + "/quizzes"
+          };
+          break;
+        case 'notification':
+          templateData = {
+            title: "Aviso para a Turma",
+            message: "Olá! Temos uma novidade para sua classe no sistema Quiz EBD.",
+            ctaLabel: "Ver no Painel",
+            ctaUrl: window.location.origin + "/painel"
+          };
+          break;
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-bulk-class-email', {
+        body: {
+          classId: selectedClassId,
+          templateName: selectedBulkTemplate,
+          templateData
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data.total === 0) {
+        toast.warning("Nenhum participante com e-mail encontrado nesta turma.");
+      } else {
+        toast.success(`${data.sent} e-mails estão sendo processados!`);
+        setSelectedClassId("");
+        setSelectedBulkTemplate("");
+        fetchLogs();
+      }
+    } catch (error: any) {
+      toast.error("Erro no envio em lote: " + error.message);
+    } finally {
+      setSendingBulk(false);
+    }
+  };
+
   const filteredLogs = logs.filter(log => 
     log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.template_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
