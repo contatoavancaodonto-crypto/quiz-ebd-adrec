@@ -184,9 +184,9 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
                   options={[
                     { value: "INDIVIDUAL", label: "INDIVIDUAL" },
                     ...CHURCHES.map((c) => ({ value: c, label: c })),
-                    ...(churchRequested ? [{ value: OTHER_CHURCH, label: OTHER_CHURCH }] : []),
+                    ...(churchRequested ? [{ value: church, label: church }] : []),
                   ]}
-                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2}
+                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== "INDIVIDUAL" && !churchRequested}
                   onAddClick={() => handleChurchChange(ADD_CHURCH)}
                   error={errors.church}
                   hint={
