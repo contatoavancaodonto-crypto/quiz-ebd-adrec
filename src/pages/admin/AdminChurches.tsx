@@ -302,7 +302,7 @@ export default function AdminChurches() {
                         {!c.active && <Badge variant="outline">Inativa</Badge>}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {c.requester_pastor_name ?? "—"}{" "}
+                        {c.requester_pastor_name || c.pastor_president || "—"}{" "}
                         {c.requester_phone && `· ${c.requester_phone}`}
                       </TableCell>
                       <TableCell className="text-right space-x-2">
