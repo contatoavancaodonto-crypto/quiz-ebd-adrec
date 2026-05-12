@@ -36,6 +36,11 @@ export function PendingRequestsBell() {
         { event: "*", schema: "public", table: "church_edit_requests" },
         () => refresh()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "churches" },
+        () => refresh()
+      )
       .subscribe();
 
     return () => {
