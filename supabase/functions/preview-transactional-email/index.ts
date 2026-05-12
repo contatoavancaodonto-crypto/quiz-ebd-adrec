@@ -34,17 +34,21 @@ Deno.serve(async (req) => {
     isAuthorized = true
   }
 
-  // 2. If not, check if it's a superadmin user
-  if (!isAuthorized && token) {
+  // 2. Service role check
+  if (token) {
     try {
-      const supabase = createClient(supabaseUrl, supabaseServiceKey)
-      const { data: { user } } = await supabase.auth.getUser(token)
+      const authClient = createClient(supabaseUrl, supabaseServiceKey)
+      const { data: claimsData } = await authClient.auth.getClaims(token)
+      const claims = claimsData?.claims as any
       
-      if (user) {
-        const { data: roles } = await supabase
+      if (claims?.role === 'service_role') {
+        isAuthorized = true
+      } else if (claims?.sub) {
+        // Superadmin check
+        const { data: roles } = await authClient
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
+          .eq('user_id', claims.sub)
           .eq('role', 'superadmin')
         
         if (roles && roles.length > 0) {
@@ -52,12 +56,13 @@ Deno.serve(async (req) => {
         }
       }
     } catch (err) {
-      console.error('Error verifying superadmin:', err)
+      console.error('Error verifying authorization:', err)
     }
   }
 
   if (!isAuthorized) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    console.error('Unauthorized access attempt to preview-transactional-email')
+    return new Response(JSON.stringify({ error: 'Unauthorized', details: 'Invalid token or insufficient permissions' }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
