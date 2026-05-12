@@ -38,7 +38,7 @@ interface EmailTemplate {
 }
 
 export default function AdminEmails() {
-  const { isSuperadmin, loading: rolesLoading } = useRoles();
+  const { isSuperadmin, isAdmin, loading: rolesLoading } = useRoles();
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -118,7 +118,7 @@ export default function AdminEmails() {
   };
 
   useEffect(() => {
-    if (isSuperadmin) {
+    if (isAdmin) {
       setLoading(true);
       Promise.all([fetchLogs(), fetchTemplates(), fetchClasses()]).finally(() => setLoading(false));
     }
@@ -126,7 +126,7 @@ export default function AdminEmails() {
 
   // Polling para autoatualização
   useEffect(() => {
-    if (autoRefresh && isSuperadmin) {
+    if (autoRefresh && isAdmin) {
       refreshInterval.current = setInterval(() => {
         fetchLogs();
       }, 5000); // Atualiza a cada 5 segundos
@@ -147,11 +147,11 @@ export default function AdminEmails() {
         clearInterval(refreshInterval.current);
       }
     };
-  }, [autoRefresh, isSuperadmin]);
+  }, [autoRefresh, isAdmin]);
 
   // Real-time com Supabase Realtime
   useEffect(() => {
-    if (!isSuperadmin) return;
+    if (!isAdmin) return;
 
     const channel = supabase
       .channel('email_logs_changes')
@@ -172,7 +172,7 @@ export default function AdminEmails() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isSuperadmin]);
+  }, [isAdmin]);
 
   const handleSendTest = async () => {
     if (!testEmail || !selectedTemplate) {
@@ -372,7 +372,7 @@ export default function AdminEmails() {
   };
 
   if (rolesLoading) return null;
-  if (!isSuperadmin) return <Navigate to="/painel" replace />;
+  if (!isAdmin) return <Navigate to="/painel" replace />;
 
   return (
     <AdminPage
