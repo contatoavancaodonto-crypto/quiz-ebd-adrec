@@ -1,5 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
 
 const corsHeaders = {
@@ -7,29 +8,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, content-type',
 }
 
-// Renders all registered templates with their previewData.
-// Gated by LOVABLE_API_KEY — only the Go API calls this.
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: 'Server configuration error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 
-  // Verify the caller is authorized with LOVABLE_API_KEY
   const authHeader = req.headers.get('Authorization')
   const token = authHeader?.replace(/^Bearer\s+/i, '')
-  if (token !== apiKey) {
+  
+  let isAuthorized = false
+
+  // 1. Check if it's the internal LOVABLE_API_KEY
+  if (apiKey && token === apiKey) {
+    isAuthorized = true
+  }
+
+  // 2. If not, check if it's a superadmin user
+  if (!isAuthorized && token) {
+    try {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey)
+      const { data: { user } } = await supabase.auth.getUser(token)
+      
+      if (user) {
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'superadmin')
+        
+        if (roles && roles.length > 0) {
+          isAuthorized = true
+        }
+      }
+    } catch (err) {
+      console.error('Error verifying superadmin:', err)
+    }
+  }
+
+  if (!isAuthorized) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
