@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff } from "lucide-react";
+import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
@@ -39,12 +40,16 @@ export default function AdminEmails() {
   const { isSuperadmin, loading: rolesLoading } = useRoles();
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLog, setSelectedLog] = useState<EmailLog | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [selectedBulkTemplate, setSelectedBulkTemplate] = useState<string>("");
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+  const [sendingBulk, setSendingBulk] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const refreshInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -87,10 +92,25 @@ export default function AdminEmails() {
     }
   };
 
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+      
+      if (error) throw error;
+      setClasses(data || []);
+    } catch (error: any) {
+      console.error("Erro ao carregar turmas:", error);
+    }
+  };
+
   useEffect(() => {
     if (isSuperadmin) {
       setLoading(true);
-      Promise.all([fetchLogs(), fetchTemplates()]).finally(() => setLoading(false));
+      Promise.all([fetchLogs(), fetchTemplates(), fetchClasses()]).finally(() => setLoading(false));
     }
   }, [isSuperadmin]);
 
@@ -261,9 +281,10 @@ export default function AdminEmails() {
       variant="primary"
     >
       <Tabs defaultValue="logs" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="logs">Logs de Envio</TabsTrigger>
           <TabsTrigger value="templates">Templates & Testes</TabsTrigger>
+          <TabsTrigger value="bulk">Envio em Lote</TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="mt-6 space-y-4">
@@ -382,6 +403,77 @@ export default function AdminEmails() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </TabsContent>
+        <TabsContent value="bulk" className="mt-6 space-y-6">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Disparo em Massa para Turma
+                </CardTitle>
+                <CardDescription>
+                  Envie um template de e-mail para todos os participantes de uma turma selecionada.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>1. Selecione a Turma</Label>
+                  <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha uma turma..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>2. Selecione o Template</Label>
+                  <Select value={selectedBulkTemplate} onValueChange={setSelectedBulkTemplate}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha o modelo de e-mail..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.map((t) => (
+                        <SelectItem key={t.name} value={t.name}>{t.displayName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="p-4 bg-muted/50 rounded-lg border border-border/50">
+                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    O que será enviado?
+                  </h4>
+                  <ul className="text-xs space-y-1 text-muted-foreground">
+                    <li>• O e-mail será personalizado com o nome de cada participante.</li>
+                    <li>• Apenas usuários com e-mail cadastrado e ativo receberão.</li>
+                    <li>• Os envios são processados de forma assíncrona para garantir a entrega.</li>
+                  </ul>
+                </div>
+              </CardContent>
+              <CardFooter className="bg-muted/30 border-t p-6">
+                <Button 
+                  className="w-full" 
+                  size="lg" 
+                  onClick={handleSendBulk} 
+                  disabled={sendingBulk || !selectedClassId || !selectedBulkTemplate}
+                >
+                  {sendingBulk ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  Disparar para a Turma
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
