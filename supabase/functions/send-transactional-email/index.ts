@@ -9,7 +9,7 @@ const SITE_NAME = "quiz-ebd"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers — never the root domain.
 // The email API looks up this exact domain; a mismatch causes "No email domain record found".
-const SENDER_DOMAIN = "notify.quizebd.com"
+const SENDER_DOMAIN = "quizebd.com"
 const FROM_DOMAIN = "quizebd.com"
 
 const corsHeaders = {
