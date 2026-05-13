@@ -539,7 +539,7 @@ const Auth = () => {
                           placeholder="Digite ou selecione sua igreja"
                           error={errors.church}
                           options={[
-                            { value: INDIVIDUAL, label: INDIVIDUAL },
+                            
                             ...CHURCHES.map((c) => ({ value: c, label: c })),
                             ...(churchRequested ? [{ value: church, label: church }] : []),
                           ]}
