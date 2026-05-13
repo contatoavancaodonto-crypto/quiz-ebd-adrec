@@ -1821,6 +1821,39 @@ export type Database = {
           },
         ]
       }
+      webhook_queue: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          id: string
+          last_error: string | null
+          next_retry_at: string | null
+          payload: Json
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          id?: string
+          last_error?: string | null
+          next_retry_at?: string | null
+          payload: Json
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          id?: string
+          last_error?: string | null
+          next_retry_at?: string | null
+          payload?: Json
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       ranking_by_class: {
