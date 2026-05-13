@@ -270,8 +270,8 @@ export default function Revista() {
       <PageShell contentClassName="pb-4">
         <PageHero
           eyebrow="Trimestre atual"
-          title="Revistas da EBD"
-          description="Baixe as revistas para acompanhar as lições."
+          title="Subsídios da EBD"
+          description="Baixe os materiais para acompanhar as lições."
           Icon={FileText}
           variant="amber"
         />
