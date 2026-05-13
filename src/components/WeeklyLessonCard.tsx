@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useFavoriteVerses } from "@/hooks/useFavoriteVerses";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 interface WeeklyLessonCardProps {
   lesson: WeeklyLesson;
@@ -85,7 +86,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   const { setParticipant, setChurch, setQuizId } = useQuizStore();
   const { toggleFavorite, isFavorite } = useFavoriteVerses();
   const [openDay, setOpenDay] = useState<string | null>(null);
-  const [readDays, setReadDays] = useState<Record<string, boolean>>({});
+  const { progress: readDays, toggleProgress } = useReadingProgress(lesson.id);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleStartQuiz = () => {
@@ -110,32 +111,11 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   };
 
   // Chave baseada no ID da lição para persistir o progresso
-  const storageKey = `lesson-read-${lesson.id}`;
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        setReadDays(JSON.parse(stored));
-      } else {
-        // Reset local state if no storage found for this lesson
-        setReadDays({});
-      }
-    } catch {
-      setReadDays({});
-    }
-  }, [storageKey]);
+  
 
   const toggleRead = (dayKey: string) => {
-    setReadDays(prev => {
-      const next = { ...prev, [dayKey]: !prev[dayKey] };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next));
-      } catch (e) {
-        console.error("Erro ao salvar progresso da lição:", e);
-      }
-      return next;
-    });
+    const isCurrentlyRead = !!readDays[dayKey];
+    toggleProgress(dayKey, !isCurrentlyRead);
     setOpenDay(null);
   };
 
