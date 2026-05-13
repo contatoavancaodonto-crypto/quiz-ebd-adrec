@@ -72,7 +72,7 @@ type SignupStepKey = typeof SIGNUP_STEPS[number];
 const Auth = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { churches: CHURCHES } = useChurches();
+  const { churches: CHURCHES, rawData: CHURCHES_DATA = [] } = useChurches();
   const [mode, setMode] = useState<Mode>("login");
   const [showPwd, setShowPwd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -115,12 +115,11 @@ const Auth = () => {
       return;
     }
     setChurch(v);
-    if (v !== INDIVIDUAL) {
-      const isApproved = CHURCHES.some(c => c === v);
-      if (isApproved) setChurchRequested(false);
-    } else {
-      setChurchRequested(false);
-    }
+    
+    // Agora mostramos o aviso se a igreja não estiver aprovada, 
+    // permitindo que o usuário saiba que ela ainda passará por revisão.
+    const selectedChurchData = CHURCHES_DATA.find(c => c.name === v);
+    setChurchRequested(selectedChurchData ? !selectedChurchData.approved : false);
   };
 
   const handleChurchRequestSubmit = async (data: ChurchRequest) => {
