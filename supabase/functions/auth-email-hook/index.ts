@@ -290,7 +290,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     recipient: payload.data.email,
     confirmationUrl: payload.data.url,
     resetUrl: payload.data.url, // For password-reset template
-    name: resolveDisplayName(payload.data.user_metadata),
+    name: await resolveDisplayName(supabase, payload.data.user_id, payload.data.user_metadata),
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
