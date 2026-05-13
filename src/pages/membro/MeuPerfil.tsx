@@ -12,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { AccountTabs } from "@/components/membro/AccountTabs";
+
 
 export default function MeuPerfil() {
   const { user, signOut } = useAuth();
@@ -154,6 +156,8 @@ export default function MeuPerfil() {
       contentPaddingMobile={false}
     >
       <div className="px-4 py-4 space-y-4 pb-4">
+        <AccountTabs />
+
         {/* Hero perfil */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}

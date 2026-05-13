@@ -33,6 +33,8 @@ import { useAcademicHistory } from "@/hooks/useAcademicHistory";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
+import { AccountTabs } from "@/components/membro/AccountTabs";
+
 
 
 // Types
@@ -127,6 +129,9 @@ export default function Historico() {
             </div>
           </div>
         </motion.div>
+
+        <AccountTabs />
+
 
         {/* Loading state */}
         {isLoading && (

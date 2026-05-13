@@ -13,6 +13,8 @@ import { useFullProfile } from "@/hooks/useFullProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { AccountTabs } from "@/components/membro/AccountTabs";
+
 
 export default function Configuracoes() {
   const { user, signOut } = useAuth();
@@ -70,6 +72,9 @@ export default function Configuracoes() {
             <h2 className="text-xl font-bold mt-1">Configurações da conta</h2>
           </div>
         </motion.div>
+
+        <AccountTabs />
+
 
         <section className="space-y-2">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">
