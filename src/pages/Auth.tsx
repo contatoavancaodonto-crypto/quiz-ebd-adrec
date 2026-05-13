@@ -877,4 +877,16 @@ const SubmitButton = ({ submitting, disabled, children }: {
   </button>
 );
 
+const StepBlock = ({ title, subtitle, children }: {
+  title: string; subtitle?: string; children: React.ReactNode;
+}) => (
+  <div className="space-y-3">
+    <div className="space-y-0.5">
+      <h2 className="text-base font-display font-bold text-foreground leading-tight">{title}</h2>
+      {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+    </div>
+    <div className="space-y-3">{children}</div>
+  </div>
+);
+
 export default Auth;
