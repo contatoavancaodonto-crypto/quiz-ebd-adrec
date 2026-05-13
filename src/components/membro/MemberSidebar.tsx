@@ -34,8 +34,8 @@ const items: Array<{
   { title: "Conquistas", url: "/membro/conquistas", icon: Award },
   { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap, type: 'history' },
 
-  { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
-  { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
+  { title: "Subsídios da Classe", url: "/membro/revista", icon: FileText },
+  { title: "Subsídio ao Professor", url: "/membro/revista", icon: GraduationCap },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, type: 'biblia' },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, type: 'harpa' },
   { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
