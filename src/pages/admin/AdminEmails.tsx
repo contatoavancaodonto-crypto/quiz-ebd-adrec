@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save } from "lucide-react";
+import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
