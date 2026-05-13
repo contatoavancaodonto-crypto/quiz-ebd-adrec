@@ -344,7 +344,37 @@ const Auth = () => {
                   />
                   Manter conectado
                 </label>
-                <button type="button" className="text-xs text-primary hover:underline" onClick={() => toast.info("Funcionalidade de recuperação de senha em desenvolvimento.")}>
+                <button 
+                  type="button" 
+                  className="text-xs text-primary hover:underline" 
+                  onClick={async () => {
+                    if (!identifier) {
+                      toast.error("Por favor, digite seu e-mail ou telefone acima para recuperar a senha.");
+                      return;
+                    }
+                    
+                    const loginType = detectIdentifier(identifier);
+                    if (loginType !== "email") {
+                      toast.info("A recuperação automática de senha via telefone ainda não está disponível. Por favor, entre em contato com o suporte.");
+                      return;
+                    }
+
+                    try {
+                      setSubmitting(true);
+                      const { error } = await supabase.auth.resetPasswordForEmail(identifier.trim(), {
+                        redirectTo: window.location.origin + "/auth/reset-password",
+                      });
+                      
+                      if (error) throw error;
+                      toast.success("E-mail de recuperação enviado! Verifique sua caixa de entrada.");
+                    } catch (error: any) {
+                      toast.error("Erro ao enviar e-mail: " + error.message);
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                  disabled={submitting}
+                >
                   Esqueci minha senha
                 </button>
                 <SubmitButton submitting={submitting} disabled={false}>Acessar minha conta</SubmitButton>
