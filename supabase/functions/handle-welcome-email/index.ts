@@ -19,10 +19,9 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const { record } = payload;
 
-    // Só enviamos se for um novo perfil
-    if (payload.type === 'INSERT' && record.email) {
-      console.log(`Enviando e-mail de boas-vindas para: ${record.email}`);
+    console.log("Recebido trigger de boas-vindas para:", record?.email);
 
+    if (record?.email) {
       const { error: invokeErr } = await supabase.functions.invoke(
         "send-transactional-email",
         {
@@ -31,7 +30,6 @@ Deno.serve(async (req) => {
             recipientEmail: record.email,
             templateData: {
               name: record.display_name || record.first_name || "Membro",
-              provider: record.provider || "manual",
               link_do_app: "https://quizebd.com/painel"
             },
           },
@@ -40,7 +38,10 @@ Deno.serve(async (req) => {
 
       if (invokeErr) {
         console.error("Erro ao invocar send-transactional-email:", invokeErr);
+        throw invokeErr;
       }
+      
+      console.log(`E-mail de boas-vindas enfileirado com sucesso para: ${record.email}`);
     }
 
     return new Response(JSON.stringify({ success: true }), {
