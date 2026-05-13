@@ -58,8 +58,13 @@ export function MemberSidebar() {
   };
 
   const closeOnMobile = () => {
-    setOpenMobile(false);
+    // Envia o comando de fechar imediatamente para o estado do mobile
+    // Usamos o next tick para garantir que o fechamento comece antes da navegação pesada
+    setTimeout(() => {
+      setOpenMobile(false);
+    }, 0);
   };
+
 
 
   const handleLogout = async () => {
