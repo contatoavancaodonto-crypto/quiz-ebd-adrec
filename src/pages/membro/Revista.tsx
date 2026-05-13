@@ -175,7 +175,7 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       <div className="p-3 space-y-2">
         <div>
           <h3 className="font-bold text-sm leading-tight text-foreground">{item.title}</h3>
-          <p className="text-[10px] text-muted-foreground">{item.subtitle}</p>
+          <p className="text-[10px] text-muted-foreground">{item.subtitle.replace(/Revista/g, "Material")}</p>
         </div>
         <Button
           onClick={handleDownload}
