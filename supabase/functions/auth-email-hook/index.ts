@@ -36,6 +36,15 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
+const EMAIL_TEMPLATE_DB_KEYS: Record<string, string[]> = {
+  signup: ['signup'],
+  invite: ['invite'],
+  magiclink: ['magiclink'],
+  recovery: ['password-reset', 'recovery'],
+  email_change: ['email_change'],
+  reauthentication: ['reauthentication'],
+}
+
 // Configuration
 const SITE_NAME = "quiz-ebd"
 const SENDER_DOMAIN = "quizebd.com"
@@ -79,6 +88,45 @@ const SAMPLE_DATA: Record<string, object> = {
   reauthentication: {
     token: '123456',
   },
+}
+
+function resolveDisplayName(userMetadata: Record<string, unknown> | undefined) {
+  const possibleNames = [
+    userMetadata?.first_name,
+    userMetadata?.name,
+    userMetadata?.full_name,
+  ]
+
+  const name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  return typeof name === 'string' ? name.trim() : 'irmão(ã)'
+}
+
+function replaceTemplateVariables(template: string, variables: Record<string, unknown>) {
+  let output = template
+
+  Object.entries(variables).forEach(([key, value]) => {
+    const normalizedValue = value == null ? '' : String(value)
+    output = output.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), normalizedValue)
+  })
+
+  return output
+}
+
+function htmlToPlainText(html: string) {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
 }
 
 // Preview endpoint handler - returns rendered HTML without sending email
