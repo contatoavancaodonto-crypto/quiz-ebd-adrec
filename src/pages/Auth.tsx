@@ -95,8 +95,7 @@ const Auth = () => {
   }, []);
 
   // Signup fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [classId, setClassId] = useState("");
   const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
   const [church, setChurch] = useState("");
@@ -105,9 +104,10 @@ const Auth = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [confirmPassword, setConfirmPassword] = useState(""); // Removed as requested
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptUpdates, setAcceptUpdates] = useState(false);
+  const [signupStep, setSignupStep] = useState(0);
+  const [stepDir, setStepDir] = useState<1 | -1>(1);
 
   const handleChurchChange = (v: string) => {
     if (v === ADD_CHURCH) {
