@@ -77,13 +77,14 @@ export function MemberSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
-
+                <SidebarMenuButton 
+                  asChild 
+                  onPointerDown={closeOnMobile}
+                  onClick={closeOnMobile}
+                >
                   <NavLink
                     to="/"
                     end
-                    onClick={closeOnMobile}
-                    onPointerDown={closeOnMobile}
                     className="hover:bg-muted/50"
                     activeClassName="bg-muted text-primary font-medium"
                   >
@@ -92,6 +93,7 @@ export function MemberSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
