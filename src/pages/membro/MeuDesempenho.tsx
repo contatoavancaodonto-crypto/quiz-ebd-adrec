@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveSeason } from "@/hooks/useActiveSeason";
 import { useCountdown } from "@/hooks/useCountdown";
 import { SeasonCountdown } from "@/components/SeasonCountdown";
+import { AccountTabs } from "@/components/membro/AccountTabs";
+
 
 export default function MeuDesempenho() {
   const { data: profile } = useFullProfile();
@@ -84,6 +86,9 @@ export default function MeuDesempenho() {
           Icon={Trophy}
           variant="primary"
         />
+
+        <AccountTabs />
+
 
         {season && !seasonCountdown.expired && <SeasonCountdown />}
 

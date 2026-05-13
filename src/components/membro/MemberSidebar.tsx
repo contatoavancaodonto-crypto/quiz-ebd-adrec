@@ -28,18 +28,12 @@ const items: Array<{
   type?: 'profile' | 'ranking' | 'biblia' | 'harpa' | 'history';
   comingSoon?: boolean;
 }> = [
-  { title: "Meu Perfil", url: "/membro/perfil", icon: User, type: 'profile' },
-  { title: "Meu Desempenho", url: "/membro/desempenho", icon: BarChart3 },
+  { title: "Minha Conta", url: "/membro/perfil", icon: User, type: 'profile' },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Conquistas", url: "/membro/conquistas", icon: Award },
-  { title: "Boletim Acadêmico", url: "/membro/historico", icon: GraduationCap, type: 'history' },
-
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
-  { title: "Apoio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, type: 'biblia' },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, type: 'harpa' },
-  { title: "Configurações", url: "/membro/configuracoes", icon: Settings },
-  { title: "Loja", url: "/membro/loja", icon: ShoppingBag, comingSoon: true },
   { title: "Suporte", url: "/membro/suporte", icon: LifeBuoy },
   { title: "Apoiar Projeto", url: "/oferta", icon: Heart },
 ];
@@ -64,8 +58,9 @@ export function MemberSidebar() {
   };
 
   const closeOnMobile = () => {
-    if (isMobile) setOpenMobile(false);
+    setOpenMobile(false);
   };
+
 
   const handleLogout = async () => {
     closeOnMobile();
@@ -82,11 +77,13 @@ export function MemberSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+
                   <NavLink
                     to="/"
                     end
                     onClick={closeOnMobile}
+                    onPointerDown={closeOnMobile}
                     className="hover:bg-muted/50"
                     activeClassName="bg-muted text-primary font-medium"
                   >
@@ -97,11 +94,13 @@ export function MemberSidebar() {
               </SidebarMenuItem>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+
                     <NavLink
                       to={item.url}
                       end
                       onClick={closeOnMobile}
+                      onPointerDown={closeOnMobile}
                       onMouseEnter={() => handlePrefetch(item.type)}
                       onTouchStart={() => handlePrefetch(item.type)}
                       className="hover:bg-muted/50"
@@ -124,11 +123,12 @@ export function MemberSidebar() {
               ))}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
                     <NavLink
                       to="/painel"
                       end
                       onClick={closeOnMobile}
+                      onPointerDown={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -147,6 +147,7 @@ export function MemberSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
+              onPointerDown={closeOnMobile}
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
