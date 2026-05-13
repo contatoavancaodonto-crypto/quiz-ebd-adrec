@@ -90,6 +90,13 @@ const TOOL_TILES = [
     bg: "from-amber-500 to-orange-600",
   },
   {
+    label: "Indicar",
+    desc: "Convide um amigo",
+    icon: UserPlus,
+    path: "/membro/comunidade", // Ou uma rota específica de convite se existir
+    bg: "from-purple-500 to-indigo-600",
+  },
+  {
     label: "Quiz",
     desc: "Responder agora",
     icon: Sparkles,
