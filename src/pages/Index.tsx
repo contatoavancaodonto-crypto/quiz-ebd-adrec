@@ -82,7 +82,7 @@ const TOOL_TILES = [
     type: 'harpa'
   },
   {
-    label: "Revista",
+    label: "Subsídio",
     desc: "Lições do tri.",
     icon: FileText,
     path: "/membro/revista",
