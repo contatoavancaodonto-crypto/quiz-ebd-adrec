@@ -278,8 +278,8 @@ export default function Subsidio() {
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="alunos">Alunos</TabsTrigger>
             <TabsTrigger value="professores">Professores</TabsTrigger>
+            <TabsTrigger value="alunos">Alunos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="alunos" className="mt-4">
