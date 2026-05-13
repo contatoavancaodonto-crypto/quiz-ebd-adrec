@@ -33,14 +33,23 @@ serve(async (req) => {
 
       try {
         const userData = item.payload.record || item.payload
+        
+        // Remove emails automáticos baseados no telefone (@quiz-ebd.local)
+        const cleanEmail = userData.email && userData.email.endsWith('@quiz-ebd.local') 
+          ? "" 
+          : (userData.email || "");
+
         const queryParams = new URLSearchParams({
           event: "CADASTRO",
           timestamp: new Date().toISOString(),
           queue_id: item.id,
           attempt: (item.attempts + 1).toString(),
           ...Object.fromEntries(
-            Object.entries(userData).map(([k, v]) => [k, String(v)])
-          )
+            Object.entries(userData)
+              .filter(([k]) => k !== 'email') // Remove email original para usar o limpo
+              .map(([k, v]) => [k, String(v ?? "")])
+          ),
+          email: cleanEmail
         })
 
         const finalUrl = `${WEBHOOK_URL}?${queryParams.toString()}`
