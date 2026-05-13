@@ -58,8 +58,13 @@ export function MemberSidebar() {
   };
 
   const closeOnMobile = () => {
-    setOpenMobile(false);
+    // Envia o comando de fechar imediatamente para o estado do mobile
+    // Usamos o next tick para garantir que o fechamento comece antes da navegação pesada
+    setTimeout(() => {
+      setOpenMobile(false);
+    }, 0);
   };
+
 
 
   const handleLogout = async () => {
@@ -77,13 +82,14 @@ export function MemberSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
-
+                <SidebarMenuButton 
+                  asChild 
+                  onPointerDown={closeOnMobile}
+                  onClick={closeOnMobile}
+                >
                   <NavLink
                     to="/"
                     end
-                    onClick={closeOnMobile}
-                    onPointerDown={closeOnMobile}
                     className="hover:bg-muted/50"
                     activeClassName="bg-muted text-primary font-medium"
                   >
@@ -92,17 +98,18 @@ export function MemberSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
-
+                  <SidebarMenuButton 
+                    asChild 
+                    onPointerDown={closeOnMobile}
+                    onClick={closeOnMobile}
+                  >
                     <NavLink
                       to={item.url}
                       end
-                      onClick={closeOnMobile}
-                      onPointerDown={closeOnMobile}
                       onMouseEnter={() => handlePrefetch(item.type)}
-                      onTouchStart={() => handlePrefetch(item.type)}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -120,15 +127,18 @@ export function MemberSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+
               ))}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+                  <SidebarMenuButton 
+                    asChild 
+                    onPointerDown={closeOnMobile}
+                    onClick={closeOnMobile}
+                  >
                     <NavLink
                       to="/painel"
                       end
-                      onClick={closeOnMobile}
-                      onPointerDown={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -157,5 +167,6 @@ export function MemberSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+
   );
 }
