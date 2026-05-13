@@ -181,8 +181,35 @@ async function handlePreview(req: Request): Promise<Response> {
     })
   }
 
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  const dbTemplateNames = EMAIL_TEMPLATE_DB_KEYS[type] || [type]
+  const { data: dbTemplates } = await supabase
+    .from('email_templates')
+    .select('name, subject, content_html')
+    .in('name', dbTemplateNames)
+
+  const dbTemplate = dbTemplateNames
+    .map((name) => dbTemplates?.find((entry) => entry.name === name))
+    .find(Boolean)
+
   const sampleData = SAMPLE_DATA[type] || {}
-  const html = await renderAsync(React.createElement(EmailTemplate, sampleData))
+  const variableMap = {
+    nome: 'Usuário Teste',
+    name: 'Usuário Teste',
+    link_redefinir_senha: SAMPLE_PROJECT_URL,
+    reset_url: SAMPLE_PROJECT_URL,
+    confirmation_url: SAMPLE_PROJECT_URL,
+    email: SAMPLE_EMAIL,
+    site_name: SITE_NAME,
+  }
+
+  const html = dbTemplate?.content_html
+    ? replaceTemplateVariables(dbTemplate.content_html, variableMap)
+    : await renderAsync(React.createElement(EmailTemplate, sampleData))
 
   return new Response(html, {
     status: 200,
