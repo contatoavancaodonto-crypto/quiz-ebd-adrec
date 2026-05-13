@@ -5,7 +5,7 @@ import { FileText } from "lucide-react";
 export default function AdminMaterials() {
   return (
     <AdminPage
-      title="Materiais de Aula"
+      title="Subsídios de Aula"
       description="Upload e envio de materiais para as turmas."
       Icon={FileText}
       variant="amber"
