@@ -96,15 +96,15 @@ export function MemberSidebar() {
 
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
-
+                  <SidebarMenuButton 
+                    asChild 
+                    onPointerDown={closeOnMobile}
+                    onClick={closeOnMobile}
+                  >
                     <NavLink
                       to={item.url}
                       end
-                      onClick={closeOnMobile}
-                      onPointerDown={closeOnMobile}
                       onMouseEnter={() => handlePrefetch(item.type)}
-                      onTouchStart={() => handlePrefetch(item.type)}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -122,6 +122,7 @@ export function MemberSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+
               ))}
               {isAdmin && (
                 <SidebarMenuItem>
