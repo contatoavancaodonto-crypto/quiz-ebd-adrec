@@ -264,7 +264,7 @@ export default function Revista() {
 
   return (
     <MemberLayout
-      title="Revista"
+      title="Subsídio"
       mobileHeader={{ variant: "back", title: "Subsídio ao Professor", subtitle: "Lições do trimestre", backTo: "/" }}
     >
       <PageShell contentClassName="pb-4">
