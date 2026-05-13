@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { AdminPage } from "@/components/admin/AdminPage";
-import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save } from "lucide-react";
+import { Mail, Send, Eye, RefreshCw, CheckCircle2, AlertCircle, Search, Clock, Zap, ZapOff, Users, Edit3, Save, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -389,7 +389,6 @@ export default function AdminEmails() {
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="logs">Logs de Envio</TabsTrigger>
           <TabsTrigger value="templates">Templates & Testes</TabsTrigger>
-          <TabsTrigger value="bulk">Envio em Lote</TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="mt-6 space-y-4">
@@ -486,6 +485,22 @@ export default function AdminEmails() {
         </TabsContent>
 
         <TabsContent value="templates" className="mt-6 space-y-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">Modelos Disponíveis</h3>
+            <Button onClick={() => {
+              setEditingTemplate({
+                name: "novo-template-" + Date.now(),
+                displayName: "Novo Template",
+                subject: "Assunto do E-mail",
+                html: "<h1>Olá {{name}}</h1><p>Conteúdo do e-mail...</p>"
+              });
+              setEditedSubject("Assunto do E-mail");
+              setEditedHtml("<h1>Olá {{name}}</h1><p>Conteúdo do e-mail...</p>");
+            }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Template
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((template) => (
               <Card key={template.name} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setSelectedTemplate(template)}>
