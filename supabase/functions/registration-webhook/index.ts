@@ -34,23 +34,29 @@ serve(async (req) => {
       try {
         const userData = item.payload.record || item.payload
         
-        // Remove emails automáticos baseados no telefone (@quiz-ebd.local)
+        // Limpeza e formatação dos dados para o webhook
         const cleanEmail = userData.email && userData.email.endsWith('@quiz-ebd.local') 
           ? "" 
           : (userData.email || "");
 
-        const queryParams = new URLSearchParams({
+        // Mapeamento explícito para garantir o formato solicitado
+        const webhookData: Record<string, string> = {
           event: "CADASTRO",
           timestamp: new Date().toISOString(),
+          id: String(userData.id || ""),
+          first_name: String(userData.first_name || ""),
+          last_name: String(userData.last_name || ""),
+          display_name: String(userData.display_name || ""),
+          email: cleanEmail,
+          phone: String(userData.phone || ""),
+          church_id: String(userData.church_id || ""),
+          class_id: String(userData.class_id || ""),
+          created_at: String(userData.created_at || ""),
           queue_id: item.id,
-          attempt: (item.attempts + 1).toString(),
-          ...Object.fromEntries(
-            Object.entries(userData)
-              .filter(([k]) => k !== 'email') // Remove email original para usar o limpo
-              .map(([k, v]) => [k, String(v ?? "")])
-          ),
-          email: cleanEmail
-        })
+          attempt: (item.attempts + 1).toString()
+        };
+
+        const queryParams = new URLSearchParams(webhookData);
 
         const finalUrl = `${WEBHOOK_URL}?${queryParams.toString()}`
         
