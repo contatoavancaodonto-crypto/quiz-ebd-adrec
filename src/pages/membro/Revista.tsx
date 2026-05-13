@@ -124,7 +124,7 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       }
     }
 
-    toast.info("Abrindo revista...", {
+    toast.info("Abrindo material...", {
       description: "O material será aberto em uma nova aba para visualização e download."
     });
 
