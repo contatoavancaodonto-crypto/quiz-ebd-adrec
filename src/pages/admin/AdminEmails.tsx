@@ -389,7 +389,6 @@ export default function AdminEmails() {
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="logs">Logs de Envio</TabsTrigger>
           <TabsTrigger value="templates">Templates & Testes</TabsTrigger>
-          <TabsTrigger value="bulk">Envio em Lote</TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="mt-6 space-y-4">
