@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
-  recovery: RecoveryEmail,
+  recovery: PasswordResetEmail,
   email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
 }
