@@ -13,7 +13,6 @@ export function useChurches() {
     const { data } = await supabase
       .from("churches")
       .select("name, approved, active, requested")
-      .eq("approved", true)
       .eq("active", true)
       .order("name");
     const names = (data ?? [])
