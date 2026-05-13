@@ -126,12 +126,14 @@ export function MemberSidebar() {
               ))}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+                  <SidebarMenuButton 
+                    asChild 
+                    onPointerDown={closeOnMobile}
+                    onClick={closeOnMobile}
+                  >
                     <NavLink
                       to="/painel"
                       end
-                      onClick={closeOnMobile}
-                      onPointerDown={closeOnMobile}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
@@ -160,5 +162,6 @@ export function MemberSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+
   );
 }
