@@ -212,7 +212,7 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     const parsed = signupSchema.safeParse({
-      firstName, lastName, class_id: classId, church, phone, email, password, acceptTerms, acceptUpdates,
+      fullName, class_id: classId, church, phone, email, password, acceptTerms, acceptUpdates,
     });
     if (!parsed.success) {
       const fe: Record<string, string> = {};
@@ -221,6 +221,7 @@ const Auth = () => {
       return;
     }
     setSubmitting(true);
+    const { first, last } = splitFullName(fullName);
     const method = email.trim() ? "email" : "phone";
     const { error } = await supabase.auth.signUp({
       email: email.trim() || `${phone.replace(/\D/g, "")}@quiz-ebd.local`,
@@ -228,7 +229,7 @@ const Auth = () => {
       options: {
         emailRedirectTo: window.location.origin,
         data: {
-          first_name: firstName.trim(), last_name: lastName.trim(),
+          first_name: first, last_name: last,
           phone: phone.replace(/\D/g, ""), class_id: classId, church,
         },
       },
@@ -239,11 +240,10 @@ const Auth = () => {
       toast.error(error.message.includes("already") ? "Este email já está cadastrado" : error.message);
       return;
     }
-    
-    // Auto-login after signup to ensure smooth transition
+
     const loginType = email.trim() ? "email" : "phone";
     const identifier = email.trim() || `${phone.replace(/\D/g, "")}@quiz-ebd.local`;
-    
+
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: identifier,
       password: password,
@@ -262,9 +262,61 @@ const Auth = () => {
   };
 
   const pwdStrength = passwordStrength(password);
-  const signupValid =
-    firstName && lastName && classId && church && phone.length >= 14 && password.length >= 8 &&
-    acceptTerms && acceptUpdates;
+
+  const validateCurrentStep = (): boolean => {
+    const key = SIGNUP_STEPS[signupStep];
+    const fe: Record<string, string> = {};
+    switch (key) {
+      case "fullName": {
+        const r = signupSchema.shape.fullName.safeParse(fullName);
+        if (!r.success) fe.fullName = r.error.issues[0].message;
+        break;
+      }
+      case "phone":
+        if (phone.length < 14) fe.phone = "Telefone inválido";
+        break;
+      case "class_id":
+        if (!classId) fe.class_id = "Selecione uma classe";
+        break;
+      case "church":
+        if (!church) fe.church = "Selecione sua igreja";
+        break;
+      case "email": {
+        const r = signupSchema.shape.email.safeParse(email);
+        if (!r.success) fe.email = r.error.issues[0].message;
+        break;
+      }
+      case "password":
+        if (password.length < 8) fe.password = "Senha precisa ter pelo menos 8 caracteres";
+        break;
+      case "terms":
+        if (!acceptTerms) fe.acceptTerms = "Você precisa aceitar os termos para continuar";
+        if (!acceptUpdates) fe.acceptUpdates = "É necessário aceitar para prosseguir";
+        break;
+    }
+    setErrors(fe);
+    return Object.keys(fe).length === 0;
+  };
+
+  const goNext = () => {
+    if (!validateCurrentStep()) return;
+    setStepDir(1);
+    setSignupStep((s) => Math.min(s + 1, SIGNUP_STEPS.length - 1));
+  };
+  const goBack = () => {
+    setErrors({});
+    setStepDir(-1);
+    setSignupStep((s) => Math.max(s - 1, 0));
+  };
+
+  useEffect(() => {
+    if (mode === "login") {
+      setSignupStep(0);
+      setStepDir(1);
+    }
+  }, [mode]);
+
+  const isLastStep = signupStep === SIGNUP_STEPS.length - 1;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
