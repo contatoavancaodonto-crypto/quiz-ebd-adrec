@@ -72,35 +72,35 @@ const STATIC_PROFESSORES: RevistaItem[] = [
   { 
     id: "preadolescentes-prof-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
-    subtitle: "Revista do Professor", 
+    subtitle: "Subsídio ao Professor", 
     cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l0N3HsZavKCggzauTR1SLK0Mbr0Rt9rZ" 
   },
   { 
     id: "adolescentes-prof-13-14", 
     title: "Adolescentes (13-14 anos)", 
-    subtitle: "Revista do Professor", 
+    subtitle: "Subsídio ao Professor", 
     cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1ej0g5-yZU2Q_UcyqKi7SrK1PjnjkZEe_" 
   },
   { 
     id: "juvenis-prof-15-17", 
     title: "Juvenis (15-17 anos)", 
-    subtitle: "Revista do Professor", 
+    subtitle: "Subsídio ao Professor", 
     cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=13iE5aMz85JUGusO12xPmLBSlnp6Ob2dF" 
   },
   { 
     id: "jovens-prof", 
     title: "Jovens", 
-    subtitle: "Revista do Professor", 
+    subtitle: "Subsídio ao Professor", 
     cover: revistaJovens, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV" 
   },
   { 
     id: "adultos-prof", 
     title: "Adultos", 
-    subtitle: "Revista do Professor", 
+    subtitle: "Subsídio ao Professor", 
     cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1wl_rdAJFMwCsoH5mHIeTl9TJ-0Pewcom" 
   },
