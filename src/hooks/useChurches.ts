@@ -7,16 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export function useChurches() {
   const [churches, setChurches] = useState<string[]>([]);
+  const [rawData, setRawData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     const { data } = await supabase
       .from("churches")
       .select("name, approved, active, requested")
-      .eq("approved", true)
       .eq("active", true)
       .order("name");
-    const names = (data ?? [])
+    const dataArr = data ?? [];
+    setRawData(dataArr);
+    const names = dataArr
       .map((c: any) => c.name as string)
       .filter((n) => !!n && !n.startsWith("SOLICITAÇÃO -"));
     setChurches(Array.from(new Set(names)));
@@ -38,5 +40,5 @@ export function useChurches() {
     };
   }, []);
 
-  return { churches, loading };
+  return { churches, rawData, loading };
 }
