@@ -195,7 +195,7 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
   );
 }
 
-export default function Revista() {
+export default function Subsidio() {
   const [tab, setTab] = useState("alunos");
 
   const { data: profile } = useFullProfile();
