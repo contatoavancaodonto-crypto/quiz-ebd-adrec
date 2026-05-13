@@ -1695,6 +1695,36 @@ export type Database = {
           },
         ]
       }
+      user_reading_progress: {
+        Row: {
+          created_at: string | null
+          day_key: string
+          id: string
+          is_read: boolean | null
+          lesson_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          day_key: string
+          id?: string
+          is_read?: boolean | null
+          lesson_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          day_key?: string
+          id?: string
+          is_read?: boolean | null
+          lesson_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           church_id: string | null
