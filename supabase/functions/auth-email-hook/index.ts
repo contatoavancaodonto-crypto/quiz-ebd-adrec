@@ -90,14 +90,25 @@ const SAMPLE_DATA: Record<string, object> = {
   },
 }
 
-function resolveDisplayName(userMetadata: Record<string, unknown> | undefined) {
+async function resolveDisplayName(supabase: any, userId: string, userMetadata: Record<string, unknown> | undefined) {
   const possibleNames = [
     userMetadata?.first_name,
     userMetadata?.name,
     userMetadata?.full_name,
   ]
 
-  const name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  let name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  
+  if (!name && userId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, display_name')
+      .eq('id', userId)
+      .single()
+    
+    name = profile?.first_name || profile?.display_name
+  }
+
   return typeof name === 'string' ? name.trim() : 'irmão(ã)'
 }
 
