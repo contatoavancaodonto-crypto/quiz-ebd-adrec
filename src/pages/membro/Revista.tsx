@@ -34,35 +34,35 @@ const STATIC_ALUNOS: RevistaItem[] = [
   { 
     id: "preadolescentes-aluno-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
-    subtitle: "Revista do Aluno", 
+    subtitle: "Material do Aluno", 
     cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1vP5aUzLRDK6w5GrOS2FxE1e9ZtrgFLor" 
   },
   { 
     id: "adolescentes-aluno-13-14", 
     title: "Adolescentes (13-14 anos)", 
-    subtitle: "Revista do Aluno", 
+    subtitle: "Material do Aluno", 
     cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=157WDP8b5764_t9YWchbQB3AuI76plWWm" 
   },
   { 
     id: "juvenis-aluno-15-17", 
     title: "Juvenis (15-17 anos)", 
-    subtitle: "Revista do Aluno", 
+    subtitle: "Material do Aluno", 
     cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1nA7A3WB3cwY3mBw5-MeUVIyjDbvO0ei3" 
   },
   { 
     id: "jovens-aluno", 
     title: "Jovens", 
-    subtitle: "Revista do Aluno", 
+    subtitle: "Material do Aluno", 
     cover: revistaJovens,
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV"
   },
   { 
     id: "adultos-aluno", 
     title: "Adultos", 
-    subtitle: "Revista do Aluno", 
+    subtitle: "Material do Aluno", 
     cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=12jsfPsQsZ558ZCOVLxYaITLkpcCmUMuE" 
   },
