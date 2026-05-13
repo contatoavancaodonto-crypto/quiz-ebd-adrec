@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const WEBHOOK_URL = "https://n8n.avancaautomacao.com.br/webhook-test/2cbc5497-4f4e-4917-86e3-325df4f9ff2b"
+const WEBHOOK_URL = "https://webhook.avancaautomacao.com.br/webhook/2cbc5497-4f4e-4917-86e3-325df4f9ff2b"
 
 serve(async (req) => {
+
   // Manejo de CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
