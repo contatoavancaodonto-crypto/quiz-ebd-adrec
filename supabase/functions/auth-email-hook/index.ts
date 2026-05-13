@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
-  recovery: PasswordResetEmail,
+  recovery: RecoveryEmail,
   email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
 }
@@ -90,14 +90,25 @@ const SAMPLE_DATA: Record<string, object> = {
   },
 }
 
-function resolveDisplayName(userMetadata: Record<string, unknown> | undefined) {
+async function resolveDisplayName(supabase: any, userId: string, userMetadata: Record<string, unknown> | undefined) {
   const possibleNames = [
     userMetadata?.first_name,
     userMetadata?.name,
     userMetadata?.full_name,
   ]
 
-  const name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  let name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  
+  if (!name && userId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, display_name')
+      .eq('id', userId)
+      .single()
+    
+    name = profile?.first_name || profile?.display_name
+  }
+
   return typeof name === 'string' ? name.trim() : 'irmão(ã)'
 }
 
@@ -142,8 +153,9 @@ async function handlePreview(req: Request): Promise<Response> {
 
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const authHeader = req.headers.get('Authorization')
+  const apiKeyHeader = req.headers.get('X-Lovable-API-Key')
 
-  if (!apiKey || authHeader !== `Bearer ${apiKey}`) {
+  if (!apiKey || (authHeader !== `Bearer ${apiKey}` && apiKeyHeader !== apiKey)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...previewCorsHeaders, 'Content-Type': 'application/json' },
@@ -170,8 +182,35 @@ async function handlePreview(req: Request): Promise<Response> {
     })
   }
 
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  const dbTemplateNames = EMAIL_TEMPLATE_DB_KEYS[type] || [type]
+  const { data: dbTemplates } = await supabase
+    .from('email_templates')
+    .select('name, subject, content_html')
+    .in('name', dbTemplateNames)
+
+  const dbTemplate = dbTemplateNames
+    .map((name) => dbTemplates?.find((entry) => entry.name === name))
+    .find(Boolean)
+
   const sampleData = SAMPLE_DATA[type] || {}
-  const html = await renderAsync(React.createElement(EmailTemplate, sampleData))
+  const variableMap = {
+    nome: 'Usuário Teste',
+    name: 'Usuário Teste',
+    link_redefinir_senha: SAMPLE_PROJECT_URL,
+    reset_url: SAMPLE_PROJECT_URL,
+    confirmation_url: SAMPLE_PROJECT_URL,
+    email: SAMPLE_EMAIL,
+    site_name: SITE_NAME,
+  }
+
+  const html = dbTemplate?.content_html
+    ? replaceTemplateVariables(dbTemplate.content_html, variableMap)
+    : await renderAsync(React.createElement(EmailTemplate, sampleData))
 
   return new Response(html, {
     status: 200,
@@ -279,7 +318,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     recipient: payload.data.email,
     confirmationUrl: payload.data.url,
     resetUrl: payload.data.url, // For password-reset template
-    name: resolveDisplayName(payload.data.user_metadata),
+    name: await resolveDisplayName(supabase, payload.data.user_id, payload.data.user_metadata),
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
