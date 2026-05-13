@@ -66,7 +66,7 @@ const allItems: Item[] = [
   { title: "Respostas Membros", url: "/painel/respostas-membros", icon: ClipboardCheck },
   { title: "Badges", url: "/painel/badges", icon: Award, superadminOnly: true },
   { title: "Plano de Leitura", url: "/painel/versiculos", icon: BookText, superadminOnly: true },
-  { title: "Materiais", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
+  { title: "Subsídios", url: "/painel/materiais", icon: FolderOpen, superadminOnly: true },
   { title: "Histórico de Alterações", url: "/painel/auditoria", icon: History, superadminOnly: true },
   { title: "Notificações", url: "/painel/notificacoes", icon: Megaphone, superadminOnly: true },
   { title: "Comunidade", url: "/painel/comunidade", icon: MessageSquare, superadminOnly: true },

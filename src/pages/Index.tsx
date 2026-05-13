@@ -17,6 +17,7 @@ import {
   BookOpen,
   Music2,
   FileText,
+  UserPlus,
   History,
   ArrowRight,
   AlertCircle,
@@ -82,11 +83,18 @@ const TOOL_TILES = [
     type: 'harpa'
   },
   {
-    label: "Revista",
+    label: "Subsídio",
     desc: "Lições do tri.",
     icon: FileText,
     path: "/membro/revista",
     bg: "from-amber-500 to-orange-600",
+  },
+  {
+    label: "Indicar",
+    desc: "Convide um amigo",
+    icon: UserPlus,
+    path: "/membro/comunidade", // Ou uma rota específica de convite se existir
+    bg: "from-purple-500 to-indigo-600",
   },
   {
     label: "Quiz",
@@ -375,14 +383,17 @@ const Index = () => {
       return toast.info("Você já respondeu o quiz desta lição 🎉");
     }
     if (weekClose.expired) return toast.error("Janela do quiz encerrada.");
-    startQuiz(userClass.id, userClass.name, 2, weeklyQuiz.id);
+    startQuiz(userClass.id, userClass.name, trimester_number, weeklyQuiz.id);
   };
 
   const handleStartProvao = () => {
     if (!provao) return;
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
-    startQuiz(userClass.id, userClass.name, 2, provao.id);
+    startQuiz(userClass.id, userClass.name, trimester_number, provao.id);
   };
+
+  // Helper para identificar o número do trimestre da temporada (fallback para 2 se não tiver)
+  const trimester_number = season?.name?.match(/(\d+)º/)?.[1] ? Number(season.name.match(/(\d+)º/)?.[1]) : 2;
 
   const weekCloseLabel = useMemo(() => {
     if (!weeklyQuiz) return null;
