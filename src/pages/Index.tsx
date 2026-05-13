@@ -383,7 +383,7 @@ const Index = () => {
       return toast.info("Você já respondeu o quiz desta lição 🎉");
     }
     if (weekClose.expired) return toast.error("Janela do quiz encerrada.");
-    startQuiz(userClass.id, userClass.name, 2, weeklyQuiz.id);
+    startQuiz(userClass.id, userClass.name, trimester_number, weeklyQuiz.id);
   };
 
   const handleStartProvao = () => {
