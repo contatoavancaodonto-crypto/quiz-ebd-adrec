@@ -1,50 +1,90 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const WEBHOOK_URL = "https://webhook.avancaautomacao.com.br/webhook/2cbc5497-4f4e-4917-86e3-325df4f9ff2b"
+const MAX_ATTEMPTS = 5
 
 serve(async (req) => {
-
-  // Manejo de CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
-  }
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  )
 
   try {
-    const payload = await req.json()
-    console.log("Receiving registration webhook:", payload)
+    // 1. Buscar itens pendentes ou que falharam mas ainda têm tentativas
+    const { data: queueItems, error: fetchError } = await supabaseClient
+      .from('webhook_queue')
+      .select('*')
+      .or('status.eq.pending,status.eq.failed')
+      .lt('attempts', MAX_ATTEMPTS)
+      .lte('next_retry_at', new Date().toISOString())
+      .limit(10)
 
-    // O payload do Supabase Database Webhook vem formatado com 'record', 'old_record', 'type', etc.
-    const userData = payload.record || payload
+    if (fetchError) throw fetchError
+    if (!queueItems || queueItems.length === 0) {
+      return new Response(JSON.stringify({ message: "No items to process" }), { status: 200 })
+    }
 
-    // Convertendo para query params caso o n8n espere GET ou para garantir entrega
-    const queryParams = new URLSearchParams({
-      event: "CADASTRO",
-      timestamp: new Date().toISOString(),
-      ...Object.fromEntries(
-        Object.entries(userData).map(([k, v]) => [k, String(v)])
-      )
-    })
+    const results = []
 
-    const finalUrl = `${WEBHOOK_URL}?${queryParams.toString()}`
-    
-    // Tenta primeiro POST, se falhar ou se quiser garantir, manda via GET conforme erro 404 sugeriu
-    const response = await fetch(finalUrl, {
-      method: 'GET', // Mudando para GET conforme a sugestão do erro do n8n
-    })
+    for (const item of queueItems) {
+      // Marcar como processando para evitar duplicidade
+      await supabaseClient.from('webhook_queue').update({ status: 'processing' }).eq('id', item.id)
 
-    const result = await response.text()
-    console.log("n8n response:", result)
+      try {
+        const userData = item.payload.record || item.payload
+        const queryParams = new URLSearchParams({
+          event: "CADASTRO",
+          timestamp: new Date().toISOString(),
+          queue_id: item.id,
+          attempt: (item.attempts + 1).toString(),
+          ...Object.fromEntries(
+            Object.entries(userData).map(([k, v]) => [k, String(v)])
+          )
+        })
 
-    return new Response(JSON.stringify({ success: true, n8n_response: result, url_called: finalUrl }), {
+        const finalUrl = `${WEBHOOK_URL}?${queryParams.toString()}`
+        
+        const response = await fetch(finalUrl, { method: 'GET', timeout: 10000 })
+        
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`)
+
+        // Sucesso
+        await supabaseClient.from('webhook_queue').update({
+          status: 'completed',
+          attempts: item.attempts + 1,
+          last_error: null,
+          updated_at: new Date().toISOString()
+        }).eq('id', item.id)
+
+        results.push({ id: item.id, status: 'success' })
+      } catch (error) {
+        // Falha: Incrementar tentativa e agendar retry (exponecial backoff simples)
+        const nextAttempt = item.attempts + 1
+        const retryDelayMinutes = Math.pow(2, nextAttempt) // 2, 4, 8, 16... minutos
+        const nextRetry = new Date()
+        nextRetry.setMinutes(nextRetry.getMinutes() + retryDelayMinutes)
+
+        await supabaseClient.from('webhook_queue').update({
+          status: 'failed',
+          attempts: nextAttempt,
+          last_error: error.message,
+          next_retry_at: nextRetry.toISOString(),
+          updated_at: new Date().toISOString()
+        }).eq('id', item.id)
+
+        results.push({ id: item.id, status: 'failed', error: error.message })
+      }
+    }
+
+    return new Response(JSON.stringify({ processed: results.length, results }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error("Error processing webhook:", error)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { 'Content-Type': 'application/json' },
       status: 500,
     })
   }
 })
-
