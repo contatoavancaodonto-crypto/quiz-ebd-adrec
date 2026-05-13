@@ -15,22 +15,26 @@ serve(async (req) => {
     // O payload do Supabase Database Webhook vem formatado com 'record', 'old_record', 'type', etc.
     const userData = payload.record || payload
 
-    const response = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        event: "CADASTRO",
-        timestamp: new Date().toISOString(),
-        data: userData
-      }),
+    // Convertendo para query params caso o n8n espere GET ou para garantir entrega
+    const queryParams = new URLSearchParams({
+      event: "CADASTRO",
+      timestamp: new Date().toISOString(),
+      ...Object.fromEntries(
+        Object.entries(userData).map(([k, v]) => [k, String(v)])
+      )
+    })
+
+    const finalUrl = `${WEBHOOK_URL}?${queryParams.toString()}`
+    
+    // Tenta primeiro POST, se falhar ou se quiser garantir, manda via GET conforme erro 404 sugeriu
+    const response = await fetch(finalUrl, {
+      method: 'GET', // Mudando para GET conforme a sugestão do erro do n8n
     })
 
     const result = await response.text()
     console.log("n8n response:", result)
 
-    return new Response(JSON.stringify({ success: true, n8n_response: result }), {
+    return new Response(JSON.stringify({ success: true, n8n_response: result, url_called: finalUrl }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     })
@@ -42,3 +46,4 @@ serve(async (req) => {
     })
   }
 })
+
