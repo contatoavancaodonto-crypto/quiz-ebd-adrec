@@ -17,6 +17,7 @@ import {
   BookOpen,
   Music2,
   FileText,
+  UserPlus,
   History,
   ArrowRight,
   AlertCircle,
