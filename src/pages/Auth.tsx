@@ -458,10 +458,6 @@ const Auth = () => {
               >
                 {/* Progress */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Passo {signupStep + 1} de {SIGNUP_STEPS.length}</span>
-                    <span>{Math.round(((signupStep + 1) / SIGNUP_STEPS.length) * 100)}%</span>
-                  </div>
                   <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <motion.div
                       className="h-full gradient-primary"
