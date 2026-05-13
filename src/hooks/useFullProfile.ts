@@ -28,7 +28,7 @@ export function useFullProfile() {
   return useQuery({
     queryKey: ["full-profile", user?.id],
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 min — perfil muda raramente
+    staleTime: 10 * 1000, // 10 segundos para ser mais reativo após mudanças
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<FullProfile | null> => {
