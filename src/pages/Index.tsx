@@ -389,8 +389,11 @@ const Index = () => {
   const handleStartProvao = () => {
     if (!provao) return;
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
-    startQuiz(userClass.id, userClass.name, 2, provao.id);
+    startQuiz(userClass.id, userClass.name, trimester_number, provao.id);
   };
+
+  // Helper para identificar o número do trimestre da temporada (fallback para 2 se não tiver)
+  const trimester_number = season?.name?.match(/(\d+)º/)?.[1] ? Number(season.name.match(/(\d+)º/)?.[1]) : 2;
 
   const weekCloseLabel = useMemo(() => {
     if (!weeklyQuiz) return null;
