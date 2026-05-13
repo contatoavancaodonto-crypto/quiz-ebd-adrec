@@ -153,9 +153,10 @@ async function handlePreview(req: Request): Promise<Response> {
 
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const authHeader = req.headers.get('Authorization')
+  const apiKeyHeader = req.headers.get('X-Lovable-API-Key')
 
-  if (!apiKey || (authHeader !== `Bearer ${apiKey}` && authHeader !== apiKey)) {
-    return new Response(JSON.stringify({ error: 'Unauthorized', authHeader: authHeader?.substring(0, 10) }), {
+  if (!apiKey || (authHeader !== `Bearer ${apiKey}` && apiKeyHeader !== apiKey)) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...previewCorsHeaders, 'Content-Type': 'application/json' },
     })
