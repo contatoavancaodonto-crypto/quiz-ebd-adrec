@@ -125,10 +125,12 @@ export const CompleteProfileModal = ({ open, userId, onCompleted }: Props) => {
           church_id: churchId,
         })
         .eq("id", userId);
+      
       if (upErr) throw upErr;
 
-      // Invalida o cache do perfil para todos os hooks que dependem dele
-      await queryClient.invalidateQueries({ queryKey: ["full-profile", userId] });
+      // Invalida o cache do perfil para garantir que a ProfileGate pare de mostrar o modal
+      await queryClient.refetchQueries({ queryKey: ["full-profile", userId] });
+      
       toast.success("Cadastro concluído!");
       onCompleted();
     } catch (err: any) {
