@@ -119,8 +119,10 @@ const App = () => (
               <Route path="/membro/conquistas" element={<Conquistas />} />
               <Route path="/membro/revista" element={<Revista />} />
 
+              <Route path="/membro/conta" element={<Navigate to="/membro/perfil" replace />} />
               <Route path="/revistas" element={<Navigate to="/membro/revista" replace />} />
               <Route path="/Revistas" element={<Navigate to="/membro/revista" replace />} />
+
               <Route path="/membro/comunidade" element={<Comunidade />} />
               <Route path="/membro/biblia" element={<Biblia />} />
               <Route path="/membro/harpa" element={<Harpa />} />
