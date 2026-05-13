@@ -79,7 +79,7 @@ export default function MeuDesempenho() {
       <PageShell contentClassName="pb-4">
         <PageHero
           eyebrow="Temporada atual"
-          title="Meu Desempenho"
+          title="Meu desempenho"
           description="Sua posição, pontuação e conquistas em tempo real."
           Icon={Trophy}
           variant="primary"

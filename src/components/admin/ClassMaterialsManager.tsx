@@ -192,7 +192,7 @@ export function ClassMaterialsManager() {
   return (
     <Card className="p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Subsídios da Classe</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Revistas da Classe</h2>
         <p className="text-sm text-muted-foreground">
           Envie o PDF da revista de cada classe por trimestre.
         </p>

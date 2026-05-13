@@ -34,35 +34,35 @@ const STATIC_ALUNOS: RevistaItem[] = [
   { 
     id: "preadolescentes-aluno-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
-    subtitle: "Material do Aluno", 
+    subtitle: "Revista do Aluno", 
     cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1vP5aUzLRDK6w5GrOS2FxE1e9ZtrgFLor" 
   },
   { 
     id: "adolescentes-aluno-13-14", 
     title: "Adolescentes (13-14 anos)", 
-    subtitle: "Material do Aluno", 
+    subtitle: "Revista do Aluno", 
     cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=157WDP8b5764_t9YWchbQB3AuI76plWWm" 
   },
   { 
     id: "juvenis-aluno-15-17", 
     title: "Juvenis (15-17 anos)", 
-    subtitle: "Material do Aluno", 
+    subtitle: "Revista do Aluno", 
     cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1nA7A3WB3cwY3mBw5-MeUVIyjDbvO0ei3" 
   },
   { 
     id: "jovens-aluno", 
     title: "Jovens", 
-    subtitle: "Material do Aluno", 
+    subtitle: "Revista do Aluno", 
     cover: revistaJovens,
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV"
   },
   { 
     id: "adultos-aluno", 
     title: "Adultos", 
-    subtitle: "Material do Aluno", 
+    subtitle: "Revista do Aluno", 
     cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=12jsfPsQsZ558ZCOVLxYaITLkpcCmUMuE" 
   },
@@ -72,35 +72,35 @@ const STATIC_PROFESSORES: RevistaItem[] = [
   { 
     id: "preadolescentes-prof-11-12", 
     title: "Pré-Adolescentes (11-12 anos)", 
-    subtitle: "Subsídio ao Professor", 
+    subtitle: "Revista do Professor", 
     cover: revistaPreadolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l0N3HsZavKCggzauTR1SLK0Mbr0Rt9rZ" 
   },
   { 
     id: "adolescentes-prof-13-14", 
     title: "Adolescentes (13-14 anos)", 
-    subtitle: "Subsídio ao Professor", 
+    subtitle: "Revista do Professor", 
     cover: revistaAdolescentes, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1ej0g5-yZU2Q_UcyqKi7SrK1PjnjkZEe_" 
   },
   { 
     id: "juvenis-prof-15-17", 
     title: "Juvenis (15-17 anos)", 
-    subtitle: "Subsídio ao Professor", 
+    subtitle: "Revista do Professor", 
     cover: revistaJuvenis, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=13iE5aMz85JUGusO12xPmLBSlnp6Ob2dF" 
   },
   { 
     id: "jovens-prof", 
     title: "Jovens", 
-    subtitle: "Subsídio ao Professor", 
+    subtitle: "Revista do Professor", 
     cover: revistaJovens, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1l2C0-qMDZzCYLwOHqQ7z_Qdv-HTphHTV" 
   },
   { 
     id: "adultos-prof", 
     title: "Adultos", 
-    subtitle: "Subsídio ao Professor", 
+    subtitle: "Revista do Professor", 
     cover: revistaAdultos, 
     downloadUrl: "https://drive.google.com/uc?export=download&id=1wl_rdAJFMwCsoH5mHIeTl9TJ-0Pewcom" 
   },
@@ -124,7 +124,7 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       }
     }
 
-    toast.info("Abrindo material...", {
+    toast.info("Abrindo revista...", {
       description: "O material será aberto em uma nova aba para visualização e download."
     });
 
@@ -175,7 +175,7 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
       <div className="p-3 space-y-2">
         <div>
           <h3 className="font-bold text-sm leading-tight text-foreground">{item.title}</h3>
-          <p className="text-[10px] text-muted-foreground">{item.subtitle.replace(/Revista/g, "Material")}</p>
+          <p className="text-[10px] text-muted-foreground">{item.subtitle}</p>
         </div>
         <Button
           onClick={handleDownload}
@@ -195,8 +195,8 @@ function RevistaCard({ item, index }: { item: RevistaItem; index: number }) {
   );
 }
 
-export default function Subsidio() {
-  const [tab, setTab] = useState("professores");
+export default function Revista() {
+  const [tab, setTab] = useState("alunos");
 
   const { data: profile } = useFullProfile();
   const userClassId = profile?.class_id;
@@ -264,22 +264,22 @@ export default function Subsidio() {
 
   return (
     <MemberLayout
-      title="Subsídio"
-      mobileHeader={{ variant: "back", title: "Subsídio ao Professor", subtitle: "Lições do trimestre", backTo: "/" }}
+      title="Revista"
+      mobileHeader={{ variant: "back", title: "Revista da Classe", subtitle: "Lições do trimestre", backTo: "/" }}
     >
       <PageShell contentClassName="pb-4">
         <PageHero
           eyebrow="Trimestre atual"
-          title="Subsídios da EBD"
-          description="Baixe os materiais para acompanhar as lições."
+          title="Revistas da EBD"
+          description="Baixe as revistas para acompanhar as lições."
           Icon={FileText}
           variant="amber"
         />
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="professores">Professores</TabsTrigger>
             <TabsTrigger value="alunos">Alunos</TabsTrigger>
+            <TabsTrigger value="professores">Professores</TabsTrigger>
           </TabsList>
 
           <TabsContent value="alunos" className="mt-4">
