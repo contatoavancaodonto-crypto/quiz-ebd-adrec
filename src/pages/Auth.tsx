@@ -44,8 +44,12 @@ const loginSchema = z.object({
 
 const signupSchema = z
   .object({
-    firstName: z.string().trim().min(1, "Digite seu nome").max(50),
-    lastName: z.string().trim().min(1, "Digite seu sobrenome").max(50),
+    fullName: z
+      .string()
+      .trim()
+      .min(3, "Digite seu nome completo")
+      .max(100)
+      .refine((v) => v.split(/\s+/).filter(Boolean).length >= 2, "Digite nome e sobrenome"),
     class_id: z.string().uuid("Selecione uma classe válida"),
     church: z.string().min(1, "Selecione sua igreja"),
     phone: z.string().trim().min(14, "Telefone inválido"),
@@ -54,6 +58,16 @@ const signupSchema = z
     acceptTerms: z.literal(true, { errorMap: () => ({ message: "Você precisa aceitar os termos para continuar" }) }),
     acceptUpdates: z.literal(true, { errorMap: () => ({ message: "É necessário aceitar para prosseguir" }) }),
   });
+
+const splitFullName = (full: string): { first: string; last: string } => {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first: "", last: "" };
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
+};
+
+const SIGNUP_STEPS = ["fullName", "phone", "class_id", "church", "email", "password", "terms"] as const;
+type SignupStepKey = typeof SIGNUP_STEPS[number];
 
 const Auth = () => {
   const navigate = useNavigate();
