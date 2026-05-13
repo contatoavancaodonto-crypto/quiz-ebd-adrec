@@ -72,12 +72,17 @@ export const WeeklyReadingCard = () => {
               </div>
             ) : (
               <div className="space-y-5">
-                {reading.content && (
+                {(reading.content || reading.verseText) && (
                   <div className="relative">
                     <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/10 -z-0" />
                     <p className="text-lg font-display font-bold text-foreground leading-tight relative z-10 italic">
-                      "{reading.content}"
+                      "{reading.verseText || reading.content}"
                     </p>
+                    {reading.reference && (
+                      <p className="text-sm font-semibold text-primary mt-2">
+                        {reading.reference}
+                      </p>
+                    )}
                     <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">
                       <Sparkles className="h-3 w-3" /> Versículo de hoje
                     </div>

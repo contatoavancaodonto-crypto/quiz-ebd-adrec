@@ -8,6 +8,8 @@ export interface WeeklyReading {
   type: ReadingType;
   title: string;
   content: string | null;
+  verseText?: string | null;
+  reference?: string | null;
   weeklyBibleReading: string | null;
   dayName: string;
   lessonTitle?: string;
@@ -50,7 +52,9 @@ export const useWeeklyReading = () => {
         return {
           type: "verse",
           title: "Versículo do Dia",
-          content: scheduledVerse.text,
+          content: scheduledVerse.theme || scheduledVerse.text,
+          verseText: scheduledVerse.text,
+          reference: `${scheduledVerse.book} ${scheduledVerse.chapter}:${scheduledVerse.verse}`,
           weeklyBibleReading: null,
           dayName: days[day],
           lessonTitle: scheduledVerse.theme
@@ -123,7 +127,8 @@ const processQuiz = (quiz: any, day: number): WeeklyReading => {
   return {
     type: content ? "verse" : "bible_reading",
     title: content ? "Versículo do Dia" : "Leitura Bíblica",
-    content,
+    content: content || null,
+    reference: content || null,
     weeklyBibleReading,
     dayName,
     lessonTitle: quiz.lesson_title || undefined
