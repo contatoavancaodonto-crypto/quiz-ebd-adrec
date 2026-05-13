@@ -447,70 +447,207 @@ const Auth = () => {
               </motion.form>
             ) : (
               <motion.form
-                key="signup" onSubmit={handleSignup}
+                key="signup"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (isLastStep) handleSignup(e);
+                  else goNext();
+                }}
                 initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-                className="space-y-3"
+                className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Nome" value={firstName} onChange={setFirstName} placeholder="João" error={errors.firstName} />
-                  <Field label="Sobrenome" value={lastName} onChange={setLastName} placeholder="Silva" error={errors.lastName} />
+                {/* Progress */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>Passo {signupStep + 1} de {SIGNUP_STEPS.length}</span>
+                    <span>{Math.round(((signupStep + 1) / SIGNUP_STEPS.length) * 100)}%</span>
+                  </div>
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full gradient-primary"
+                      initial={false}
+                      animate={{ width: `${((signupStep + 1) / SIGNUP_STEPS.length) * 100}%` }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                  </div>
                 </div>
 
-                <Select
-                  label="Qual sua classe?" value={classId} onChange={setClassId}
-                  placeholder="Selecione sua classe" error={errors.class_id}
-                  options={classes.map((c) => ({ value: c.id, label: c.name }))}
-                />
-                <SearchableSelect
-                  label="Qual o nome da sua igreja?" value={church} onChange={handleChurchChange}
-                  placeholder="Digite ou selecione sua igreja" error={errors.church}
-                  options={[
-                    { value: INDIVIDUAL, label: INDIVIDUAL },
-                    ...CHURCHES.map((c) => ({ value: c, label: c })),
-                    ...(churchRequested ? [{ value: church, label: church }] : []),
-                  ]}
-                  showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL && !churchRequested}
-                  onAddClick={() => handleChurchChange(ADD_CHURCH)}
-                  hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
-                />
-                <Field
-                  label="Telefone" value={phone} onChange={(v) => setPhone(phoneMask(v))}
-                  placeholder="(11) 99999-9999" error={errors.phone}
-                  success={phone.length >= 14}
-                />
-                <Field
-                  label="Email (opcional)" type="email" value={email} onChange={setEmail}
-                  placeholder="seu@email.com" error={errors.email}
-                />
-                <PasswordField
-                  label="Senha" value={password} onChange={setPassword}
-                  show={showPwd} toggle={() => setShowPwd(!showPwd)} error={errors.password}
-                />
-                {password && (
-                  <div className="flex gap-1 items-center">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
-                        i < pwdStrength.score
-                          ? pwdStrength.score <= 2 ? "bg-destructive" : pwdStrength.score === 3 ? "bg-primary/70" : "bg-primary"
-                          : "bg-muted"
-                      }`} />
-                    ))}
-                    <span className="text-[10px] text-muted-foreground ml-1">{pwdStrength.label}</span>
-                  </div>
-                )}
-                {/* confirmPassword field removed */}
+                <AnimatePresence mode="wait" custom={stepDir}>
+                  <motion.div
+                    key={SIGNUP_STEPS[signupStep]}
+                    custom={stepDir}
+                    initial={{ opacity: 0, x: stepDir * 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: stepDir * -30 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="space-y-3 min-h-[140px]"
+                  >
+                    {SIGNUP_STEPS[signupStep] === "fullName" && (
+                      <StepBlock
+                        title="Como podemos te chamar?"
+                        subtitle="Digite seu nome e sobrenome"
+                      >
+                        <Field
+                          label="Nome completo"
+                          value={fullName}
+                          onChange={setFullName}
+                          placeholder="João Silva"
+                          error={errors.fullName}
+                          autoFocus
+                        />
+                      </StepBlock>
+                    )}
 
-                <Checkbox
-                  checked={acceptTerms} onChange={setAcceptTerms} error={errors.acceptTerms}
-                  label={<>Aceito os <a href="#" className="text-primary hover:underline">termos de uso</a></>}
-                />
-                <Checkbox
-                  checked={acceptUpdates} onChange={setAcceptUpdates} error={errors.acceptUpdates}
-                  label="Desejo receber atualizações importantes do QUIZ EBD"
-                  hint="Enviamos apenas comunicações relevantes"
-                />
+                    {SIGNUP_STEPS[signupStep] === "phone" && (
+                      <StepBlock
+                        title="Qual o seu telefone?"
+                        subtitle="Usaremos para te avisar sobre os quizzes"
+                      >
+                        <Field
+                          label="Telefone"
+                          value={phone}
+                          onChange={(v) => setPhone(phoneMask(v))}
+                          placeholder="(11) 99999-9999"
+                          error={errors.phone}
+                          success={phone.length >= 14}
+                          autoFocus
+                        />
+                      </StepBlock>
+                    )}
 
-                <SubmitButton submitting={submitting} disabled={!signupValid}>Criar conta e começar</SubmitButton>
+                    {SIGNUP_STEPS[signupStep] === "class_id" && (
+                      <StepBlock
+                        title="Qual a sua classe?"
+                        subtitle="Selecione a classe da EBD que você frequenta"
+                      >
+                        <Select
+                          label="Classe"
+                          value={classId}
+                          onChange={setClassId}
+                          placeholder="Selecione sua classe"
+                          error={errors.class_id}
+                          options={classes.map((c) => ({ value: c.id, label: c.name }))}
+                        />
+                      </StepBlock>
+                    )}
+
+                    {SIGNUP_STEPS[signupStep] === "church" && (
+                      <StepBlock
+                        title="Qual a sua igreja?"
+                        subtitle="Busque pelo nome ou cadastre uma nova"
+                      >
+                        <SearchableSelect
+                          label="Igreja"
+                          value={church}
+                          onChange={handleChurchChange}
+                          placeholder="Digite ou selecione sua igreja"
+                          error={errors.church}
+                          options={[
+                            { value: INDIVIDUAL, label: INDIVIDUAL },
+                            ...CHURCHES.map((c) => ({ value: c, label: c })),
+                            ...(churchRequested ? [{ value: church, label: church }] : []),
+                          ]}
+                          showAddButton={!CHURCHES.some(c => c.toLowerCase() === church.toLowerCase()) && church.length > 2 && church !== INDIVIDUAL && !churchRequested}
+                          onAddClick={() => handleChurchChange(ADD_CHURCH)}
+                          hint={churchRequested ? "Solicitação enviada. Igreja aguardando adesão no banco de dados." : undefined}
+                        />
+                      </StepBlock>
+                    )}
+
+                    {SIGNUP_STEPS[signupStep] === "email" && (
+                      <StepBlock
+                        title="Qual o seu e-mail?"
+                        subtitle="Opcional — usado para login e recuperação de senha"
+                      >
+                        <Field
+                          label="E-mail (opcional)"
+                          type="email"
+                          value={email}
+                          onChange={setEmail}
+                          placeholder="seu@email.com"
+                          error={errors.email}
+                          autoFocus
+                        />
+                      </StepBlock>
+                    )}
+
+                    {SIGNUP_STEPS[signupStep] === "password" && (
+                      <StepBlock
+                        title="Crie uma senha"
+                        subtitle="Mínimo de 8 caracteres"
+                      >
+                        <PasswordField
+                          label="Senha"
+                          value={password}
+                          onChange={setPassword}
+                          show={showPwd}
+                          toggle={() => setShowPwd(!showPwd)}
+                          error={errors.password}
+                        />
+                        {password && (
+                          <div className="flex gap-1 items-center">
+                            {[0, 1, 2, 3].map((i) => (
+                              <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
+                                i < pwdStrength.score
+                                  ? pwdStrength.score <= 2 ? "bg-destructive" : pwdStrength.score === 3 ? "bg-primary/70" : "bg-primary"
+                                  : "bg-muted"
+                              }`} />
+                            ))}
+                            <span className="text-[10px] text-muted-foreground ml-1">{pwdStrength.label}</span>
+                          </div>
+                        )}
+                      </StepBlock>
+                    )}
+
+                    {SIGNUP_STEPS[signupStep] === "terms" && (
+                      <StepBlock
+                        title="Quase lá!"
+                        subtitle="Confirme os termos para finalizar"
+                      >
+                        <Checkbox
+                          checked={acceptTerms} onChange={setAcceptTerms} error={errors.acceptTerms}
+                          label={<>Aceito os <a href="#" className="text-primary hover:underline">termos de uso</a></>}
+                        />
+                        <Checkbox
+                          checked={acceptUpdates} onChange={setAcceptUpdates} error={errors.acceptUpdates}
+                          label="Desejo receber atualizações importantes do QUIZ EBD"
+                          hint="Enviamos apenas comunicações relevantes"
+                        />
+                      </StepBlock>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Nav buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  {signupStep > 0 && (
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      disabled={submitting}
+                      className="px-4 py-3 rounded-xl border border-border bg-background hover:bg-muted/50 transition-colors text-sm font-medium flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Voltar
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 py-3 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isLastStep ? (
+                      "Criar conta e começar"
+                    ) : (
+                      <>
+                        Continuar
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
               </motion.form>
             )}
           </AnimatePresence>
