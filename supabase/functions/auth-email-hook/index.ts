@@ -225,6 +225,8 @@ async function handleWebhook(req: Request): Promise<Response> {
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
     confirmationUrl: payload.data.url,
+    resetUrl: payload.data.url, // For password-reset template
+    name: payload.data.user_metadata?.first_name || 'Membro', // Use metadata name if available
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
