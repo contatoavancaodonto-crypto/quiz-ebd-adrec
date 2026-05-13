@@ -111,7 +111,7 @@ export const WeeklyLessonCard = ({ lesson, index }: WeeklyLessonCardProps) => {
   };
 
   // Chave baseada no ID da lição para persistir o progresso
-  const storageKey = `lesson-read-${lesson.id}`;
+  
 
   const toggleRead = (dayKey: string) => {
     const isCurrentlyRead = !!readDays[dayKey];
