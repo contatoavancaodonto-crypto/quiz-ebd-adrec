@@ -58,14 +58,9 @@ export function MemberSidebar() {
   };
 
   const closeOnMobile = () => {
-    if (isMobile) {
-      // Usamos um pequeno atraso para garantir que o evento de clique 
-      // do React Router não seja interrompido, mas o menu feche rápido.
-      // O usuário relatou que o menu fica "travado" até carregar a página.
-      // Definir como falso imediatamente aqui.
-      setOpenMobile(false);
-    }
+    setOpenMobile(false);
   };
+
 
   const handleLogout = async () => {
     closeOnMobile();
@@ -82,7 +77,8 @@ export function MemberSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+
                   <NavLink
                     to="/"
                     end
@@ -98,7 +94,8 @@ export function MemberSidebar() {
               </SidebarMenuItem>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
+
                     <NavLink
                       to={item.url}
                       end
@@ -126,7 +123,7 @@ export function MemberSidebar() {
               ))}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild onClick={closeOnMobile} onPointerDown={closeOnMobile}>
                     <NavLink
                       to="/painel"
                       end
