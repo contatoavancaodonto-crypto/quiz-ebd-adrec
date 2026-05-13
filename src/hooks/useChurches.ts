@@ -14,7 +14,7 @@ export function useChurches() {
     const { data } = await supabase
       .from("churches")
       .select("name, approved, active, requested")
-      // Removida a restrição de aprovada para permitir que igrejas recém criadas apareçam no cadastro
+      .eq("active", true)
       .order("name");
     const dataArr = data ?? [];
     setRawData(dataArr);
