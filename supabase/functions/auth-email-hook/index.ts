@@ -36,6 +36,15 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
+const EMAIL_TEMPLATE_DB_KEYS: Record<string, string[]> = {
+  signup: ['signup'],
+  invite: ['invite'],
+  magiclink: ['magiclink'],
+  recovery: ['password-reset', 'recovery'],
+  email_change: ['email_change'],
+  reauthentication: ['reauthentication'],
+}
+
 // Configuration
 const SITE_NAME = "quiz-ebd"
 const SENDER_DOMAIN = "quizebd.com"
@@ -79,6 +88,45 @@ const SAMPLE_DATA: Record<string, object> = {
   reauthentication: {
     token: '123456',
   },
+}
+
+function resolveDisplayName(userMetadata: Record<string, unknown> | undefined) {
+  const possibleNames = [
+    userMetadata?.first_name,
+    userMetadata?.name,
+    userMetadata?.full_name,
+  ]
+
+  const name = possibleNames.find((value) => typeof value === 'string' && value.trim().length > 0)
+  return typeof name === 'string' ? name.trim() : 'irmão(ã)'
+}
+
+function replaceTemplateVariables(template: string, variables: Record<string, unknown>) {
+  let output = template
+
+  Object.entries(variables).forEach(([key, value]) => {
+    const normalizedValue = value == null ? '' : String(value)
+    output = output.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), normalizedValue)
+  })
+
+  return output
+}
+
+function htmlToPlainText(html: string) {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
 }
 
 // Preview endpoint handler - returns rendered HTML without sending email
@@ -219,6 +267,11 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
   // Build template props from payload.data (HookData structure)
   const templateProps = {
     siteName: SITE_NAME,
@@ -226,24 +279,55 @@ async function handleWebhook(req: Request): Promise<Response> {
     recipient: payload.data.email,
     confirmationUrl: payload.data.url,
     resetUrl: payload.data.url, // For password-reset template
-    name: payload.data.user_metadata?.first_name || 'Membro', // Use metadata name if available
+    name: resolveDisplayName(payload.data.user_metadata),
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
     newEmail: payload.data.new_email,
   }
 
-  // Render React Email to HTML and plain text
-  const html = await renderAsync(React.createElement(EmailTemplate, templateProps))
-  const text = await renderAsync(React.createElement(EmailTemplate, templateProps), {
-    plainText: true,
-  })
+  const dbTemplateNames = EMAIL_TEMPLATE_DB_KEYS[emailType] || [emailType]
+  const { data: dbTemplates, error: dbTemplateError } = await supabase
+    .from('email_templates')
+    .select('name, subject, content_html')
+    .in('name', dbTemplateNames)
 
-  // Enqueue email for async processing by the dispatcher (process-email-queue).
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+  if (dbTemplateError) {
+    console.error('Failed to load custom auth email template', {
+      emailType,
+      dbTemplateNames,
+      error: dbTemplateError,
+      run_id,
+    })
+  }
+
+  const dbTemplate = dbTemplateNames
+    .map((name) => dbTemplates?.find((entry) => entry.name === name))
+    .find(Boolean)
+
+  const variableMap = {
+    nome: templateProps.name,
+    name: templateProps.name,
+    link_redefinir_senha: templateProps.resetUrl,
+    reset_url: templateProps.resetUrl,
+    confirmation_url: templateProps.confirmationUrl,
+    email: templateProps.email,
+    site_name: SITE_NAME,
+  }
+
+  const html = dbTemplate?.content_html
+    ? replaceTemplateVariables(dbTemplate.content_html, variableMap)
+    : await renderAsync(React.createElement(EmailTemplate, templateProps))
+
+  const text = dbTemplate?.content_html
+    ? htmlToPlainText(html)
+    : await renderAsync(React.createElement(EmailTemplate, templateProps), {
+        plainText: true,
+      })
+
+  const subject = dbTemplate?.subject
+    ? replaceTemplateVariables(dbTemplate.subject, variableMap)
+    : EMAIL_SUBJECTS[emailType] || 'Notification'
 
   const messageId = crypto.randomUUID()
 
@@ -263,7 +347,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       to: payload.data.email,
       from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
       sender_domain: SENDER_DOMAIN,
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+      subject,
       html,
       text,
       purpose: 'transactional',
