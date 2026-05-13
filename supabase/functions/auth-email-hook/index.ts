@@ -9,6 +9,7 @@ import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
+import { PasswordResetEmail } from '../_shared/transactional-email-templates/password-reset.tsx'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
-  recovery: RecoveryEmail,
+  recovery: PasswordResetEmail,
   email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
 }
@@ -224,6 +225,8 @@ async function handleWebhook(req: Request): Promise<Response> {
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
     confirmationUrl: payload.data.url,
+    resetUrl: payload.data.url, // For password-reset template
+    name: payload.data.user_metadata?.first_name || 'Membro', // Use metadata name if available
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
