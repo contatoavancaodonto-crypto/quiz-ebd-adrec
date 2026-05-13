@@ -58,7 +58,17 @@ const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
 const Biblia = lazy(() => import("./pages/membro/Biblia"));
 const Harpa = lazy(() => import("./pages/membro/Harpa"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 30, // 30 segundos
+      gcTime: 1000 * 60 * 5, // 5 minutos
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 
 const KeepLoggedInGuard = () => {
   useEffect(() => {
