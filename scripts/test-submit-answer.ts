@@ -10,7 +10,6 @@ async function runSubmitAnswerTest() {
 
     // Buscar lição e GARANTIR que a data de encerramento seja no futuro para o teste
     const lessonId = 'd6339eef-e8a4-4094-a975-5455d0693232';
-    execSync(`psql -c "UPDATE public.lessons SET scheduled_end_date = now() + interval '1 day' WHERE id = '${lessonId}';"`);
 
     const lessonJson = execSync(`psql -t -A -c "SELECT json_build_object('id', id, 'questions', questions) FROM public.lessons WHERE id = '${lessonId}';"`).toString().trim();
     const lesson = JSON.parse(lessonJson);
@@ -50,7 +49,6 @@ async function runSubmitAnswerTest() {
     console.log("📊 Itens no gabarito:", parseInt(resGabarito) > 0 ? "✅ OK" : "❌ FALHA");
 
     // Restaurar data da lição
-    execSync(`psql -c "UPDATE public.lessons SET scheduled_end_date = '2025-05-10 23:59:59' WHERE id = '${lessonId}';"`);
 
   } catch (err) {
     console.error("💥 Erro:", err.message);
