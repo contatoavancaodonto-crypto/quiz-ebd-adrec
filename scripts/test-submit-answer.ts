@@ -16,30 +16,32 @@ async function runSubmitAnswerTest() {
     const questionId = testQuestion.id;
     const correctOption = (testQuestion.respostaCorreta || testQuestion.correct_option || 'A').toUpperCase();
 
-    // 2. Criar tentativa (usando -q para silenciar avisos)
     const attemptId = execSync(`psql -t -A -c "INSERT INTO public.quiz_attempts (participant_id, lesson_id, source_type, total_questions) VALUES ('${participant.id}', '${lesson.id}', 'lesson_json', ${questions.length}) RETURNING id;"`).toString().trim().split('\n')[0];
     console.log(`✅ Tentativa: ${attemptId}`);
 
-    // 3. Testar submit_answer (Correta)
+    // Escapando as aspas duplas corretamente para o shell
+    const jwtClaims = `{\\"sub\\": \\"${participant.user_id}\\"}`;
+    
+    // Teste 1: Correta
     const sqlCorrect = `
-      SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
+      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
       SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${correctOption}');
     `;
     const resCorrect = execSync(`psql -t -A -c "${sqlCorrect}"`).toString().trim();
     console.log("📊 Resposta Correta:", resCorrect === 't' ? "✅ SUCESSO" : "❌ FALHA");
 
-    // 4. Testar submit_answer (Incorreta)
+    // Teste 2: Incorreta
     const wrongOption = correctOption === 'A' ? 'B' : 'A';
     const sqlWrong = `
-      SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
+      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
       SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${wrongOption}');
     `;
     const resWrong = execSync(`psql -t -A -c "${sqlWrong}"`).toString().trim();
     console.log("📊 Resposta Incorreta:", resWrong === 'f' ? "✅ SUCESSO" : "❌ FALHA");
 
-    // 5. Validar Gabarito
+    // Teste 3: Gabarito
     const sqlGabarito = `
-      SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
+      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
       SELECT count(*) FROM public.get_attempt_gabarito('${attemptId}');
     `;
     const resGabarito = execSync(`psql -t -A -c "${sqlGabarito}"`).toString().trim();
