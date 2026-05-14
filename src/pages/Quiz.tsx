@@ -419,13 +419,23 @@ const QuizPage = () => {
 
   // ✅ auto-avança também na última pergunta (finaliza automaticamente)
   useEffect(() => {
-    if (!confirmed) return;
+    if (!confirmed) {
+      autoAdvanceRef.current = false;
+      return;
+    }
+    
+    if (autoAdvanceRef.current) return; // Já agendado
+    autoAdvanceRef.current = true;
 
     const timer = setTimeout(() => {
+      autoAdvanceRef.current = false;
       handleNext();
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      autoAdvanceRef.current = false;
+    };
   }, [confirmed, handleNext]);
 
   if (seasonExpired) {
