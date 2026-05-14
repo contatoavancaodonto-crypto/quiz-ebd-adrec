@@ -23,7 +23,7 @@ export const ProfileGate = () => {
   const incomplete = !profile.phone || !profile.class_id || !profile.church_id;
   const isGoogleUser = profile.provider === "google";
 
-  if (!incomplete || !isGoogleUser || forceClose) return null;
+  if (!incomplete || forceClose) return null;
 
   return (
     <CompleteProfileModal
