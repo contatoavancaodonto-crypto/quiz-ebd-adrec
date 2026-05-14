@@ -161,6 +161,7 @@ const App = () => (
               />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/oferta" element={<Oferta />} />
+              <Route path="/regras-pontuacao" element={<RegrasPontuacao />} />
               <Route path="*" element={<NotFound />} />
 
             </Routes>
