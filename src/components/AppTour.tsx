@@ -66,14 +66,14 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
       content: "Aqui você gerencia seus dados e pode rever este tour quando quiser.",
     },
     {
-      target: "[data-tour='rules-card']",
-      title: "Regras do Quiz 📏",
-      content: "Fique atento: o quiz abre segunda e fecha domingo. O desempate no ranking é sempre pelo tempo de resposta!",
-    },
-    {
       target: "[data-tour='sidebar-trigger']",
       title: "Menu Lateral ☰",
-      content: "Acesse a Comunidade, Harpa Cristã, Regras e muito mais por aqui.",
+      content: "Abra o menu lateral para acessar a Comunidade, Harpa Cristã, Regras & Pontuação e muito mais.",
+    },
+    {
+      target: "[data-tour='menu-regras']",
+      title: "Regras & Pontuação 📏",
+      content: "Aqui você consulta todas as regras do quiz: horários (seg 00:00 → dom 23:59), critério de desempate (menor tempo) e como funciona a pontuação.",
     },
     {
       target: "body",
