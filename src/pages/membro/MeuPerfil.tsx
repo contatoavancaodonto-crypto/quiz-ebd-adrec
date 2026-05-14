@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, GraduationCap, Mail, Phone, Eye } from "lucide-react";
+import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, GraduationCap, Mail, Phone, Eye, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { AccountTabs } from "@/components/membro/AccountTabs";
+import { AppTour } from "@/components/AppTour";
 
 
 export default function MeuPerfil() {
@@ -25,12 +27,12 @@ export default function MeuPerfil() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
-  // Armazena apenas os 11 dígitos após o 55 (DDD + número)
   const [phoneLocal, setPhoneLocal] = useState("");
   const [showAvatar, setShowAvatar] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -40,7 +42,6 @@ export default function MeuPerfil() {
         profile.display_name ??
           `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
       );
-      // Remove tudo que não é dígito e tira o "55" inicial se existir
       const digits = (profile.phone ?? "").replace(/\D/g, "");
       const local = digits.startsWith("55") ? digits.slice(2) : digits;
       setPhoneLocal(local.slice(0, 11));
@@ -48,7 +49,6 @@ export default function MeuPerfil() {
     }
   }, [profile]);
 
-  // Formata os 11 dígitos locais como "(DD) 9XXXX-XXXX"
   const formatLocalPhone = (digits: string) => {
     const d = digits.replace(/\D/g, "").slice(0, 11);
     if (d.length === 0) return "";
@@ -155,10 +155,26 @@ export default function MeuPerfil() {
       mobileHeader={{ variant: "full" }}
       contentPaddingMobile={false}
     >
+      <AppTour forceStart={showTour} onComplete={() => setShowTour(false)} />
       <div className="px-4 py-4 space-y-4 pb-4">
         <AccountTabs />
 
         {/* Hero perfil */}
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            Meu Perfil
+          </h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowTour(true)}
+            className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary"
+          >
+            <Info className="w-4 h-4 mr-2" />
+            Ver Tour do App
+          </Button>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

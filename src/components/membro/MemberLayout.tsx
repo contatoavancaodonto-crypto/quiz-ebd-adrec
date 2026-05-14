@@ -69,7 +69,10 @@ export function MemberLayout({
           {/* Header DESKTOP (sempre que md+) */}
           <header className="hidden md:flex h-14 items-center justify-between border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur z-20">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
+              <div data-tour="sidebar-trigger">
+                <SidebarTrigger />
+              </div>
+
               <h1 className="text-lg font-semibold text-foreground">{title}</h1>
             </div>
             <ThemeToggle />

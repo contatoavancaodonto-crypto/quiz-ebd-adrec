@@ -1031,6 +1031,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           first_name: string | null
+          has_seen_tour: boolean | null
           hidden_at: string | null
           id: string
           last_name: string | null
@@ -1049,6 +1050,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           first_name?: string | null
+          has_seen_tour?: boolean | null
           hidden_at?: string | null
           id: string
           last_name?: string | null
@@ -1067,6 +1069,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           first_name?: string | null
+          has_seen_tour?: boolean | null
           hidden_at?: string | null
           id?: string
           last_name?: string | null
