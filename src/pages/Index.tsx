@@ -29,7 +29,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/page-shell";
 import { AdminClassSwitcher } from "@/components/admin/AdminClassSwitcher";
 import { useRoles } from "@/hooks/useRoles";
 import { useQuizStore } from "@/stores/quizStore";
