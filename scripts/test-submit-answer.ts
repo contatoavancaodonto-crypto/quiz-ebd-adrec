@@ -12,7 +12,17 @@ async function runSubmitAnswerTest() {
     const { data: participants } = await supabase.from('participants').select('id').limit(1);
     const participantId = participants?.[0]?.id;
 
-    const { data: lessons } = await supabase.from('lessons').select('id, questions').limit(10);
+    const { data: lessons, error: lError } = await supabase.from('lessons').select('id, questions').limit(20);
+    
+    // Log para depuração
+    if (lessons) {
+        console.log(`Encontradas ${lessons.length} lições.`);
+        lessons.forEach(l => {
+            const qs = Array.isArray(l.questions) ? l.questions : [];
+            console.log(`Lição ${l.id}: ${qs.length} questões`);
+        });
+    }
+
     const lesson = lessons?.find(l => Array.isArray(l.questions) && l.questions.length > 0);
     
     if (!lesson || !participantId) {
