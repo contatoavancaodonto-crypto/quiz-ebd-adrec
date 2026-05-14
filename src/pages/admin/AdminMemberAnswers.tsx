@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRoles } from "@/hooks/useRoles";
+import { useClassSwitcher } from "@/hooks/useClassSwitcher";
 
 type Period = "all" | "week" | "month" | "trimester" | "t1" | "t2" | "t3" | "t4";
 
@@ -66,6 +67,7 @@ function formatTime(seconds: number) {
 
 export default function AdminMemberAnswers() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
+  const { selectedClassId } = useClassSwitcher();
   const [rows, setRows] = useState<AttemptRow[]>([]);
   const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +110,7 @@ export default function AdminMemberAnswers() {
     if (rolesLoading) return;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, isSuperadmin, churchId]);
+  }, [rolesLoading, isSuperadmin, churchId, selectedClassId]);
 
   const periodRange = useMemo<{ start: Date | null; end: Date | null }>(() => {
     if (periodFilter === "all") return { start: null, end: null };
@@ -160,6 +162,9 @@ export default function AdminMemberAnswers() {
 
   const filtered = useMemo(() => {
     let list = rows;
+    if (selectedClassId) {
+      list = list.filter((r) => r.participants?.class_id === selectedClassId);
+    }
     if (allowedNames) {
       list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
     }

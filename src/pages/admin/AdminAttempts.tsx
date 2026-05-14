@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Trash2, Search, ListChecks } from "lucide-react";
 import { useRoles } from "@/hooks/useRoles";
+import { useClassSwitcher } from "@/hooks/useClassSwitcher";
 import { AdminPage } from "@/components/admin/AdminPage";
 
 interface Attempt {
@@ -23,6 +24,7 @@ const norm = (s: string | null | undefined) =>
 
 export default function AdminAttempts() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
+  const { selectedClassId } = useClassSwitcher();
   const [rows, setRows] = useState<Attempt[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -60,6 +62,10 @@ export default function AdminAttempts() {
       );
 
     // 3. Aplicar filtros
+    if (selectedClassId) {
+      query = query.eq("participants.class_id", selectedClassId);
+    }
+    
     if (q) {
       query = query.ilike("participants.name", `%${q}%`);
     }
@@ -88,7 +94,7 @@ export default function AdminAttempts() {
     if (rolesLoading) return;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, isSuperadmin, churchId, page, q]);
+  }, [rolesLoading, isSuperadmin, churchId, page, q, selectedClassId]);
 
   const remove = async (id: string) => {
     if (!confirm("Excluir esta tentativa? Essa ação é permanente.")) return;
