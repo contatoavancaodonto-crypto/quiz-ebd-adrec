@@ -1,68 +1,37 @@
-## Objetivo
+## Correção crítica: respostas do quiz não validadas corretamente
 
-Reduzir o abandono na aba "Criar conta" do `/auth` transformando o formulário longo em um fluxo passo-a-passo (estilo Typeform), com uma pergunta por vez, animação suave e progresso visível. Também unificar "Nome" e "Sobrenome" em um único campo "Nome completo".
+### Problema
+- Existem **duas funções `submit_answer`** no banco (sobrecarga). A versão antiga `(uuid, uuid, text)` só lê de `public.questions` e o PostgREST pode resolvê-la em vez da nova, falhando silenciosamente para lições importadas via `/versiculos`.
+- Lições criadas em `/versiculos` armazenam perguntas em `lessons.questions` (JSONB) mas **não sincronizam** para `public.questions`. Resultado: `submit_answer` antiga não acha a pergunta → resposta marcada errada.
+- A coluna `answers.question_id` é `NOT NULL UUID`, então perguntas com IDs não-UUID (ex.: `2f1yuimg3`) não conseguem ser inseridas.
+- `get_attempt_gabarito` faz JOIN só com `public.questions`, então o gabarito pós-quiz fica vazio para lições do `/versiculos`.
 
-## Mudanças propostas
+### Solução
 
-### 1. Campo único "Nome completo"
-- Substituir os inputs `firstName` + `lastName` por um único `fullName`.
-- No envio (`handleSignup`), fazer o split:
-  - `first_name` = primeira palavra
-  - `last_name` = restante (resto das palavras juntas; vazio se só houver uma palavra)
-- Atualizar `signupSchema` para validar `fullName` (mín. 2 palavras recomendado, mas aceitar 1 com aviso suave; mín. 3 chars).
+**1. Migração SQL**
+- `DROP FUNCTION public.submit_answer(uuid, uuid, text)` — remove sobrecarga antiga.
+- Tornar `answers.question_id` nullable e adicionar `question_ref text` para suportar IDs do JSON.
+- Ajustar índice único de `answers` para `(attempt_id, COALESCE(question_id::text, question_ref))`.
+- Reescrever `submit_answer(uuid, text, text)` única:
+  - Prioridade 1: busca em `public.questions` por UUID.
+  - Prioridade 2: busca no JSON `lessons.questions` por `id`, com COALESCE de variantes (`respostaCorreta`, `correct_option`, `correctOption`, `resposta_correta`).
+  - Comparação case-insensitive.
+  - Insere usando `question_id` (UUID) ou `question_ref` (texto) conforme o caso.
+- Reescrever `get_attempt_gabarito` para:
+  - JOIN com `questions` quando `question_id` existir.
+  - Fallback: ler do JSON `lessons.questions` quando só houver `question_ref`, mapeando `pergunta`/`alternativas`/`respostaCorreta` para os campos retornados.
+- Migração retroativa: popular `public.questions` espelhando o JSON de lições antigas (idempotente, só cria se não existir).
 
-### 2. Fluxo step-by-step (Typeform-like)
-Quebrar o formulário de signup em **7 etapas**, mostrando uma pergunta por vez com transição animada (fade + slide):
+**2. Sincronização futura no `/versiculos`**
+- No `AdminVerses` (salvar lição), após upsert em `lessons`, espelhar perguntas em `public.questions` (delete + insert por `lesson_id`) para manter compatibilidade total.
 
-```
-Step 1 → Nome completo
-Step 2 → Telefone
-Step 3 → Classe
-Step 4 → Igreja
-Step 5 → E-mail (opcional)
-Step 6 → Senha
-Step 7 → Termos + Atualizações + Botão "Criar conta"
-```
+**3. Validação**
+- Rodar quiz da lição "Uma Prova de Fé" (`1895101c-…`).
+- Conferir que `answers.is_correct` reflete o `respostaCorreta` do JSON.
+- Abrir "Meu Gabarito" e validar que aparece corretamente.
+- Criar nova lição em `/versiculos`, simular quiz, validar fluxo completo.
 
-Cada step terá:
-- Pergunta grande/destacada como título.
-- 1 input principal.
-- Botão "Continuar" (ou Enter avança).
-- Botão "Voltar" discreto.
-- Validação inline antes de permitir avançar (usa o mesmo `signupSchema` aplicado por campo).
-
-### 3. Barra de progresso
-- Barra fina no topo do card de signup mostrando `step / total`.
-- Texto pequeno: "Passo X de 7".
-- Animar largura com `framer-motion`.
-
-### 4. Animações (já temos `framer-motion`)
-- `AnimatePresence mode="wait"` envolvendo o step ativo.
-- Entrada: `x: 30, opacity: 0` → `x: 0, opacity: 1`.
-- Saída: `x: -30, opacity: 0`.
-- Duração ~0.25s, easing suave.
-- Auto-foco no input ao entrar no step.
-- Enter avança step (exceto no último, onde envia).
-
-### 5. Login permanece igual
-Nenhuma mudança na aba "Entrar" — só na aba "Criar conta". Botão Google e divisor seguem visíveis acima do fluxo.
-
-## Detalhes técnicos
-
-- Novo state em `Auth.tsx`: `const [signupStep, setSignupStep] = useState(0)`.
-- Função `validateStep(step)` que roda apenas o pedaço relevante do schema (ex.: `signupSchema.pick({ fullName: true }).safeParse(...)`).
-- Função `goNext()` valida → incrementa step. `goBack()` decrementa.
-- Ao trocar de aba (login ↔ signup) ou desmontar, resetar `signupStep = 0`.
-- Reaproveitar componentes existentes (`Field`, `Select`, `SearchableSelect`, `PasswordField`, `ModalCheckbox`-equivalente) — não recriar.
-- Manter `SubmitButton` apenas no último step.
-- O fluxo Google (botão "Continuar com Google") continua acima da barra de progresso quando `signupStep === 0`; a partir do step 1, escondemos o bloco Google + divisor para dar foco total ao step.
-
-## Fora de escopo
-
-- Sem mudanças em `CompleteProfileModal` (fluxo Google pós-login segue igual).
-- Sem mudanças no backend, schema do banco ou e-mails.
-- Sem mudanças visuais profundas (cores, tokens) — só layout/animação dentro do card existente.
-
-## Arquivos afetados
-
-- `src/pages/Auth.tsx` (principal — refatorar form de signup, adicionar steps, progresso, animações, unificar nome).
+### Arquivos afetados
+- Migração SQL (nova).
+- `src/pages/admin/AdminVerses.tsx` (sincronizar `questions` ao salvar lição).
+- Nenhuma mudança no `Quiz.tsx` — ele já chama `submit_answer` com `text`.

@@ -70,7 +70,8 @@ export type Database = {
           attempt_id: string
           id: string
           is_correct: boolean
-          question_id: string
+          question_id: string | null
+          question_ref: string | null
           selected_option: string
         }
         Insert: {
@@ -78,7 +79,8 @@ export type Database = {
           attempt_id: string
           id?: string
           is_correct?: boolean
-          question_id: string
+          question_id?: string | null
+          question_ref?: string | null
           selected_option: string
         }
         Update: {
@@ -86,7 +88,8 @@ export type Database = {
           attempt_id?: string
           id?: string
           is_correct?: boolean
-          question_id?: string
+          question_id?: string | null
+          question_ref?: string | null
           selected_option?: string
         }
         Relationships: [
@@ -2466,29 +2469,17 @@ export type Database = {
         Args: { p_note?: string; p_request_id: string }
         Returns: undefined
       }
-      submit_answer:
-        | {
-            Args: {
-              p_attempt_id: string
-              p_question_id: string
-              p_selected_option: string
-            }
-            Returns: {
-              correct_option: string
-              is_correct: boolean
-            }[]
-          }
-        | {
-            Args: {
-              p_attempt_id: string
-              p_question_id: string
-              p_selected_option: string
-            }
-            Returns: {
-              correct_option: string
-              is_correct: boolean
-            }[]
-          }
+      submit_answer: {
+        Args: {
+          p_attempt_id: string
+          p_question_id: string
+          p_selected_option: string
+        }
+        Returns: {
+          correct_option: string
+          is_correct: boolean
+        }[]
+      }
       tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
       urlencode: { Args: { "": string }; Returns: string }
     }
