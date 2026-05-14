@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap, Heart, ShoppingBag, Award } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap, Heart, ShoppingBag, Award, Medal } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
