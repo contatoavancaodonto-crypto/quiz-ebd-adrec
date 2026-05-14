@@ -158,6 +158,7 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { isAdmin } = useRoles();
+  const { selectedClassId } = useClassSwitcher();
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
