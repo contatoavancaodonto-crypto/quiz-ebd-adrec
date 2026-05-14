@@ -83,7 +83,7 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
     },
   ];
 
-  const handleJoyrideCallback = async (data: CallBackProps) => {
+  const handleJoyrideCallback = async (data: any) => {
     const { status } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
@@ -105,8 +105,10 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
     }
   };
 
+  const JoyrideComponent = (Joyride as any).default || Joyride;
+
   return (
-    <Joyride
+    <JoyrideComponent
       steps={steps}
       run={run}
       continuous
