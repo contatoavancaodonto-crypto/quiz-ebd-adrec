@@ -36,7 +36,7 @@ async function runSubmitAnswerTest() {
       .limit(5);
 
     if (lError || !lessons || lessons.length === 0) {
-      console.error("❌ Nenhuma lição com perguntas encontrada para o teste.");
+      console.log("Lessons found:", lessons?.length); console.error("❌ Nenhuma lição com perguntas encontrada para o teste.");
       return;
     }
     
