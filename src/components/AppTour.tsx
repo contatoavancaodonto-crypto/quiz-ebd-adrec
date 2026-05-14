@@ -28,7 +28,6 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
       placement: "center",
       title: "Bem-vindo ao ADREC! 🙏",
       content: "Vamos fazer um tour rápido para você conhecer as funções e regras do nosso app.",
-      disableBeacon: true,
     },
     {
       target: "[data-tour='weekly-quiz-hero']",
@@ -66,7 +65,13 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
       content: "Aqui você gerencia seus dados e pode rever este tour quando quiser.",
     },
     {
+      target: "[data-tour='rules-card']",
+      title: "Regras do Quiz 📏",
+      content: "Fique atento: o quiz abre segunda e fecha domingo. O desempate no ranking é sempre pelo tempo de resposta!",
+    },
+    {
       target: "[data-tour='sidebar-trigger']",
+
       title: "Menu Lateral ☰",
       content: "Acesse a Comunidade, Harpa Cristã, Regras e muito mais por aqui.",
     },

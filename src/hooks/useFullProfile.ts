@@ -16,7 +16,9 @@ export interface FullProfile {
   class_id: string | null;
   avatar_url: string | null;
   show_avatar_in_ranking: boolean;
+  has_seen_tour: boolean;
 }
+
 
 /**
  * Hook único e canônico para o perfil do usuário logado.
@@ -35,8 +37,9 @@ export function useFullProfile() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, churches(name), classes(name)"
+          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, churches(name), classes(name)"
         )
+
         .eq("id", user!.id)
         .maybeSingle();
       if (!data) return null;
@@ -53,7 +56,9 @@ export function useFullProfile() {
         class_id: (data as any).class_id ?? null,
         avatar_url: (data as any).avatar_url ?? null,
         show_avatar_in_ranking: (data as any).show_avatar_in_ranking ?? true,
+        has_seen_tour: (data as any).has_seen_tour ?? false,
         church_name: (data as any).churches?.name ?? null,
+
       };
     },
   });
