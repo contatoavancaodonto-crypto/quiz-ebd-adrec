@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Joyride, { STATUS } from "react-joyride";
+import { Joyride, STATUS } from "react-joyride";
 import type { Step, CallBackProps } from "react-joyride";
 import { supabase } from "@/integrations/supabase/client";
 import { useFullProfile } from "@/hooks/useFullProfile";
