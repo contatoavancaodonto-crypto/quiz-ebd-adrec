@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileGate } from "./components/ProfileGate";
 import { RolesProvider } from "./hooks/useRoles";
+import { ClassSwitcherProvider } from "./hooks/useClassSwitcher";
 import { PageSkeleton } from "./components/PageSkeleton";
 import { AdminLayout } from "./components/admin/AdminLayout";
 
@@ -90,7 +91,8 @@ const App = () => (
       <BrowserRouter>
         <KeepLoggedInGuard />
         <RolesProvider>
-          <ProfileGate />
+          <ClassSwitcherProvider>
+            <ProfileGate />
           <Suspense fallback={<PageSkeleton />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
@@ -162,6 +164,7 @@ const App = () => (
 
             </Routes>
           </Suspense>
+          </ClassSwitcherProvider>
         </RolesProvider>
       </BrowserRouter>
     </TooltipProvider>

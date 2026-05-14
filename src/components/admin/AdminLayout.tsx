@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { PendingRequestsBell } from "./PendingRequestsBell";
 import { ModerationBell } from "./ModerationBell";
 import { AdminClassSwitcher } from "./AdminClassSwitcher";
-import { ClassSwitcherProvider } from "@/hooks/useClassSwitcher";
 
 const ADMIN_ROOT = "/painel";
 
@@ -86,8 +85,7 @@ function RoleBadge() {
 export function AdminLayout() {
   return (
     <AdminGuard>
-      <ClassSwitcherProvider>
-        <SidebarProvider>
+      <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background relative overflow-hidden">
           {/* Background blobs (mesmo padrão da Home) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -125,7 +123,6 @@ export function AdminLayout() {
           </div>
         </div>
       </SidebarProvider>
-      </ClassSwitcherProvider>
     </AdminGuard>
   );
 }

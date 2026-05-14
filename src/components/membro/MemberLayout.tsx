@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+
 type MobileHeader =
   | { variant: "full" }
   | { variant: "back"; title: string; subtitle?: string; backTo?: string; onBack?: () => void }
@@ -109,6 +110,6 @@ export function MemberLayout({
           )}
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
   );
 }
