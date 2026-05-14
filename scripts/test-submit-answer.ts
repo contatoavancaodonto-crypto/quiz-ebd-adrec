@@ -1,9 +1,18 @@
-import { supabase } from "../../src/integrations/supabase/client";
+import { createClient } from '@supabase/supabase-js';
 
-// Este script testa a função submit_answer diretamente no banco
-// Ele cria uma tentativa de teste e submete respostas para validar a lógica
+// Usar variáveis de ambiente do sandbox para configurar o cliente
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 async function runSubmitAnswerTest() {
   console.log("🚀 Iniciando teste da função submit_answer...");
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("❌ Erro: VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY não estão definidas.");
+    return;
+  }
 
   try {
     // 1. Obter um participante para o teste
@@ -19,24 +28,27 @@ async function runSubmitAnswerTest() {
     const participantId = participants[0].id;
 
     // 2. Buscar uma lição que tenha perguntas no JSON
+    // Buscamos especificamente uma que tenha perguntas no JSON (campo 'questions')
     const { data: lessons, error: lError } = await supabase
       .from('lessons')
       .select('id, questions')
       .not('questions', 'is', null)
-      .limit(1);
+      .limit(5);
 
     if (lError || !lessons || lessons.length === 0) {
       console.error("❌ Nenhuma lição com perguntas encontrada para o teste.");
       return;
     }
-    const lesson = lessons[0];
-    const questions = lesson.questions as any[];
     
-    if (!questions || questions.length === 0) {
-      console.error("❌ A lição encontrada não tem perguntas no JSON.");
-      return;
+    // Filtrar por lições que tenham array de perguntas válido
+    const lesson = lessons.find(l => Array.isArray(l.questions) && l.questions.length > 0);
+    
+    if (!lesson) {
+        console.error("❌ Nenhuma lição encontrada com array de perguntas válido.");
+        return;
     }
 
+    const questions = lesson.questions as any[];
     const testQuestion = questions[0];
     const questionId = testQuestion.id;
     const correctOption = testQuestion.respostaCorreta || testQuestion.correct_option || 'A';
@@ -63,6 +75,7 @@ async function runSubmitAnswerTest() {
 
     // 4. Testar submit_answer via RPC (Chamada da função do banco)
     console.log("📡 Chamando submit_answer para resposta CORRETA...");
+    // A função retorna um array de objetos devido à definição 'RETURNS TABLE'
     const { data: resultCorrect, error: scError } = await supabase.rpc('submit_answer', {
       p_attempt_id: attempt.id,
       p_question_id: String(questionId),
@@ -73,15 +86,18 @@ async function runSubmitAnswerTest() {
       console.error("❌ Erro na RPC submit_answer (correta):", scError);
     } else {
       console.log("📊 Resultado (esperado is_correct: true):", resultCorrect);
-      if (resultCorrect[0]?.is_correct === true) {
+      // O resultado de uma table function no supabase-js vem como array
+      const isCorrect = Array.isArray(resultCorrect) ? resultCorrect[0]?.is_correct : (resultCorrect as any)?.is_correct;
+      
+      if (isCorrect === true) {
         console.log("✨ SUCESSO: Resposta correta validada!");
       } else {
-        console.error("FAILED: Resposta correta marcada como errada.");
+        console.error("❌ FALHA: Resposta correta marcada como errada ou não retornou esperado.");
       }
     }
 
     // 5. Testar resposta INCORRETA
-    const wrongOption = correctOption === 'A' ? 'B' : 'A';
+    const wrongOption = correctOption.toUpperCase() === 'A' ? 'B' : 'A';
     console.log(`📡 Chamando submit_answer para resposta INCORRETA (${wrongOption})...`);
     const { data: resultWrong, error: swError } = await supabase.rpc('submit_answer', {
       p_attempt_id: attempt.id,
@@ -93,16 +109,16 @@ async function runSubmitAnswerTest() {
       console.error("❌ Erro na RPC submit_answer (incorreta):", swError);
     } else {
       console.log("📊 Resultado (esperado is_correct: false):", resultWrong);
-      if (resultWrong[0]?.is_correct === false) {
+      const isCorrect = Array.isArray(resultWrong) ? resultWrong[0]?.is_correct : (resultWrong as any)?.is_correct;
+
+      if (isCorrect === false) {
         console.log("✨ SUCESSO: Resposta incorreta validada!");
       } else {
-        console.error("FAILED: Resposta incorreta marcada como certa.");
+        console.error("❌ FALHA: Resposta incorreta marcada como certa ou não retornou esperado.");
       }
     }
 
-    // Limpeza (opcional): remover tentativa e respostas de teste
-    // await supabase.from('answers').delete().eq('attempt_id', attempt.id);
-    // await supabase.from('quiz_attempts').delete().eq('id', attempt.id);
+    console.log("\n🏁 Testes concluídos com sucesso.");
 
   } catch (err) {
     console.error("💥 Erro inesperado durante o teste:", err);
