@@ -63,6 +63,7 @@ const QuizPage = () => {
 
   // 🔒 trava de finalização
   const finishingRef = useRef(false);
+  const autoAdvanceRef = useRef(false);
 
   useEffect(() => {
     console.log("QuizPage mounted. store.classId:", store.classId);
