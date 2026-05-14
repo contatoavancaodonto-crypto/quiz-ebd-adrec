@@ -7,6 +7,7 @@ import { AppHeader } from "./AppHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ClassSwitcherProvider } from "@/hooks/useClassSwitcher";
 
 type MobileHeader =
   | { variant: "full" }
@@ -59,7 +60,8 @@ export function MemberLayout({
     mobileHeader ?? { variant: "back", title };
 
   return (
-    <SidebarProvider>
+    <ClassSwitcherProvider>
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
         <MemberSidebar />
@@ -109,6 +111,7 @@ export function MemberLayout({
           )}
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ClassSwitcherProvider>
   );
 }
