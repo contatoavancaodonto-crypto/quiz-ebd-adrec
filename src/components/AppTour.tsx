@@ -71,7 +71,6 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
     },
     {
       target: "[data-tour='sidebar-trigger']",
-
       title: "Menu Lateral ☰",
       content: "Acesse a Comunidade, Harpa Cristã, Regras e muito mais por aqui.",
     },

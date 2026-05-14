@@ -23,7 +23,9 @@ import {
   Timer,
   Users,
   Lock,
+  Info,
 } from "lucide-react";
+
 import churchLogo from "@/assets/church-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -151,14 +153,8 @@ const WeeklyQuizCardSkeleton = () => (
   </section>
 );
 
-const SectionLabel = ({ color, label }: { color: "primary" | "secondary"; label: string }) => (
-  <div className="flex items-center gap-2 px-1">
-    <div className={`w-1.5 h-1.5 rounded-full bg-${color}`} />
-    <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-      {label}
-    </span>
-  </div>
-);
+// Removed duplicate SectionLabel
+
 
 
 import { AppTour } from "@/components/AppTour";
