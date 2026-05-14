@@ -27,7 +27,7 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
     {
       target: "body",
       placement: "center",
-      title: "Bem-vindo ao ADREC! 🙏",
+      title: "Bem-vindo ao Quiz EBD! 🙏",
       content: "Vamos fazer um tour rápido para você conhecer as funções e regras do nosso app.",
     },
     {
