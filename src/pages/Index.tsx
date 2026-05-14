@@ -151,7 +151,10 @@ const WeeklyQuizCardSkeleton = () => (
   </section>
 );
 
+import { AppTour } from "@/components/AppTour";
+
 const Index = () => {
+
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -448,7 +451,9 @@ const Index = () => {
         fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : "Provão",
       }}
     >
+      <AppTour />
       <div className="relative">
+
         {/* Background blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
@@ -471,6 +476,8 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
             className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-secondary via-secondary/90 to-primary p-6 shadow-xl shadow-secondary/20"
+            data-tour="weekly-quiz-hero"
+
           >
             <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
             <div className="absolute top-4 right-4 opacity-20">
@@ -493,7 +500,11 @@ const Index = () => {
               </p>
 
               {streak > 0 && (
-                <div className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur border border-white/20">
+                <div 
+                  className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur border border-white/20"
+                  data-tour="streak-badge"
+                >
+
                   <Flame className="w-4 h-4 text-orange-300" />
                   <span className="text-xs font-bold text-white">
                     {streak} {streak === 1 ? "semana" : "semanas"} seguidas

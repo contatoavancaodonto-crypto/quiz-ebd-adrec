@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, KeyRound, LogOut, User as UserIcon, Building2, GraduationCap, Mail, Phone, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { MemberLayout } from "@/components/membro/MemberLayout";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

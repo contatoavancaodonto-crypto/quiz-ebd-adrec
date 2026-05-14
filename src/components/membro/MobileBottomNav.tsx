@@ -59,7 +59,9 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
             return (
               <button
                 key={item.path}
+                data-tour={item.type ? `nav-${item.type}` : undefined}
                 onClick={() => navigate(item.path)}
+
                 onMouseEnter={() => handlePrefetch((item as any).type)}
                 onTouchStart={() => handlePrefetch((item as any).type)}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
@@ -102,7 +104,9 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
             return (
               <button
                 key={item.path}
+                data-tour={item.type ? `nav-${item.type}` : undefined}
                 onClick={() => navigate(item.path)}
+
                 onMouseEnter={() => handlePrefetch((item as any).type)}
                 onTouchStart={() => handlePrefetch((item as any).type)}
                 className="flex flex-col items-center justify-center gap-1 h-full transition-colors"
