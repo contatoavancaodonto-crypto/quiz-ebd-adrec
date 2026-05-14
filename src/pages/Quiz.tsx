@@ -576,7 +576,7 @@ const QuizPage = () => {
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
                     confirmed
                       ? isCorrect
-                        ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                        ? "border-green-500 bg-green-500/20 text-green-700 dark:text-green-400"
                         : isSelected
                         ? "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400"
                         : "border-border opacity-50"
