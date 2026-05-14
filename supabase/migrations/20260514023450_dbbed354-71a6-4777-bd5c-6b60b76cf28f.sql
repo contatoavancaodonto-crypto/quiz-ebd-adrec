@@ -1,0 +1,1 @@
+ALTER FUNCTION public.submit_answer(uuid, text, text) SET search_path TO public;
