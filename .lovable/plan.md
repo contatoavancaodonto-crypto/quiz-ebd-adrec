@@ -1,37 +1,30 @@
-## Correção crítica: respostas do quiz não validadas corretamente
+## Objetivo
+Corrigir dois regressos no quiz:
+1. A alternativa correta deve aparecer somente em verde, sem qualquer flash vermelho.
+2. A próxima questão deve avançar automaticamente após o feedback validado, como antes.
 
-### Problema
-- Existem **duas funções `submit_answer`** no banco (sobrecarga). A versão antiga `(uuid, uuid, text)` só lê de `public.questions` e o PostgREST pode resolvê-la em vez da nova, falhando silenciosamente para lições importadas via `/versiculos`.
-- Lições criadas em `/versiculos` armazenam perguntas em `lessons.questions` (JSONB) mas **não sincronizam** para `public.questions`. Resultado: `submit_answer` antiga não acha a pergunta → resposta marcada errada.
-- A coluna `answers.question_id` é `NOT NULL UUID`, então perguntas com IDs não-UUID (ex.: `2f1yuimg3`) não conseguem ser inseridas.
-- `get_attempt_gabarito` faz JOIN só com `public.questions`, então o gabarito pós-quiz fica vazio para lições do `/versiculos`.
+## Plano
+1. **Reorganizar o fluxo de confirmação da resposta em `src/pages/Quiz.tsx`**
+   - Separar o estado de “opção clicada” do estado de “resposta confirmada”.
+   - Impedir que a UI entre em modo de correção antes do retorno da validação.
+   - Usar `isSubmitting` para travar clique duplo enquanto a resposta é enviada.
 
-### Solução
+2. **Corrigir a lógica visual do feedback**
+   - Mostrar verde apenas quando a alternativa tiver sido validada como correta.
+   - Mostrar vermelho somente para erro real, nunca durante o tempo de espera da RPC.
+   - Garantir que ícones e estilos sigam o mesmo critério, sem estado intermediário inconsistente.
 
-**1. Migração SQL**
-- `DROP FUNCTION public.submit_answer(uuid, uuid, text)` — remove sobrecarga antiga.
-- Tornar `answers.question_id` nullable e adicionar `question_ref text` para suportar IDs do JSON.
-- Ajustar índice único de `answers` para `(attempt_id, COALESCE(question_id::text, question_ref))`.
-- Reescrever `submit_answer(uuid, text, text)` única:
-  - Prioridade 1: busca em `public.questions` por UUID.
-  - Prioridade 2: busca no JSON `lessons.questions` por `id`, com COALESCE de variantes (`respostaCorreta`, `correct_option`, `correctOption`, `resposta_correta`).
-  - Comparação case-insensitive.
-  - Insere usando `question_id` (UUID) ou `question_ref` (texto) conforme o caso.
-- Reescrever `get_attempt_gabarito` para:
-  - JOIN com `questions` quando `question_id` existir.
-  - Fallback: ler do JSON `lessons.questions` quando só houver `question_ref`, mapeando `pergunta`/`alternativas`/`respostaCorreta` para os campos retornados.
-- Migração retroativa: popular `public.questions` espelhando o JSON de lições antigas (idempotente, só cria se não existir).
+3. **Restaurar o avanço automático no momento certo**
+   - Fazer o timer de autoavanço depender da resposta já validada, não apenas do clique.
+   - Manter o delay curto de feedback visual antes de avançar/finalizar automaticamente.
+   - Preservar o comportamento da última pergunta e da pausa de avaliação no meio do quiz.
 
-**2. Sincronização futura no `/versiculos`**
-- No `AdminVerses` (salvar lição), após upsert em `lessons`, espelhar perguntas em `public.questions` (delete + insert por `lesson_id`) para manter compatibilidade total.
+4. **Validar o comportamento final**
+   - Confirmar no código que o avanço automático volta a ocorrer.
+   - Verificar que o feedback correto não passa mais por vermelho em nenhum ramo do fluxo.
 
-**3. Validação**
-- Rodar quiz da lição "Uma Prova de Fé" (`1895101c-…`).
-- Conferir que `answers.is_correct` reflete o `respostaCorreta` do JSON.
-- Abrir "Meu Gabarito" e validar que aparece corretamente.
-- Criar nova lição em `/versiculos`, simular quiz, validar fluxo completo.
-
-### Arquivos afetados
-- Migração SQL (nova).
-- `src/pages/admin/AdminVerses.tsx` (sincronizar `questions` ao salvar lição).
-- Nenhuma mudança no `Quiz.tsx` — ele já chama `submit_answer` com `text`.
+## Detalhes técnicos
+- O problema atual acontece porque `setConfirmed(true)` é disparado antes do retorno de `submit_answer`.
+- Como o estilo usa `confirmed` imediatamente, a opção clicada pode cair temporariamente na regra vermelha antes de `revealedCorrect` ser preenchido.
+- O autoavanço também dispara cedo demais porque o `useEffect` observa `confirmed`, não a conclusão real da validação.
+- A correção será feita só no frontend, principalmente em `src/pages/Quiz.tsx`, sem expandir escopo para backend.
