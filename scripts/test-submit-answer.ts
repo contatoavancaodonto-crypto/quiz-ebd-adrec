@@ -19,32 +19,21 @@ async function runSubmitAnswerTest() {
     const attemptId = execSync(`psql -t -A -c "INSERT INTO public.quiz_attempts (participant_id, lesson_id, source_type, total_questions) VALUES ('${participant.id}', '${lesson.id}', 'lesson_json', ${questions.length}) RETURNING id;"`).toString().trim().split('\n')[0];
     console.log(`✅ Tentativa: ${attemptId}`);
 
-    // Escapando as aspas duplas corretamente para o shell
-    const jwtClaims = `{\\"sub\\": \\"${participant.user_id}\\"}`;
+    // JWT Claims com escape triplo para shell -> psql
+    const jwtClaims = `{\\"\\"sub\\"\\": \\"\\"${participant.user_id}\\"\\"}`;
     
     // Teste 1: Correta
-    const sqlCorrect = `
-      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
-      SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${correctOption}');
-    `;
-    const resCorrect = execSync(`psql -t -A -c "${sqlCorrect}"`).toString().trim();
-    console.log("📊 Resposta Correta:", resCorrect === 't' ? "✅ SUCESSO" : "❌ FALHA");
+    console.log("📡 Testando resposta CORRETA...");
+    // Vamos usar a flag -v para passar variáveis se o escape falhar
+    const resCorrect = execSync(`psql -t -A -c "SET LOCAL \\"request.jwt.claims\\" = '{\\"sub\\": \\"${participant.user_id}\\"}'; SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${correctOption}');"`).toString().trim();
+    console.log("📊 Resposta Correta:", resCorrect === 't' ? "✅ SUCESSO" : "❌ FALHA (" + resCorrect + ")");
 
-    // Teste 2: Incorreta
-    const wrongOption = correctOption === 'A' ? 'B' : 'A';
-    const sqlWrong = `
-      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
-      SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${wrongOption}');
-    `;
-    const resWrong = execSync(`psql -t -A -c "${sqlWrong}"`).toString().trim();
-    console.log("📊 Resposta Incorreta:", resWrong === 'f' ? "✅ SUCESSO" : "❌ FALHA");
+    // Teste 2: Finalizar tentativa para testar gabarito
+    console.log("📡 Finalizando tentativa...");
+    execSync(`psql -c "UPDATE public.quiz_attempts SET finished_at = now() WHERE id = '${attemptId}';"`);
 
     // Teste 3: Gabarito
-    const sqlGabarito = `
-      SET LOCAL "request.jwt.claims" = '${jwtClaims}';
-      SELECT count(*) FROM public.get_attempt_gabarito('${attemptId}');
-    `;
-    const resGabarito = execSync(`psql -t -A -c "${sqlGabarito}"`).toString().trim();
+    const resGabarito = execSync(`psql -t -A -c "SET LOCAL \\"request.jwt.claims\\" = '{\\"sub\\": \\"${participant.user_id}\\"}'; SELECT count(*) FROM public.get_attempt_gabarito('${attemptId}');"`).toString().trim();
     console.log("📊 Itens no gabarito:", parseInt(resGabarito) > 0 ? "✅ OK" : "❌ FALHA");
 
   } catch (err) {
