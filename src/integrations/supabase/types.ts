@@ -1035,6 +1035,7 @@ export type Database = {
           provider: string | null
           show_avatar_in_ranking: boolean
           updated_at: string
+          welcome_sent: boolean | null
         }
         Insert: {
           area?: number | null
@@ -1052,6 +1053,7 @@ export type Database = {
           provider?: string | null
           show_avatar_in_ranking?: boolean
           updated_at?: string
+          welcome_sent?: boolean | null
         }
         Update: {
           area?: number | null
@@ -1069,6 +1071,7 @@ export type Database = {
           provider?: string | null
           show_avatar_in_ranking?: boolean
           updated_at?: string
+          welcome_sent?: boolean | null
         }
         Relationships: [
           {
@@ -2487,6 +2490,7 @@ export type Database = {
             }[]
           }
       tick_weekly_quiz_schedule: { Args: never; Returns: undefined }
+      urlencode: { Args: { "": string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "superadmin"
