@@ -35,6 +35,8 @@ const items: Array<{
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, type: 'biblia' },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, type: 'harpa' },
+  { title: "Loja EBD", url: "/membro/loja", icon: ShoppingBag, comingSoon: true },
+  { title: "Subsídio ao Professor", url: "/membro/apoio-professor", icon: GraduationCap, comingSoon: true },
   { title: "Suporte", url: "/membro/suporte", icon: LifeBuoy },
   { title: "Apoiar Projeto", url: "/oferta", icon: Heart },
 ];
