@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Joyride, { STATUS } from "react-joyride";
-import type { Step, CallBackProps } from "react-joyride";
+import Joyride from "react-joyride";
+import type { Step } from "react-joyride";
+import { STATUS } from "react-joyride";
 import { supabase } from "@/integrations/supabase/client";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
   useEffect(() => {
     if (forceStart) {
       setRun(true);
-    } else if (profile && profile.has_seen_tour === false) {
+    } else if (profile && (profile as any).has_seen_tour === false) {
       setRun(true);
     }
   }, [profile, forceStart]);
@@ -89,11 +90,11 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
 
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      if (profile && !profile.has_seen_tour) {
+      if (profile && !(profile as any).has_seen_tour) {
         try {
           await supabase
             .from("profiles")
-            .update({ has_seen_tour: true })
+            .update({ has_seen_tour: true } as any)
             .eq("id", profile.id);
           
           queryClient.invalidateQueries({ queryKey: ["full-profile"] });
