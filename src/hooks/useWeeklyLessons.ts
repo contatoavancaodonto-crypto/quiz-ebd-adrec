@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
+import { useClassSwitcher } from "./useClassSwitcher";
 
 export interface WeeklyLesson {
   id: string;
@@ -24,7 +25,8 @@ export interface WeeklyLesson {
 
 export const useWeeklyLessons = () => {
   const { profile } = useProfile();
-  const classId = profile?.class_id;
+  const { selectedClassId } = useClassSwitcher();
+  const classId = selectedClassId || profile?.class_id;
 
   return useQuery({
     queryKey: ["weekly-lessons", classId],

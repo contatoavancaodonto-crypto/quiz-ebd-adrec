@@ -31,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AdminClassSwitcher } from "@/components/admin/AdminClassSwitcher";
 import { useRoles } from "@/hooks/useRoles";
+import { useClassSwitcher } from "@/hooks/useClassSwitcher";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
