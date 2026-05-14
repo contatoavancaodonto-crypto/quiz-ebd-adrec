@@ -467,14 +467,6 @@ const Index = () => {
         </div>
 
         <div className="px-4 pt-4 pb-6 space-y-5 relative z-10">
-          <section className="space-y-2" data-tour="rules-card">
-            <SectionLabel color="secondary" label="Regras" />
-            <div className="rounded-3xl border border-secondary/20 bg-card/50 backdrop-blur p-4 text-xs text-muted-foreground flex items-start gap-3">
-              <Info className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
-              <p>O quiz abre seg 00:00 e fecha dom 23:59. Em caso de empate, vence quem responder em menor tempo!</p>
-            </div>
-          </section>
-
 
           {isAdmin && (
             <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-primary/5 border border-primary/10">

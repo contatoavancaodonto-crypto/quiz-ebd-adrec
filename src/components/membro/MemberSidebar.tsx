@@ -113,9 +113,11 @@ export function MemberSidebar() {
                       to={item.url}
                       end
                       onMouseEnter={() => handlePrefetch(item.type)}
+                      data-tour={item.url === "/regras-pontuacao" ? "menu-regras" : undefined}
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
+
                       <item.icon className="mr-2 h-4 w-4" />
                       {(!collapsed || isMobile) && (
                         <div className="flex items-center justify-between flex-1">
