@@ -14,7 +14,7 @@ export function AdminClassSwitcher() {
   const { isAdmin } = useRoles();
   const { classes, selectedClassId, setSelectedClassId } = useClassSwitcher();
 
-  if (!isAdmin || classes.length === 0) return null;
+  if (!isAdmin) return null;
 
   const currentClass = classes.find((c) => c.id === selectedClassId);
 
