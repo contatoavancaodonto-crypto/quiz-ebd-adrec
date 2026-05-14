@@ -546,9 +546,9 @@ const QuizPage = () => {
                   whileHover={!confirmed ? { scale: 1.01 } : {}}
                   whileTap={!confirmed ? { scale: 0.99 } : {}}
                   onClick={async () => {
-                    if (confirmed) return;
+                    if (confirmed || isSubmitting) return;
+                    setIsSubmitting(true);
                     setSelectedOption(label);
-                    setConfirmed(true);
                     store.setAnswer(currentQ.id.toString(), label);
 
                     const { data, error } = await supabase.rpc("submit_answer", {
@@ -556,22 +556,17 @@ const QuizPage = () => {
                       p_question_id: currentQ.id.toString(),
                       p_selected_option: label,
                     });
-                    
+
                     if (!error && data && data[0]) {
                       const isCorrect = data[0].is_correct;
                       setRevealedCorrect((s) => ({ ...s, [currentQ.id]: data[0].correct_option }));
                       setCorrectnessByQ((s) => ({ ...s, [currentQ.id]: isCorrect }));
-                      
-                      // Som baseado no resultado
-                      if (isCorrect) {
-                        playSound('win');
-                      } else {
-                        playSound('error');
-                      }
+                      playSound(isCorrect ? 'win' : 'error');
                     } else {
-                      // Fallback se erro no servidor
                       playSound('ding');
                     }
+                    setConfirmed(true);
+                    setIsSubmitting(false);
                   }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
                     confirmed
