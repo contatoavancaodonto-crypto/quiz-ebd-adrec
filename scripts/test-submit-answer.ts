@@ -1,110 +1,81 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Usar Service Role Key para ignorar RLS durante o teste se possível
-// Se não, vamos simular um usuário autenticado se soubermos um ID
-const supabaseUrl = "https://ndautjliwnpnbpxvfsik.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kYXV0amxpd25wbmJweHZmc2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjAxOTEsImV4cCI6MjA4OTUzNjE5MX0.TmY8PncrvWs5Lh2uu9F3-zbgPHMQoczmQwVAf_PmOiE";
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 async function runSubmitAnswerTest() {
   console.log("🚀 Iniciando teste da função submit_answer...");
   
   try {
-    // 1. Precisamos de um participante que tenha user_id para que RLS permita o teste
-    const { data: participant, error: pError } = await supabase
-      .from('participants')
-      .select('id, user_id')
-      .not('user_id', 'is', null)
-      .limit(1)
-      .single();
+    const { execSync } = require('child_process');
 
-    if (pError || !participant) {
-        console.error("❌ Nenhum participante com user_id encontrado para simular sessão.");
+    // 1. Pegar dados via psql diretamente
+    console.log("🔍 Buscando dados via psql...");
+    const participantJson = execSync(`psql -t -A -c "SELECT json_build_object('id', id, 'user_id', user_id) FROM public.participants WHERE user_id IS NOT NULL LIMIT 1;"`).toString().trim();
+    const participant = JSON.parse(participantJson);
+
+    const lessonJson = execSync(`psql -t -A -c "SELECT json_build_object('id', id, 'questions', questions) FROM public.lessons WHERE jsonb_array_length(questions) > 0 LIMIT 1;"`).toString().trim();
+    const lesson = JSON.parse(lessonJson);
+
+    if (!participant || !lesson) {
+        console.error("❌ Dados não encontrados via psql.");
         return;
     }
 
-    console.log(`👤 Simulando participante: ${participant.id} (User: ${participant.user_id})`);
-
-    // 2. Buscar lição e questões
-    // Usamos um ID que sabemos que existe
-    const lessonId = 'd6339eef-e8a4-4094-a975-5455d0693232';
-    
-    // Como o script roda como "anon", se RLS bloquear a lição, precisamos de uma forma de ler
-    // Vamos tentar ler todas as lições visíveis
-    const { data: lesson, error: lError } = await supabase.from('lessons').select('*').eq('id', lessonId).maybeSingle();
-    
-    if (lError || !lesson) {
-        console.error("❌ Erro ao buscar lição (pode ser RLS):", lError);
-        console.log("Tentando buscar qualquer lição visível...");
-        const { data: anyLesson } = await supabase.from('lessons').select('*').limit(1);
-        if (!anyLesson || anyLesson.length === 0) {
-            console.error("❌ Nenhuma lição visível via SDK (RLS está restringindo tudo).");
-            return;
-        }
-    }
-
-    const targetLesson = lesson || (await supabase.from('lessons').select('*').limit(1)).data?.[0];
-    const questions = targetLesson.questions as any[];
+    const questions = lesson.questions;
     const testQuestion = questions[0];
     const questionId = testQuestion.id;
-    const correctOption = testQuestion.respostaCorreta || testQuestion.correct_option || 'A';
+    const correctOption = (testQuestion.respostaCorreta || testQuestion.correct_option || 'A').toUpperCase();
 
-    console.log(`📝 Testando com Lição: ${targetLesson.id}, Pergunta: ${questionId}`);
+    console.log(`👤 Participante: ${participant.id}`);
+    console.log(`📝 Lição: ${lesson.id}, Pergunta: ${questionId}, Correta: ${correctOption}`);
 
-    // 3. Criar tentativa
-    // IMPORTANTE: Para passar no RLS de quiz_attempts, precisamos que o auth.uid() coincida com participant.user_id
-    // Em scripts externos 'anon', isso não acontece.
-    // MAS a função RPC submit_answer usa SECURITY DEFINER, então ela ignora RLS da tabela 'answers'.
-    // No entanto, a criação da tentativa (INSERT) pode falhar.
-    
-    // Vamos tentar criar a tentativa via SQL (psql) para ignorar RLS e depois testar o RPC
-    console.log("🛠️ Criando tentativa via psql para bypassar RLS...");
-    const { execSync } = require('child_process');
-    const attemptId = execSync(`psql -t -A -c "INSERT INTO public.quiz_attempts (participant_id, lesson_id, source_type, total_questions) VALUES ('${participant.id}', '${targetLesson.id}', 'lesson_json', ${questions.length}) RETURNING id;"`).toString().trim();
-    
-    console.log(`✅ Tentativa criada via psql: ${attemptId}`);
+    // 2. Criar tentativa
+    const attemptId = execSync(`psql -t -A -c "INSERT INTO public.quiz_attempts (participant_id, lesson_id, source_type, total_questions) VALUES ('${participant.id}', '${lesson.id}', 'lesson_json', ${questions.length}) RETURNING id;"`).toString().trim();
+    console.log(`✅ Tentativa: ${attemptId}`);
 
-    // 4. Testar submit_answer (RPC)
-    // Precisamos simular o JWT do usuário no RPC? 
-    // A função verifica: IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Unauthorized';
-    // No Bun/SDK anon, auth.uid() é NULL.
-    
-    // Solução: Testar o RPC via psql chamando a função diretamente com um session_set para auth.uid
-    console.log("📡 Chamando submit_answer via psql (simulando auth)...");
+    // 3. Testar submit_answer (Correta)
+    console.log("📡 Testando resposta CORRETA...");
     const sqlCorrect = `
-      BEGIN;
       SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
-      SELECT * FROM public.submit_answer('${attemptId}', '${questionId}', '${correctOption}');
-      COMMIT;
+      SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${correctOption}');
     `;
     const resCorrect = execSync(`psql -t -A -c "${sqlCorrect}"`).toString().trim();
-    console.log("📊 Resultado Correta:", resCorrect);
+    console.log("📊 Resultado:", resCorrect);
     
-    if (resCorrect.includes('t')) {
-        console.log("✨ SUCESSO: Resposta correta validada pelo banco!");
+    if (resCorrect === 't') {
+        console.log("✅ SUCESSO: Validou corretamente.");
     } else {
-        console.error("❌ FALHA: Resposta correta negada.");
+        console.error("❌ FALHA: Não validou a correta.");
     }
 
-    const wrongOption = correctOption.toUpperCase() === 'A' ? 'B' : 'A';
+    // 4. Testar submit_answer (Incorreta)
+    const wrongOption = correctOption === 'A' ? 'B' : 'A';
+    console.log(`📡 Testando resposta INCORRETA (${wrongOption})...`);
     const sqlWrong = `
-      BEGIN;
       SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
-      SELECT * FROM public.submit_answer('${attemptId}', '${questionId}', '${wrongOption}');
-      COMMIT;
+      SELECT is_correct FROM public.submit_answer('${attemptId}', '${questionId}', '${wrongOption}');
     `;
     const resWrong = execSync(`psql -t -A -c "${sqlWrong}"`).toString().trim();
-    console.log("📊 Resultado Incorreta:", resWrong);
+    console.log("📊 Resultado:", resWrong);
     
-    if (resWrong.includes('f')) {
-        console.log("✨ SUCESSO: Resposta incorreta invalidada pelo banco!");
+    if (resWrong === 'f') {
+        console.log("✅ SUCESSO: Invalidou corretamente.");
     } else {
-        console.error("❌ FALHA: Resposta incorreta aceita.");
+        console.error("❌ FALHA: Aceitou a incorreta.");
+    }
+
+    // 5. Validar Gabarito
+    console.log("📡 Testando GABARITO...");
+    const sqlGabarito = `
+      SET LOCAL "request.jwt.claims" = '{"sub": "${participant.user_id}"}';
+      SELECT count(*) FROM public.get_attempt_gabarito('${attemptId}');
+    `;
+    const resGabarito = execSync(`psql -t -A -c "${sqlGabarito}"`).toString().trim();
+    console.log("📊 Itens no gabarito:", resGabarito);
+    if (parseInt(resGabarito) > 0) {
+        console.log("✅ SUCESSO: Gabarito retornou itens.");
+    } else {
+        console.error("❌ FALHA: Gabarito vazio.");
     }
 
   } catch (err) {
-    console.error("💥 Erro:", err);
+    console.error("💥 Erro:", err.message);
   }
 }
 
