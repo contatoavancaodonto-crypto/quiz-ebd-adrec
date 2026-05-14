@@ -22,6 +22,7 @@ const PreviewTelas = lazy(() => import("./pages/PreviewTelas"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Oferta = lazy(() => import("./pages/Oferta"));
+const RegrasPontuacao = lazy(() => import("./pages/RegrasPontuacao"));
 
 // Membro
 const MeuPerfil = lazy(() => import("./pages/membro/MeuPerfil"));
@@ -160,6 +161,7 @@ const App = () => (
               />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/oferta" element={<Oferta />} />
+              <Route path="/regras-pontuacao" element={<RegrasPontuacao />} />
               <Route path="*" element={<NotFound />} />
 
             </Routes>

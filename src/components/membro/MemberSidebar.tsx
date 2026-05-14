@@ -1,4 +1,4 @@
-import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap, Heart, ShoppingBag, Award } from "lucide-react";
+import { User, BarChart3, History, BookOpen, Music2, FileText, Settings, Home, LogOut, Shield, LifeBuoy, Users, GraduationCap, Heart, ShoppingBag, Award, Medal } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +31,7 @@ const items: Array<{
   { title: "Minha Conta", url: "/membro/perfil", icon: User, type: 'profile' },
   { title: "Comunidade EBD", url: "/membro/comunidade", icon: Users },
   { title: "Conquistas", url: "/membro/conquistas", icon: Award },
+  { title: "Regras & Pontuação", url: "/regras-pontuacao", icon: Medal },
   { title: "Revista da Classe", url: "/membro/revista", icon: FileText },
   { title: "Bíblia Online", url: "/membro/biblia", icon: BookOpen, type: 'biblia' },
   { title: "Harpa Cristã", url: "/membro/harpa", icon: Music2, type: 'harpa' },
