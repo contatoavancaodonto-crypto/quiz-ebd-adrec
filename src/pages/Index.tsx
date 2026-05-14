@@ -171,9 +171,9 @@ const Index = () => {
     queryClient.invalidateQueries({ queryKey: ["weekly-attempt"] });
   }, [queryClient]);
 
-  const { data: weeklyQuiz, isLoading: isLoadingWeeklyQuiz } = useWeeklyQuiz(userClassId);
-  const { data: nextQuiz, isLoading: isLoadingNextQuiz } = useNextScheduledQuiz(userClassId);
-  const { data: provao } = useTrimestralProvao(userClassId, season?.id);
+  const { data: weeklyQuiz, isLoading: isLoadingWeeklyQuiz } = useWeeklyQuiz(selectedClassId || userClassId);
+  const { data: nextQuiz, isLoading: isLoadingNextQuiz } = useNextScheduledQuiz(selectedClassId || userClassId);
+  const { data: provao } = useTrimestralProvao(selectedClassId || userClassId, season?.id);
 
   const fullName = profile
     ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
@@ -230,13 +230,13 @@ const Index = () => {
   const showProvao = provaoStatus.available;
 
   const { data: userClass } = useQuery({
-    queryKey: ["my-class", userClassId],
-    enabled: !!userClassId,
+    queryKey: ["my-class", selectedClassId || userClassId],
+    enabled: !!(selectedClassId || userClassId),
     queryFn: async () => {
       const { data } = await supabase
         .from("classes")
         .select("id, name")
-        .eq("id", userClassId!)
+        .eq("id", (selectedClassId || userClassId)!)
         .maybeSingle();
       return data;
     },
