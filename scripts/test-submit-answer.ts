@@ -12,21 +12,25 @@ async function runSubmitAnswerTest() {
     const { data: participants } = await supabase.from('participants').select('id').limit(1);
     const participantId = participants?.[0]?.id;
 
-    const { data: lessons, error: lError } = await supabase.from('lessons').select('id, questions').limit(20);
+    // Tentamos buscar as lições sem o campo questions primeiro para ver se elas aparecem
+    const { data: lessons, error: lError } = await supabase.from('lessons').select('*').limit(20);
     
-    // Log para depuração
+    if (lError) {
+        console.error("❌ Erro ao buscar lições:", lError);
+        return;
+    }
+
     if (lessons) {
         console.log(`Encontradas ${lessons.length} lições.`);
-        lessons.forEach(l => {
-            const qs = Array.isArray(l.questions) ? l.questions : [];
-            console.log(`Lição ${l.id}: ${qs.length} questões`);
-        });
     }
 
     const lesson = lessons?.find(l => Array.isArray(l.questions) && l.questions.length > 0);
     
     if (!lesson || !participantId) {
         console.error("❌ Dados insuficientes:", { lesson: !!lesson, participantId: !!participantId });
+        if (lessons?.[0]) {
+            console.log("Exemplo de lição encontrada (sem questões válidas):", JSON.stringify(lessons[0], null, 2));
+        }
         return;
     }
 
@@ -37,31 +41,36 @@ async function runSubmitAnswerTest() {
 
     console.log(`📝 Testando com Lição: ${lesson.id}, Pergunta: ${questionId}, Resposta: ${correctOption}`);
 
-    const { data: attempt } = await supabase.from('quiz_attempts').insert({
+    const { data: attempt, error: attError } = await supabase.from('quiz_attempts').insert({
         participant_id: participantId,
         lesson_id: lesson.id,
         source_type: 'lesson_json',
         total_questions: questions.length
     }).select().single();
 
-    if (!attempt) return console.error("❌ Erro ao criar tentativa");
+    if (attError || !attempt) {
+        console.error("❌ Erro ao criar tentativa:", attError);
+        return;
+    }
 
     // Teste 1: Correta
-    const { data: resultCorrect } = await supabase.rpc('submit_answer', {
+    const { data: resultCorrect, error: rpcErr1 } = await supabase.rpc('submit_answer', {
       p_attempt_id: attempt.id,
       p_question_id: String(questionId),
       p_selected_option: correctOption
     });
+    if (rpcErr1) console.error("❌ Erro RPC 1:", rpcErr1);
     const isCorrectVal = Array.isArray(resultCorrect) ? resultCorrect[0]?.is_correct : (resultCorrect as any)?.is_correct;
     console.log(isCorrectVal ? "✅ OK: Correta validada" : "❌ FALHA: Correta negada", resultCorrect);
 
     // Teste 2: Incorreta
     const wrongOption = correctOption.toUpperCase() === 'A' ? 'B' : 'A';
-    const { data: resultWrong } = await supabase.rpc('submit_answer', {
+    const { data: resultWrong, error: rpcErr2 } = await supabase.rpc('submit_answer', {
       p_attempt_id: attempt.id,
       p_question_id: String(questionId),
       p_selected_option: wrongOption
     });
+    if (rpcErr2) console.error("❌ Erro RPC 2:", rpcErr2);
     const isWrongVal = Array.isArray(resultWrong) ? resultWrong[0]?.is_correct : (resultWrong as any)?.is_correct;
     console.log(isWrongVal === false ? "✅ OK: Incorreta validada" : "❌ FALHA: Incorreta aceita", resultWrong);
 
