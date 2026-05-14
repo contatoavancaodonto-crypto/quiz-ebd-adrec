@@ -165,7 +165,13 @@ const Auth = () => {
 
   const handleGoogle = async () => {
     setSubmitting(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await lovable.auth.signInWithOAuth("google", { 
+      redirect_uri: window.location.origin,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      }
+    });
     if (result.error) {
       toast.error("Erro ao entrar com Google");
       setSubmitting(false);
