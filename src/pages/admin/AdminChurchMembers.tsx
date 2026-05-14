@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoles } from "@/hooks/useRoles";
+import { useClassSwitcher } from "@/hooks/useClassSwitcher";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { UsersRound, MessageSquare, Clock, Eye, Trash2, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -48,6 +49,7 @@ interface AcademicComment {
 
 export default function AdminChurchMembers() {
   const { isSuperadmin, isChurchAdmin, churchId, loading: rolesLoading } = useRoles();
+  const { selectedClassId } = useClassSwitcher();
   const [rows, setRows] = useState<Member[]>([]);
   const [comments, setComments] = useState<AcademicComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,12 +64,17 @@ export default function AdminChurchMembers() {
   const load = async () => {
     if (!churchId) return;
     setLoading(true);
+    const query = supabase
+      .from("profiles")
+      .select("id, first_name, last_name, email, phone, area, class_id")
+      .eq("church_id", churchId);
+
+    if (selectedClassId) {
+      query.eq("class_id", selectedClassId);
+    }
+
     const [{ data: profs }, { data: roles }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, first_name, last_name, email, phone, area")
-        .eq("church_id", churchId)
-        .order("first_name", { ascending: true }),
+      query.order("first_name", { ascending: true }),
       supabase
         .from("user_roles")
         .select("user_id, role, church_id")
@@ -142,7 +149,7 @@ export default function AdminChurchMembers() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [rolesLoading, churchId]);
+  }, [rolesLoading, churchId, selectedClassId]);
 
   if (rolesLoading) return null;
   if (!isChurchAdmin && !isSuperadmin) return <Navigate to="/painel" replace />;
