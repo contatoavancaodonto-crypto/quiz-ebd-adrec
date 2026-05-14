@@ -29,7 +29,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-// ... keep existing code
+import { SectionLabel } from "@/components/ui/page-shell";
+import { AdminClassSwitcher } from "@/components/admin/AdminClassSwitcher";
+import { useRoles } from "@/hooks/useRoles";
 import { useQuizStore } from "@/stores/quizStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -156,6 +158,7 @@ const Index = () => {
   const { setParticipant, setChurch } = useQuizStore();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
+  const { isAdmin } = useRoles();
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
@@ -447,6 +450,15 @@ const Index = () => {
         </div>
 
         <div className="px-4 pt-4 pb-6 space-y-5 relative z-10">
+          {isAdmin && (
+            <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                <GraduationCap className="w-4 h-4" />
+                Alternar visualização de classe
+              </div>
+              <AdminClassSwitcher />
+            </div>
+          )}
           {/* ===== HERO SAUDAÇÃO ===== */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
