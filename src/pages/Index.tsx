@@ -359,18 +359,23 @@ const Index = () => {
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     
-    // Configura o store com os dados necessários
-    setParticipant(fullNameLocal, quizClassId, quizClassName, trimester, season?.id);
+    // Configura o store com os dados necessários - ANTES de navegar
+    const store = useQuizStore.getState();
+    store.setParticipant(fullNameLocal, quizClassId, quizClassName, trimester, season?.id);
+    
     if (quizId) {
-      // Se tivermos um ID de quiz específico, já deixamos no store
-      useQuizStore.getState().setQuizId(quizId);
+      store.setQuizId(quizId);
       console.log("Quiz ID definido no store:", quizId);
     }
 
     if (profile.church_id && profile.church_name) {
-      setChurch(profile.church_id, profile.church_name);
+      store.setChurch(profile.church_id, profile.church_name);
     }
-    navigate("/quiz");
+    
+    // Aguarda um tick para garantir que o Zustand atualizou antes de navegar
+    setTimeout(() => {
+      navigate("/quiz");
+    }, 0);
   };
 
   const handleStartWeekly = () => {
