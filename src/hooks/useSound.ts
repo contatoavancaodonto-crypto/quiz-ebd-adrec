@@ -1,5 +1,5 @@
 export const useSound = () => {
-  const playSound = (type: 'tick' | 'ding' | 'win' | 'error') => {
+  const playSound = (type: 'tick' | 'ding' | 'win' | 'error' | 'perfect') => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
@@ -33,6 +33,27 @@ export const useSound = () => {
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.4);
+      } else if (type === 'perfect') {
+        // Som de "PERFEITO" (5/5) - Acorde triádico ascendente
+        const now = audioCtx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          
+          const startTime = now + (i * 0.1);
+          osc.frequency.setValueAtTime(freq, startTime);
+          g.gain.setValueAtTime(0, startTime);
+          g.gain.linearRampToValueAtTime(0.1, startTime + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+          
+          osc.start(startTime);
+          osc.stop(startTime + 0.5);
+        });
       } else {
         // Ding (seleção)
         oscillator.type = 'sine';

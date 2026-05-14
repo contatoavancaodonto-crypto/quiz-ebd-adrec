@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, ChevronRight, Trophy } from "lucide-react";
+import confetti from 'canvas-confetti';
 import { supabase } from "@/integrations/supabase/client";
 import churchLogo from "@/assets/church-logo.webp";
 import { useQuizStore } from "@/stores/quizStore";
@@ -51,6 +52,7 @@ const QuizPage = () => {
   const [showCountdown, setShowCountdown] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [showPerfectAnimation, setShowPerfectAnimation] = useState(false);
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
@@ -336,7 +338,7 @@ const QuizPage = () => {
   const isLast = store.currentQuestionIndex === questions.length - 1;
   const progress = questions.length > 0 ? ((store.currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (!confirmed || !currentQ) return;
     playSound('tick');
 
@@ -345,29 +347,50 @@ const QuizPage = () => {
       if (finishingRef.current) return;
       finishingRef.current = true;
 
-      const allAnswers = {
-        ...store.answers,
-        [currentQ.id]: store.answers[currentQ.id],
-      };
-
       let score = 0;
       questions.forEach((q) => {
         if (correctnessByQ[q.id]) score++;
       });
 
+      // Se acertou tudo (5/5 ou o total de questões)
+      if (score === questions.length && questions.length > 0) {
+        playSound('perfect');
+        setShowPerfectAnimation(true);
+        
+        // Disparar confetes
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 50 * (timeLeft / duration);
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+
+        // Aguardar a animação antes de navegar
+        await new Promise(resolve => setTimeout(resolve, 3500));
+      }
+
       const totalMs = Math.round(ms);
 
-      supabase
+      await supabase
         .rpc("finalize_attempt", {
           p_attempt_id: store.attemptId,
           p_total_time_ms: totalMs,
           p_trimester: store.trimester
-        })
-        .then(() => {
-          store.finishQuiz(score, totalMs);
-          navigate("/result");
         });
 
+      store.finishQuiz(score, totalMs);
+      navigate("/result");
       return;
     }
 
@@ -386,7 +409,7 @@ const QuizPage = () => {
     store.nextQuestion();
     setSelectedOption(null);
     setConfirmed(false);
-  }, [confirmed, currentQ, isLast, store, questions, seconds, navigate, evalBreakShown, evalBreakQuestion]);
+  }, [confirmed, currentQ, isLast, store, questions, ms, navigate, evalBreakShown, evalBreakQuestion, correctnessByQ, playSound]);
 
   const handleEvalContinue = useCallback(() => {
     playSound('tick');
@@ -428,6 +451,44 @@ const QuizPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <AnimatePresence>
+        {showPerfectAnimation && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm px-6 text-center"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, -10, 10, -10, 10, 0],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-32 h-32 bg-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(234,179,8,0.5)] mb-6"
+            >
+              <Trophy className="w-16 h-16 text-white" />
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-4xl font-black text-foreground mb-2"
+            >
+              PERFEITO!
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-xl text-muted-foreground font-medium"
+            >
+              Você acertou todas as questões! 🌟
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background blobs (padrão Home) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
