@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useQueryClient } from "@tanstack/react-query";
