@@ -112,7 +112,7 @@ export function AdminLayout() {
                 <div className="hidden md:block">
                   <SidebarTrigger />
                 </div>
-                <AdminClassSwitcher />
+                
                 <PendingRequestsBell />
                 <ModerationBell />
                 <RoleBadge />
