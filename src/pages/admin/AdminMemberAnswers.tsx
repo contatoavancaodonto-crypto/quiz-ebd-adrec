@@ -70,7 +70,7 @@ export default function AdminMemberAnswers() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
   const { selectedClassId } = useClassSwitcher();
   const [rows, setRows] = useState<AttemptRow[]>([]);
-  const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [quizFilter, setQuizFilter] = useState<string>("all");
