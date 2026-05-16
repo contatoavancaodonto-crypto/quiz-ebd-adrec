@@ -55,8 +55,6 @@ interface AnswerRow {
   answered_at: string;
 }
 
-const norm = (s: string | null | undefined) =>
-  (s ?? "").toLowerCase().trim().replace(/\s+/g, " ");
 
 const optionLetters: Array<"a" | "b" | "c" | "d"> = ["a", "b", "c", "d"];
 
