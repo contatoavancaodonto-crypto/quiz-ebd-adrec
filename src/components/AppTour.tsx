@@ -26,8 +26,11 @@ const CustomTooltip = ({
   return (
     <div
       {...tooltipProps}
-      className="max-w-[320px] glass-card glow-border p-6 relative animate-scale-in"
+      className="max-w-[320px] glass-card glow-border p-6 relative animate-scale-in overflow-hidden"
     >
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl -z-10" />
+      <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/10 rounded-full blur-3xl -z-10" />
+
       <button
         {...closeProps}
         className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
