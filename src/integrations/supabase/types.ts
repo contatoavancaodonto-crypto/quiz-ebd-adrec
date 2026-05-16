@@ -299,20 +299,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "class_materials_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "class_materials_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
         ]
       }
       classes: {
@@ -371,20 +357,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "daily_verse_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "daily_verse_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "daily_verse_verse_id_fkey"
@@ -635,20 +607,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "lessons_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "lessons_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
         ]
       }
       moderation_logs: {
@@ -805,20 +763,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "participants_user_id_profiles_fkey"
@@ -1101,20 +1045,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
         ]
       }
       questions: {
@@ -1177,20 +1107,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quizzes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["quiz_id"]
-          },
-          {
-            foreignKeyName: "questions_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["quiz_id"]
           },
         ]
       }
@@ -1279,20 +1195,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quizzes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["quiz_id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["quiz_id"]
           },
           {
             foreignKeyName: "quiz_attempts_season_id_fkey"
@@ -1387,20 +1289,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "quizzes_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "quizzes_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
         ]
       }
       saved_verses: {
@@ -1488,20 +1376,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "suggestions_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "suggestions_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
           },
         ]
       }
@@ -1821,20 +1695,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "verses_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "verses_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
         ]
       }
       webhook_queue: {
@@ -1898,20 +1758,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
-          {
             foreignKeyName: "quiz_attempts_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
@@ -1924,20 +1770,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quizzes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["quiz_id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["quiz_id"]
           },
         ]
       }
@@ -2027,20 +1859,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
-          {
             foreignKeyName: "profiles_church_id_fkey"
             columns: ["church_id"]
             isOneToOne: false
@@ -2060,20 +1878,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "quizzes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["quiz_id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["quiz_id"]
           },
         ]
       }
@@ -2102,6 +1906,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_church_id_fkey"
             columns: ["church_id"]
             isOneToOne: false
@@ -2113,6 +1924,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
             referencedColumns: ["id"]
           },
           {
@@ -2154,20 +1972,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
-          {
             foreignKeyName: "quiz_attempts_season_id_fkey"
             columns: ["season_id"]
             isOneToOne: false
@@ -2206,20 +2010,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "profiles_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
-          },
-          {
             foreignKeyName: "quiz_attempts_season_id_fkey"
             columns: ["season_id"]
             isOneToOne: false
@@ -2250,20 +2040,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_lesson"
-            referencedColumns: ["class_id"]
-          },
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["class_id"]
           },
           {
             foreignKeyName: "profiles_church_id_fkey"
@@ -2299,6 +2075,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_church_id_fkey"
             columns: ["church_id"]
             isOneToOne: false
@@ -2310,6 +2093,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
             referencedColumns: ["id"]
           },
           {
