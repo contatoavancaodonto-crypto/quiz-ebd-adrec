@@ -213,7 +213,7 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
     // Buscar estatísticas de tentativas da igreja
     const { data: atts, error: attsError } = await supabase
       .from("quiz_attempts")
-      .select("accuracy_percentage")
+      .select("accuracy_percentage, participants!inner(profiles!inner(church_id))")
       .not("finished_at", "is", null)
       .eq("participants.profiles.church_id", churchId);
 
