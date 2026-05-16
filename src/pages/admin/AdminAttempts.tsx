@@ -19,8 +19,6 @@ interface Attempt {
   participants: { name: string; class_id: string } | null;
 }
 
-const norm = (s: string | null | undefined) =>
-  (s ?? "").toLowerCase().trim().replace(/\s+/g, " ");
 
 export default function AdminAttempts() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
