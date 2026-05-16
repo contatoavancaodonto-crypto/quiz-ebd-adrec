@@ -216,7 +216,7 @@ export default function AdminMemberAnswers() {
       );
     }
     return list;
-  }, [rows, allowedNames, q, quizFilter, periodRange]);
+  }, [rows, q, quizFilter, periodRange]);
 
   const toggleExpand = async (attempt: AttemptRow) => {
     if (expanded === attempt.id) {
