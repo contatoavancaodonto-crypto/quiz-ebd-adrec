@@ -95,7 +95,7 @@ export default function AdminMemberAnswers() {
         participants!inner(
           name, 
           class_id,
-          profiles!inner(
+          profiles(
             church_id
           )
         ), 
