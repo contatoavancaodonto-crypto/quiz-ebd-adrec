@@ -36,32 +36,32 @@ export default function AdminAttempts() {
   const load = async () => {
     setLoading(true);
     
-    // 1. Primeiro, carregar os nomes permitidos se for admin local
-    let currentAllowedNames: Set<string> | null = null;
-    if (!isSuperadmin && churchId) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("first_name, last_name")
-        .eq("church_id", churchId);
-      currentAllowedNames = new Set(
-        (profs ?? []).map((p: any) =>
-          norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`)
-        )
-      );
-      setAllowedNames(currentAllowedNames);
-    } else {
-      setAllowedNames(null);
-    }
-
-    // 2. Construir a query base
+    // 1. Construir a query base
     let query = supabase
       .from("quiz_attempts")
       .select(
-        "id, score, total_questions, total_time_seconds, finished_at, participants(name, class_id)",
+        `
+        id, 
+        score, 
+        total_questions, 
+        total_time_seconds, 
+        finished_at, 
+        participants!inner(
+          name, 
+          class_id,
+          profiles!inner(
+            church_id
+          )
+        )
+        `,
         { count: "exact" }
       );
 
-    // 3. Aplicar filtros
+    // 2. Aplicar filtros de permissão e igreja
+    if (!isSuperadmin && churchId) {
+      query = query.eq("participants.profiles.church_id", churchId);
+    }
+
     if (selectedClassId) {
       query = query.eq("participants.class_id", selectedClassId);
     }
@@ -70,20 +70,33 @@ export default function AdminAttempts() {
       query = query.ilike("participants.name", `%${q}%`);
     }
 
-    // 4. Paginação e Ordenação
+    // 3. Paginação e Ordenação
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    const { data, count } = await query
+    const { data, count, error } = await query
       .order("finished_at", { ascending: false, nullsFirst: false })
       .range(from, to);
 
-    let attempts = (data as any) ?? [];
-
-    // 5. Filtragem por igreja (admin local)
-    if (currentAllowedNames) {
-      attempts = attempts.filter((r: any) => currentAllowedNames?.has(norm(r.participants?.name)));
+    if (error) {
+      console.error("Erro ao carregar tentativas:", error);
+      toast.error("Erro ao carregar tentativas");
+      setLoading(false);
+      return;
     }
+
+    // 4. Tratamento dos dados para garantir compatibilidade com o formato esperado
+    const attempts = ((data as any) ?? []).map((item: any) => {
+      // Garantir que participants seja um objeto e não um array
+      const participantData = Array.isArray(item.participants) 
+        ? item.participants[0] 
+        : item.participants;
+        
+      return {
+        ...item,
+        participants: participantData
+      };
+    });
 
     setRows(attempts);
     setTotalCount(count ?? 0);
