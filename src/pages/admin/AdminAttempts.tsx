@@ -29,7 +29,7 @@ export default function AdminAttempts() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const pageSize = 50;
-  const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
 
