@@ -47,7 +47,7 @@ export default function AdminAttempts() {
         participants!inner(
           name, 
           class_id,
-          profiles!inner(
+          profiles(
             church_id
           )
         )
