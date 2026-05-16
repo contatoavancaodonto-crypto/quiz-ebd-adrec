@@ -210,33 +210,26 @@ function ChurchAdminOverview({ churchId }: { churchId: string }) {
     const members = profiles.length;
     const classesUsed = new Set(profiles.map((p: any) => p.class_id).filter(Boolean)).size;
 
-    const norm = (s: string) => s.toLowerCase().trim().replace(/\s+/g, " ");
-    const allowedNames = new Set(
-      (attemptsRes.data ?? []).map((p: any) =>
-        norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`)
-      )
-    );
+    // Buscar estatísticas de tentativas da igreja
+    const { data: atts, error: attsError } = await supabase
+      .from("quiz_attempts")
+      .select("accuracy_percentage, participants!inner(profiles!inner(church_id))")
+      .not("finished_at", "is", null)
+      .eq("participants.profiles.church_id", churchId);
 
-    let totalAttempts = 0;
+    if (attsError) console.error("Erro ao carregar estatísticas de tentativas:", attsError);
+
+    const churchAttempts = atts ?? [];
+    let totalAttempts = churchAttempts.length;
     let sumAcc = 0;
     let countAcc = 0;
-    if (allowedNames.size > 0) {
-      const { data: atts } = await supabase
-        .from("quiz_attempts")
-        .select("accuracy_percentage, participants(name)")
-        .not("finished_at", "is", null)
-        .limit(2000);
-      (atts ?? []).forEach((a: any) => {
-        const nm = norm(a.participants?.name ?? "");
-        if (allowedNames.has(nm)) {
-          totalAttempts += 1;
-          if (a.accuracy_percentage !== null) {
-            sumAcc += Number(a.accuracy_percentage);
-            countAcc += 1;
-          }
-        }
-      });
-    }
+
+    churchAttempts.forEach((a: any) => {
+      if (a.accuracy_percentage !== null) {
+        sumAcc += Number(a.accuracy_percentage);
+        countAcc += 1;
+      }
+    });
 
     setC({
       churchName: chData.data?.name ?? null,

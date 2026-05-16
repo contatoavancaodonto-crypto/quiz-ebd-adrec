@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Collapsible,
   CollapsibleContent,
@@ -54,8 +55,6 @@ interface AnswerRow {
   answered_at: string;
 }
 
-const norm = (s: string | null | undefined) =>
-  (s ?? "").toLowerCase().trim().replace(/\s+/g, " ");
 
 const optionLetters: Array<"a" | "b" | "c" | "d"> = ["a", "b", "c", "d"];
 
@@ -69,7 +68,7 @@ export default function AdminMemberAnswers() {
   const { isSuperadmin, churchId, loading: rolesLoading } = useRoles();
   const { selectedClassId } = useClassSwitcher();
   const [rows, setRows] = useState<AttemptRow[]>([]);
-  const [allowedNames, setAllowedNames] = useState<Set<string> | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [quizFilter, setQuizFilter] = useState<string>("all");
@@ -81,28 +80,57 @@ export default function AdminMemberAnswers() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
+    
+    let query = supabase
       .from("quiz_attempts")
       .select(
-        "id, score, total_questions, total_time_seconds, finished_at, quiz_id, participant_id, participants(name, class_id), quizzes(title, lesson_number, week_number)"
+        `
+        id, 
+        score, 
+        total_questions, 
+        total_time_seconds, 
+        finished_at, 
+        quiz_id, 
+        participant_id, 
+        participants!inner(
+          name, 
+          class_id,
+          profiles(
+            church_id
+          )
+        ), 
+        quizzes(title, lesson_number, week_number)
+        `
       )
       .not("finished_at", "is", null)
       .order("finished_at", { ascending: false })
       .limit(500);
-    setRows((data as any) ?? []);
 
     if (!isSuperadmin && churchId) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("first_name, last_name")
-        .eq("church_id", churchId);
-      const set = new Set(
-        (profs ?? []).map((p: any) => norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`))
-      );
-      setAllowedNames(set);
-    } else {
-      setAllowedNames(null);
+      query = query.eq("participants.profiles.church_id", churchId);
     }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Erro ao carregar respostas:", error);
+      toast.error("Erro ao carregar respostas");
+      setLoading(false);
+      return;
+    }
+
+    const attempts = ((data as any) ?? []).map((item: any) => {
+      const participantData = Array.isArray(item.participants) 
+        ? item.participants[0] 
+        : item.participants;
+        
+      return {
+        ...item,
+        participants: participantData
+      };
+    });
+
+    setRows(attempts);
     setLoading(false);
   };
 
@@ -165,9 +193,6 @@ export default function AdminMemberAnswers() {
     if (selectedClassId) {
       list = list.filter((r) => r.participants?.class_id === selectedClassId);
     }
-    if (allowedNames) {
-      list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
-    }
     if (quizFilter !== "all") {
       list = list.filter((r) => r.quiz_id === quizFilter);
     }
@@ -189,7 +214,7 @@ export default function AdminMemberAnswers() {
       );
     }
     return list;
-  }, [rows, allowedNames, q, quizFilter, periodRange]);
+  }, [rows, q, quizFilter, periodRange]);
 
   const toggleExpand = async (attempt: AttemptRow) => {
     if (expanded === attempt.id) {

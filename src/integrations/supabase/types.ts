@@ -820,6 +820,13 @@ export type Database = {
             referencedRelation: "ranking_weekly"
             referencedColumns: ["class_id"]
           },
+          {
+            foreignKeyName: "participants_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_comments: {
