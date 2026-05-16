@@ -81,28 +81,57 @@ export default function AdminMemberAnswers() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
+    
+    let query = supabase
       .from("quiz_attempts")
       .select(
-        "id, score, total_questions, total_time_seconds, finished_at, quiz_id, participant_id, participants(name, class_id), quizzes(title, lesson_number, week_number)"
+        `
+        id, 
+        score, 
+        total_questions, 
+        total_time_seconds, 
+        finished_at, 
+        quiz_id, 
+        participant_id, 
+        participants!inner(
+          name, 
+          class_id,
+          profiles!inner(
+            church_id
+          )
+        ), 
+        quizzes(title, lesson_number, week_number)
+        `
       )
       .not("finished_at", "is", null)
       .order("finished_at", { ascending: false })
       .limit(500);
-    setRows((data as any) ?? []);
 
     if (!isSuperadmin && churchId) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("first_name, last_name")
-        .eq("church_id", churchId);
-      const set = new Set(
-        (profs ?? []).map((p: any) => norm(`${p.first_name ?? ""} ${p.last_name ?? ""}`))
-      );
-      setAllowedNames(set);
-    } else {
-      setAllowedNames(null);
+      query = query.eq("participants.profiles.church_id", churchId);
     }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Erro ao carregar respostas:", error);
+      toast.error("Erro ao carregar respostas");
+      setLoading(false);
+      return;
+    }
+
+    const attempts = ((data as any) ?? []).map((item: any) => {
+      const participantData = Array.isArray(item.participants) 
+        ? item.participants[0] 
+        : item.participants;
+        
+      return {
+        ...item,
+        participants: participantData
+      };
+    });
+
+    setRows(attempts);
     setLoading(false);
   };
 
