@@ -1,14 +1,97 @@
 import React, { useState, useEffect } from "react";
-import { Joyride, STATUS } from "react-joyride";
+import { Joyride, STATUS, TooltipRenderProps } from "react-joyride";
 import type { Step } from "react-joyride";
 import { supabase } from "@/integrations/supabase/client";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { X, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface AppTourProps {
   forceStart?: boolean;
   onComplete?: () => void;
 }
+
+const CustomTooltip = ({
+  continuous,
+  index,
+  step,
+  backProps,
+  closeProps,
+  primaryProps,
+  tooltipProps,
+  size,
+  isLastStep,
+}: TooltipRenderProps) => {
+  return (
+    <div
+      {...tooltipProps}
+      className="max-w-[320px] glass-card glow-border p-6 relative animate-scale-in overflow-hidden"
+    >
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl -z-10" />
+      <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/10 rounded-full blur-3xl -z-10" />
+
+      <button
+        {...closeProps}
+        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <X size={18} />
+      </button>
+      
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-primary/80">
+            Passo {index + 1} de {size}
+          </div>
+          <h3 className="text-xl font-display font-bold gradient-text leading-tight">
+            {step.title}
+          </h3>
+        </div>
+        
+        <p className="text-sm text-foreground/80 leading-relaxed">
+          {step.content}
+        </p>
+        
+        <div className="flex items-center justify-between pt-2">
+          {index > 0 ? (
+            <Button
+              {...backProps}
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 px-2"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Anterior
+            </Button>
+          ) : (
+            <div />
+          )}
+          
+          <div className="flex gap-2">
+            {!isLastStep && (
+              <Button
+                {...closeProps}
+                variant="ghost"
+                size="sm"
+                className="text-xs h-8 px-2 text-muted-foreground"
+              >
+                Pular
+              </Button>
+            )}
+            <Button
+              {...primaryProps}
+              size="sm"
+              className="h-8 px-4 text-xs font-bold gradient-primary border-none shadow-lg hover:opacity-90 transition-opacity"
+            >
+              {isLastStep ? "Finalizar" : "Próximo"}
+              {!isLastStep && <ChevronRight className="w-4 h-4 ml-1" />}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
   const { data: profile } = useFullProfile();
@@ -112,42 +195,22 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
       steps={steps}
       run={run}
       continuous
-      showProgress
-      showSkipButton
       scrollToFirstStep
-      locale={{
-        back: "Anterior",
-        close: "Fechar",
-        last: "Finalizar",
-        next: "Próximo",
-        skip: "Pular",
-      }}
+      disableScrolling={false}
+      tooltipComponent={CustomTooltip}
       styles={{
         options: {
-          primaryColor: "#4CC9E0",
-          backgroundColor: "#111827",
-          textColor: "#FFFFFF",
-          arrowColor: "#111827",
-          zIndex: 1000,
-        },
-        tooltipContainer: {
-          textAlign: "left",
-          borderRadius: "16px",
-          padding: "8px",
-        },
-        buttonNext: {
-          borderRadius: "8px",
-          fontWeight: "600",
-        },
-        buttonBack: {
-          marginRight: "10px",
-          color: "#9CA3AF",
+          zIndex: 10000,
+          overlayColor: "rgba(0, 0, 0, 0.7)",
         },
         spotlight: {
-          borderRadius: 16,
+          borderRadius: 20,
+          backgroundColor: "transparent",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 15px rgba(76, 201, 224, 0.5)",
         }
       }}
       callback={handleJoyrideCallback}
     />
   );
 }
+
