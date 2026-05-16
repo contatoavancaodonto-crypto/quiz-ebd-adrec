@@ -195,9 +195,6 @@ export default function AdminMemberAnswers() {
     if (selectedClassId) {
       list = list.filter((r) => r.participants?.class_id === selectedClassId);
     }
-    if (allowedNames) {
-      list = list.filter((r) => allowedNames.has(norm(r.participants?.name)));
-    }
     if (quizFilter !== "all") {
       list = list.filter((r) => r.quiz_id === quizFilter);
     }
