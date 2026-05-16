@@ -109,7 +109,6 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
       placement: "center",
       title: "Bem-vindo ao Quiz EBD! 🙏",
       content: "Vamos fazer um tour rápido para você conhecer as funções e regras do nosso app.",
-      disableBeacon: true,
     },
     {
       target: "[data-tour='weekly-quiz-hero']",
