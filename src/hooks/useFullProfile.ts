@@ -17,6 +17,7 @@ export interface FullProfile {
   avatar_url: string | null;
   show_avatar_in_ranking: boolean;
   has_seen_tour: boolean;
+  tour_views_count: number;
 }
 
 
@@ -37,7 +38,7 @@ export function useFullProfile() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, churches(name), classes(name)"
+          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, tour_views_count, churches(name), classes(name)"
         )
 
         .eq("id", user!.id)
@@ -57,6 +58,7 @@ export function useFullProfile() {
         avatar_url: (data as any).avatar_url ?? null,
         show_avatar_in_ranking: (data as any).show_avatar_in_ranking ?? true,
         has_seen_tour: (data as any).has_seen_tour ?? false,
+        tour_views_count: (data as any).tour_views_count ?? 0,
         church_name: (data as any).churches?.name ?? null,
 
       };

@@ -101,7 +101,7 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
   useEffect(() => {
     if (forceStart) {
       setRun(true);
-    } else if (profile && (profile as any).has_seen_tour === false) {
+    } else if (profile && ((profile as any).tour_views_count ?? 0) < 2) {
       setRun(true);
     }
   }, [profile, forceStart]);
@@ -172,13 +172,17 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
 
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      if (profile && !(profile as any).has_seen_tour) {
+      if (profile && !forceStart) {
         try {
+          const currentCount = (profile as any).tour_views_count ?? 0;
           await supabase
             .from("profiles")
-            .update({ has_seen_tour: true } as any)
+            .update({
+              tour_views_count: currentCount + 1,
+              has_seen_tour: true,
+            } as any)
             .eq("id", profile.id);
-          
+
           queryClient.invalidateQueries({ queryKey: ["full-profile"] });
         } catch (error) {
           console.error("Error updating tour status:", error);

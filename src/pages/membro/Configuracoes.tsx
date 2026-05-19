@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, KeyRound, Eye, Settings as SettingsIcon } from "lucide-react";
+import { LogOut, KeyRound, Eye, Settings as SettingsIcon, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { AccountTabs } from "@/components/membro/AccountTabs";
+import { AppTour } from "@/components/AppTour";
 
 
 export default function Configuracoes() {
@@ -23,6 +24,7 @@ export default function Configuracoes() {
   const qc = useQueryClient();
   const [showAvatar, setShowAvatar] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     if (profile) setShowAvatar(profile.show_avatar_in_ranking);
@@ -57,6 +59,7 @@ export default function Configuracoes() {
       title="Configurações"
       mobileHeader={{ variant: "back", title: "Configurações", backTo: "/membro/perfil" }}
     >
+      <AppTour forceStart={showTour} onComplete={() => setShowTour(false)} />
       <PageShell contentClassName="space-y-4 pb-4">
         {/* Hero */}
         <motion.div
@@ -108,6 +111,15 @@ export default function Configuracoes() {
                 <KeyRound className="w-4 h-4" />
               </div>
               <span className="flex-1 text-sm font-semibold text-foreground">Alterar senha</span>
+            </button>
+            <button
+              onClick={() => setShowTour(true)}
+              className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-muted/60 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Info className="w-4 h-4" />
+              </div>
+              <span className="flex-1 text-sm font-semibold text-foreground">Rever tutorial do app</span>
             </button>
             <button
               onClick={handleLogout}
