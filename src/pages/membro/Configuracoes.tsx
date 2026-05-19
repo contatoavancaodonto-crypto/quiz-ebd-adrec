@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, KeyRound, Eye, Settings as SettingsIcon } from "lucide-react";
+import { LogOut, KeyRound, Eye, Settings as SettingsIcon, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { MemberLayout } from "@/components/membro/MemberLayout";
 import { PageShell } from "@/components/ui/page-shell";
