@@ -38,7 +38,7 @@ export function useFullProfile() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, churches(name), classes(name)"
+          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, tour_views_count, churches(name), classes(name)"
         )
 
         .eq("id", user!.id)
