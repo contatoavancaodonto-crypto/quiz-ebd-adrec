@@ -17,6 +17,7 @@ export interface FullProfile {
   avatar_url: string | null;
   show_avatar_in_ranking: boolean;
   has_seen_tour: boolean;
+  tour_views_count: number;
 }
 
 
