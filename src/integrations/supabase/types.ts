@@ -989,6 +989,7 @@ export type Database = {
           phone: string | null
           provider: string | null
           show_avatar_in_ranking: boolean
+          tour_views_count: number
           updated_at: string
           welcome_sent: boolean | null
         }
@@ -1008,6 +1009,7 @@ export type Database = {
           phone?: string | null
           provider?: string | null
           show_avatar_in_ranking?: boolean
+          tour_views_count?: number
           updated_at?: string
           welcome_sent?: boolean | null
         }
@@ -1027,6 +1029,7 @@ export type Database = {
           phone?: string | null
           provider?: string | null
           show_avatar_in_ranking?: boolean
+          tour_views_count?: number
           updated_at?: string
           welcome_sent?: boolean | null
         }
