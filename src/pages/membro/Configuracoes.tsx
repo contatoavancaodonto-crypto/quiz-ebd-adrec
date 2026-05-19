@@ -59,6 +59,7 @@ export default function Configuracoes() {
       title="Configurações"
       mobileHeader={{ variant: "back", title: "Configurações", backTo: "/membro/perfil" }}
     >
+      <AppTour forceStart={showTour} onComplete={() => setShowTour(false)} />
       <PageShell contentClassName="space-y-4 pb-4">
         {/* Hero */}
         <motion.div
