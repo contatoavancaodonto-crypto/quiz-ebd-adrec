@@ -58,6 +58,7 @@ export function useFullProfile() {
         avatar_url: (data as any).avatar_url ?? null,
         show_avatar_in_ranking: (data as any).show_avatar_in_ranking ?? true,
         has_seen_tour: (data as any).has_seen_tour ?? false,
+        tour_views_count: (data as any).tour_views_count ?? 0,
         church_name: (data as any).churches?.name ?? null,
 
       };
