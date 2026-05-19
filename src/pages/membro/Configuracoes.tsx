@@ -113,6 +113,15 @@ export default function Configuracoes() {
               <span className="flex-1 text-sm font-semibold text-foreground">Alterar senha</span>
             </button>
             <button
+              onClick={() => setShowTour(true)}
+              className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-muted/60 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Info className="w-4 h-4" />
+              </div>
+              <span className="flex-1 text-sm font-semibold text-foreground">Rever tutorial do app</span>
+            </button>
+            <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-muted/60 transition-colors text-left"
             >
