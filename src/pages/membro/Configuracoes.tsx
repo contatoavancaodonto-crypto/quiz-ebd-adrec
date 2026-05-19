@@ -24,6 +24,7 @@ export default function Configuracoes() {
   const qc = useQueryClient();
   const [showAvatar, setShowAvatar] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     if (profile) setShowAvatar(profile.show_avatar_in_ranking);
