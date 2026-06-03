@@ -44,7 +44,7 @@ interface RankEntry {
 }
 
 type Scope = "general" | "church" | "interchurch";
-type Mode = "lesson" | "monthly" | "classic";
+type Mode = "lesson" | "classic";
 
 const RankingPage = () => {
   const location = useLocation();
@@ -93,12 +93,15 @@ const RankingPage = () => {
   }, [inferredTrimester, trimesterParam]);
 
   const rawModeParam = searchParams.get("mode");
-  // Backwards-compat: links antigos com ?mode=season caem em monthly
   const normalizedModeParam: Mode =
-    rawModeParam === "season" ? "monthly" :
-    (["lesson", "monthly", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
-    "classic";
+    (["lesson", "classic"] as const).includes(rawModeParam as Mode) ? (rawModeParam as Mode) :
+    "lesson";
   const [mode, setMode] = useState<Mode>(normalizedModeParam);
+
+  const lessonParam = parseInt(searchParams.get("lesson") || "", 10);
+  const [selectedLesson, setSelectedLesson] = useState<number>(
+    lessonParam && lessonParam >= 1 && lessonParam <= 13 ? lessonParam : 1
+  );
   const { profile } = useProfile();
   const [scope, setScope] = useState<Scope>(state?.churchId ? "church" : "general");
   const [selectedChurchId, setSelectedChurchId] = useState<string>(state?.churchId || "");
@@ -129,6 +132,15 @@ const RankingPage = () => {
     });
   };
 
+  const handleLessonChange = (l: number) => {
+    setSelectedLesson(l);
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set("lesson", String(l));
+      return p;
+    });
+  };
+
   const { data: classes } = useQuery({
     queryKey: ["classes-list"],
     queryFn: async () => {
@@ -143,9 +155,30 @@ const RankingPage = () => {
   const seasonId = activeSeason?.id;
   const isInter = scope === "interchurch";
   const weeklyEnabled = mode === "lesson" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
-  const monthlyEnabled = mode === "monthly" && !isInter && (scope === "general" || (scope === "church" && !!selectedChurchId));
   const classicEnabled = mode === "classic" && !isInter && enabled;
   const interEnabled = isInter;
+
+  // Busca quizzes do trimestre selecionado para filtrar por lição
+  const { data: quizzesForTrimester } = useQuery({
+    queryKey: ["quizzes-trimester", trimester, seasonId],
+    enabled: !!seasonId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("quizzes")
+        .select("id, lesson_number")
+        .eq("trimester", trimester)
+        .eq("season_id", seasonId)
+        .eq("quiz_kind", "weekly");
+      return data || [];
+    },
+  });
+
+  const quizIdsForLesson = useMemo(() => {
+    if (!quizzesForTrimester) return [];
+    return quizzesForTrimester
+      .filter(q => q.lesson_number === selectedLesson)
+      .map(q => q.id);
+  }, [quizzesForTrimester, selectedLesson]);
 
   const { data: classicData, isLoading: classicLoading } = useQuery({
     queryKey: ["ranking-classic", trimester, scope, selectedChurchId, selectedClassId],
@@ -174,12 +207,13 @@ const RankingPage = () => {
   });
 
   const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
-    queryKey: ["ranking-weekly", scope, selectedChurchId, selectedClassId],
-    enabled: weeklyEnabled,
+    queryKey: ["ranking-lesson", scope, selectedChurchId, selectedClassId, quizIdsForLesson],
+    enabled: weeklyEnabled && quizIdsForLesson.length > 0,
     queryFn: async () => {
       let query = supabase
         .from("ranking_lesson")
-        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, week_number, avatar_url")
+        .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, lesson_number, avatar_url")
+        .in("quiz_id", quizIdsForLesson)
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -193,25 +227,6 @@ const RankingPage = () => {
     },
   });
 
-  const { data: monthlyData, isLoading: monthlyLoading } = useQuery({
-    queryKey: ["ranking-monthly", scope, selectedChurchId, selectedClassId],
-    enabled: monthlyEnabled,
-    queryFn: async () => {
-      let query = supabase
-        .from("ranking_monthly")
-        .select("position, participant_name, class_id, class_name, church_id, church_name, total_score, total_time_ms, weeks_completed, current_streak, avatar_url")
-        .order("position")
-        .limit(500);
-      if (scope === "church" && selectedChurchId) {
-        query = query.eq("church_id", selectedChurchId);
-      }
-      if (selectedClassId) {
-        query = query.eq("class_id", selectedClassId);
-      }
-      const { data } = await query;
-      return (data as any[]) || [];
-    },
-  });
 
   // Entre Igrejas (uma view por modo de tempo)
   const { data: interData, isLoading: interLoading } = useQuery({
@@ -220,7 +235,6 @@ const RankingPage = () => {
     queryFn: async () => {
       const view =
         mode === "lesson" ? "ranking_churches_weekly" :
-        mode === "monthly" ? "ranking_churches_monthly" :
         "ranking_churches_classic";
       let query = supabase
         .from(view as any)
@@ -235,14 +249,13 @@ const RankingPage = () => {
     },
   });
 
-  const isLoading = classicLoading || weeklyLoading || monthlyLoading || interLoading;
+  const isLoading = classicLoading || weeklyLoading || interLoading;
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId, selectedClassId]);
-  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId]);
-  const rt3 = useRealtimeRanking(["ranking-monthly", scope, selectedChurchId, selectedClassId]);
+  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId, quizIdsForLesson]);
   const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
-  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : mode === "lesson" ? rt2 : rt3);
+  const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : rt2);
   const rtConnected = activeRt.status === "connected";
   const rtReconnecting = activeRt.status === "connecting" || activeRt.status === "reconnecting";
 
@@ -253,11 +266,10 @@ const RankingPage = () => {
     }
     const raw =
       mode === "classic" ? classicData :
-      mode === "lesson" ? weeklyData :
-      monthlyData;
+      weeklyData;
     if (!raw) return [];
     return raw.map((e: any, i: number) => ({ ...e, position: i + 1 }));
-  }, [isInter, interData, mode, classicData, weeklyData, monthlyData]);
+  }, [isInter, interData, mode, classicData, weeklyData]);
 
   const emptyMessage =
     scope === "church" && !selectedChurchId
@@ -265,25 +277,44 @@ const RankingPage = () => {
       : isInter
       ? "Nenhuma igreja com participantes neste período."
       : mode === "lesson"
-      ? "Nenhum quiz com janela aberta agora. Volte na próxima semana!"
-      : mode === "monthly"
-      ? "Nenhum participante ainda neste mês."
+      ? (quizIdsForLesson.length === 0 ? "Lição ainda não disponível neste trimestre" : "Nenhum resultado para esta lição ainda.")
       : "Nenhum resultado ainda. Seja o primeiro!";
 
-  const enabledForMode = isInter ? interEnabled : (mode === "lesson" ? weeklyEnabled : mode === "monthly" ? monthlyEnabled : classicEnabled);
+  const enabledForMode = isInter ? interEnabled : (mode === "lesson" ? weeklyEnabled : classicEnabled);
 
   return (
     <MemberLayout title="Ranking" mobileHeader={{ variant: "full" }} contentPaddingMobile={false}>
       <PageShell contentClassName="px-4 py-4 max-w-lg mx-auto w-full space-y-4">
+        {/* Filtro de Trimestre no Topo */}
+        <div className="mb-2">
+          <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5 flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            Trimestre em exibição
+          </label>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((t) => (
+              <button
+                key={t}
+                onClick={() => handleTrimesterChange(t)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  trimester === t
+                    ? "gradient-primary text-primary-foreground shadow-md"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t}º Tri.
+              </button>
+            ))}
+          </div>
+        </div>
+
         <PageHero
           eyebrow={periodEyebrow("Classificação")}
           title="Ranking"
           description={
             mode === "lesson"
-              ? "Semana atual"
-              : mode === "monthly"
-              ? "Mês atual"
-              : `${trimester}º Trimestre`
+              ? `Lição ${selectedLesson} · ${trimester}º Tri.`
+              : `${trimester}º Tri. (acumulado)`
           }
           Icon={Trophy}
           variant="primary"
@@ -314,34 +345,33 @@ const RankingPage = () => {
           }
         />
 
-        {/* Mode tabs: Semana / Mensal / Trimestral */}
+        {/* Mode tabs: Lição / Trimestral */}
         <Tabs value={mode} onValueChange={(v) => handleModeChange(v as Mode)} className="mb-3">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="lesson">Lição</TabsTrigger>
-            <TabsTrigger value="monthly">Mensal</TabsTrigger>
             <TabsTrigger value="classic">Trimestral</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* 1. Trimester (apenas no modo Trimestral) */}
-        {mode === "classic" && (
-          <div className="mb-3">
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-              <Calendar className="w-3 h-3 inline mr-1" />
-              Trimestre
+        {/* Seletor de Lição (apenas no modo Lição) */}
+        {mode === "lesson" && (
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Escolha a Lição
             </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4].map((t) => (
+            <div className="grid grid-cols-7 gap-1.5">
+              {Array.from({ length: 13 }, (_, i) => i + 1).map((l) => (
                 <button
-                  key={t}
-                  onClick={() => handleTrimesterChange(t)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    trimester === t
-                      ? "gradient-primary text-primary-foreground shadow-md"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  key={l}
+                  onClick={() => handleLessonChange(l)}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedLesson === l
+                      ? "gradient-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  {t}º Tri.
+                  {l}
                 </button>
               ))}
             </div>
@@ -504,15 +534,12 @@ const RankingPage = () => {
                   }
 
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
-                  const isMonthly = mode === "monthly";
                   const isWeekly = mode === "lesson";
                   const isClassic = mode === "classic";
                   // Para weekly e classic agora usamos final_score (acertos + bônus de streak)
-                  const mainScore = isMonthly
-                    ? entry.total_score
-                    : (entry.final_score ?? entry.score);
-                  const baseScore = isWeekly || isClassic ? entry.score : null;
-                  const bonus = isWeekly || isClassic ? (entry.streak_bonus ?? 0) : 0;
+                  const mainScore = (entry.final_score ?? entry.score);
+                  const baseScore = entry.score;
+                  const bonus = (entry.streak_bonus ?? 0);
                   return (
                     <motion.div
                       key={stableKey}
@@ -570,11 +597,6 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
-                          {isMonthly && entry.current_streak > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
-                              <Flame className="w-3 h-3" />{entry.current_streak}
-                            </span>
-                          )}
                           {entry.is_retry && (
                             <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
                               2ª tent.
@@ -587,30 +609,19 @@ const RankingPage = () => {
                         {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
                         )}
-                        {isMonthly && (
-                          <div className="text-[10px] text-muted-foreground/80">
-                            {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
-                          </div>
-                        )}
                       </div>
 
                       <div className="text-right shrink-0">
-                        {isMonthly ? (
-                          <div className="font-display font-bold text-primary">{mainScore} pts</div>
-                        ) : (
-                          <>
-                            <div className="font-display font-bold text-primary">
-                              {mainScore}/{entry.total_questions || 13}
-                            </div>
-                            {bonus > 0 && (
-                              <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
-                            )}
-                            <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
-                              <Clock className="w-3 h-3" />
-                              {formatRankingTime(entry)}
-                            </div>
-                          </>
+                        <div className="font-display font-bold text-primary">
+                          {mainScore}/{entry.total_questions || 13}
+                        </div>
+                        {bonus > 0 && (
+                          <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
                         )}
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
+                          <Clock className="w-3 h-3" />
+                          {formatRankingTime(entry)}
+                        </div>
                       </div>
                     </motion.div>
                   );
