@@ -1,4 +1,4 @@
-import { Bell, BookOpen, Sparkles, Megaphone } from "lucide-react";
+import { Bell, BookOpen, Sparkles, Megaphone, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
