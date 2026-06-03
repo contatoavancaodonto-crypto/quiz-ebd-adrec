@@ -1,4 +1,4 @@
-import { Bell, BookOpen, Sparkles, Megaphone } from "lucide-react";
+import { Bell, BookOpen, Sparkles, Megaphone, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -87,11 +87,11 @@ export function NotificationBell() {
               {items.map((n) => {
                 const Icon = iconFor(n);
                 return (
-                  <li key={n.id}>
+                  <li key={n.id} className="relative group">
                     <button
                       onClick={() => handleClick(n)}
                       className={cn(
-                        "w-full text-left px-4 py-3 flex gap-3 hover:bg-muted/50 transition-colors",
+                        "w-full text-left px-4 py-3 flex gap-3 hover:bg-muted/50 transition-colors pr-10",
                         !n.read && "bg-primary/5",
                       )}
                     >
@@ -117,9 +117,6 @@ export function NotificationBell() {
                           >
                             {n.title}
                           </p>
-                          {!n.read && (
-                            <span className="w-2 h-2 mt-1.5 rounded-full bg-primary shrink-0" />
-                          )}
                         </div>
                         {n.body && (
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -133,6 +130,17 @@ export function NotificationBell() {
                           })}
                         </p>
                       </div>
+                    </button>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markAsRead(n.id);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-muted transition-colors"
+                      title="Remover"
+                    >
+                      <X className="w-4 h-4" />
                     </button>
                   </li>
                 );

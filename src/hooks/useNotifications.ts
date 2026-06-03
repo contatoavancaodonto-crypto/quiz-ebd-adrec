@@ -66,9 +66,10 @@ export function useNotifications(limit = 30) {
       readSet = new Set((reads ?? []).map((r: any) => r.notification_id));
     }
 
-    setItems(
-      filtered.map((n: any) => ({ ...n, read: readSet.has(n.id) })),
-    );
+    const finalItems = filtered.map((n: any) => ({ ...n, read: readSet.has(n.id) }));
+    
+    // Filtra para manter apenas as não lidas
+    setItems(finalItems.filter(n => !n.read));
     setLoading(false);
   }, [user, limit]);
 
@@ -101,8 +102,8 @@ export function useNotifications(limit = 30) {
   const markAsRead = useCallback(
     async (id: string) => {
       if (!user) return;
-      // Otimista
-      setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      // Otimista: remove da lista local
+      setItems((prev) => prev.filter((n) => n.id !== id));
       await (supabase as any)
         .from("notification_reads")
         .upsert({ notification_id: id, user_id: user.id }, { onConflict: "notification_id,user_id" });
@@ -114,7 +115,8 @@ export function useNotifications(limit = 30) {
     if (!user) return;
     const unread = items.filter((n) => !n.read);
     if (unread.length === 0) return;
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    // Otimista: limpa a lista local
+    setItems([]);
     await (supabase as any)
       .from("notification_reads")
       .upsert(
@@ -123,7 +125,7 @@ export function useNotifications(limit = 30) {
       );
   }, [user, items]);
 
-  const unreadCount = items.filter((n) => !n.read).length;
+  const unreadCount = items.length;
 
   return { items, loading, unreadCount, markAsRead, markAllAsRead, refresh };
 }
