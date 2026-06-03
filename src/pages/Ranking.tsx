@@ -609,30 +609,19 @@ const RankingPage = () => {
                         {!selectedClassId && entry.class_name && (
                           <div className="text-xs text-muted-foreground">{entry.class_name}</div>
                         )}
-                        {isMonthly && (
-                          <div className="text-[10px] text-muted-foreground/80">
-                            {entry.weeks_completed} {entry.weeks_completed === 1 ? "semana" : "semanas"} respondidas
-                          </div>
-                        )}
                       </div>
 
                       <div className="text-right shrink-0">
-                        {isMonthly ? (
-                          <div className="font-display font-bold text-primary">{mainScore} pts</div>
-                        ) : (
-                          <>
-                            <div className="font-display font-bold text-primary">
-                              {mainScore}/{entry.total_questions || 13}
-                            </div>
-                            {bonus > 0 && (
-                              <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
-                            )}
-                            <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
-                              <Clock className="w-3 h-3" />
-                              {formatRankingTime(entry)}
-                            </div>
-                          </>
+                        <div className="font-display font-bold text-primary">
+                          {mainScore}/{entry.total_questions || 13}
+                        </div>
+                        {bonus > 0 && (
+                          <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
                         )}
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end font-mono">
+                          <Clock className="w-3 h-3" />
+                          {formatRankingTime(entry)}
+                        </div>
                       </div>
                     </motion.div>
                   );
