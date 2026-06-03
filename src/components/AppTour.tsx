@@ -101,7 +101,7 @@ export function AppTour({ forceStart = false, onComplete }: AppTourProps) {
   useEffect(() => {
     if (forceStart) {
       setRun(true);
-    } else if (profile && ((profile as any).tour_views_count ?? 0) < 1) {
+    } else if (profile && profile.has_seen_tour === false && ((profile as any).tour_views_count ?? 0) < 1) {
       setRun(true);
     }
   }, [profile, forceStart]);
