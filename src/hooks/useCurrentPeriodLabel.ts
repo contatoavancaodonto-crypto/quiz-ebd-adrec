@@ -19,9 +19,9 @@ export function useCurrentPeriodLabel() {
   const year = now.getFullYear();
   const church = profile?.church_name?.trim() || "ADREC";
 
-  const periodLabel = `${trimester} TRI. ${year} - ${church}`;
+  const periodLabel = `${year} - ${church}`;
 
-  const eyebrow = (prefix: string) => `${prefix} · ${periodLabel}`;
+  const eyebrow = (prefix: string) => `${prefix.toUpperCase()} · ${periodLabel}`;
 
   return { trimester, year, church, periodLabel, eyebrow };
 }
