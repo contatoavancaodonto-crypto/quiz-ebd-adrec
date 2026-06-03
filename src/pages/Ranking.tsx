@@ -207,7 +207,7 @@ const RankingPage = () => {
   });
 
   const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
-    queryKey: ["ranking-weekly", scope, selectedChurchId, selectedClassId, quizIdsForLesson],
+    queryKey: ["ranking-lesson", scope, selectedChurchId, selectedClassId, quizIdsForLesson],
     enabled: weeklyEnabled && quizIdsForLesson.length > 0,
     queryFn: async () => {
       let query = supabase
