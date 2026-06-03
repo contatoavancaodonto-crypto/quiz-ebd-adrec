@@ -534,15 +534,12 @@ const RankingPage = () => {
                   }
 
                   const stableKey = entry.attempt_id ?? `${entry.participant_name}-${entry.class_id ?? ""}-${mode}`;
-                  const isMonthly = mode === "monthly";
                   const isWeekly = mode === "lesson";
                   const isClassic = mode === "classic";
                   // Para weekly e classic agora usamos final_score (acertos + bônus de streak)
-                  const mainScore = isMonthly
-                    ? entry.total_score
-                    : (entry.final_score ?? entry.score);
-                  const baseScore = isWeekly || isClassic ? entry.score : null;
-                  const bonus = isWeekly || isClassic ? (entry.streak_bonus ?? 0) : 0;
+                  const mainScore = (entry.final_score ?? entry.score);
+                  const baseScore = entry.score;
+                  const bonus = (entry.streak_bonus ?? 0);
                   return (
                     <motion.div
                       key={stableKey}
@@ -600,11 +597,6 @@ const RankingPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground truncate flex items-center gap-2">
                           {entry.participant_name}
-                          {isMonthly && entry.current_streak > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
-                              <Flame className="w-3 h-3" />{entry.current_streak}
-                            </span>
-                          )}
                           {entry.is_retry && (
                             <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
                               2ª tent.
