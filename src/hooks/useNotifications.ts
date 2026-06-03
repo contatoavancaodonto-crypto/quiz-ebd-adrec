@@ -125,7 +125,7 @@ export function useNotifications(limit = 30) {
       );
   }, [user, items]);
 
-  const unreadCount = items.filter((n) => !n.read).length;
+  const unreadCount = items.length;
 
   return { items, loading, unreadCount, markAsRead, markAllAsRead, refresh };
 }
