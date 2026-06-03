@@ -207,13 +207,13 @@ const RankingPage = () => {
   });
 
   const { data: weeklyData, isLoading: weeklyLoading } = useQuery({
-    queryKey: ["ranking-lesson", scope, selectedChurchId, selectedClassId, quizIdsForLesson],
-    enabled: weeklyEnabled && quizIdsForLesson.length > 0,
+    queryKey: ["ranking-lesson", scope, selectedChurchId, selectedClassId, selectedLesson],
+    enabled: weeklyEnabled,
     queryFn: async () => {
       let query = supabase
         .from("ranking_lesson")
         .select("attempt_id, position, participant_name, class_id, class_name, church_id, church_name, score, streak_bonus, final_score, total_questions, total_time_seconds, total_time_ms, accuracy_percentage, lesson_number, avatar_url")
-        .in("quiz_id", quizIdsForLesson)
+        .eq("lesson_number", selectedLesson)
         .order("position")
         .limit(500);
       if (scope === "church" && selectedChurchId) {
@@ -253,7 +253,7 @@ const RankingPage = () => {
 
   // 🔴 Realtime
   const rt1 = useRealtimeRanking(["ranking-classic", trimester, scope, selectedChurchId, selectedClassId]);
-  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId, quizIdsForLesson]);
+  const rt2 = useRealtimeRanking(["ranking-lesson", scope, selectedChurchId, selectedClassId, selectedLesson]);
   const rt4 = useRealtimeRanking(["ranking-interchurch", mode, trimester]);
   const activeRt = isInter ? rt4 : (mode === "classic" ? rt1 : rt2);
   const rtConnected = activeRt.status === "connected";
@@ -277,7 +277,7 @@ const RankingPage = () => {
       : isInter
       ? "Nenhuma igreja com participantes neste período."
       : mode === "lesson"
-      ? (quizIdsForLesson.length === 0 ? "Lição ainda não disponível neste trimestre" : "Nenhum resultado para esta lição ainda.")
+      ? "Nenhum resultado para esta lição ainda."
       : "Nenhum resultado ainda. Seja o primeiro!";
 
   const enabledForMode = isInter ? interEnabled : (mode === "lesson" ? weeklyEnabled : classicEnabled);
