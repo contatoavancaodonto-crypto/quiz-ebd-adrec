@@ -66,9 +66,10 @@ export function useNotifications(limit = 30) {
       readSet = new Set((reads ?? []).map((r: any) => r.notification_id));
     }
 
-    setItems(
-      filtered.map((n: any) => ({ ...n, read: readSet.has(n.id) })),
-    );
+    const finalItems = filtered.map((n: any) => ({ ...n, read: readSet.has(n.id) }));
+    
+    // Filtra para manter apenas as não lidas
+    setItems(finalItems.filter(n => !n.read));
     setLoading(false);
   }, [user, limit]);
 
