@@ -1,0 +1,1 @@
+REVOKE SELECT (requester_phone, requester_pastor_name) ON public.churches FROM anon;
