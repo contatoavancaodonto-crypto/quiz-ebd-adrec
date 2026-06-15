@@ -62,6 +62,18 @@ serve(async (req) => {
     }
 
     if (mode === "spellcheck") {
+      if (!text || typeof text !== "string") {
+        return new Response(JSON.stringify({ error: "Texto inválido" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (text.length > 2000) {
+        return new Response(JSON.stringify({ error: "Texto muito longo (máx. 2000 caracteres)" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
