@@ -466,6 +466,16 @@ const RankingPage = () => {
           </div>
         )}
 
+        {/* Aviso de Ranking Parcial no modo Trimestral / Entre Igrejas */}
+        {(mode === "classic" || isInter) && enabledForMode && ranking.length > 0 && (
+          <div className="mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/30 text-[11px] text-foreground/90 flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span>
+              <strong className="font-semibold">Ranking parcial</strong> · pontuação acumulada do {trimester}º trimestre (total possível: 100 pts)
+            </span>
+          </div>
+        )}
+
         {/* List */}
         {!enabledForMode ? (
           <div className="text-center py-12 text-muted-foreground text-sm">{emptyMessage}</div>
@@ -524,7 +534,7 @@ const RankingPage = () => {
                         </div>
                         <div className="text-right shrink-0">
                           <div className="font-display font-bold text-primary text-lg">
-                            {avg.toFixed(1).replace(".", ",")}
+                            {avg.toFixed(1).replace(".", ",")}<span className="text-xs text-muted-foreground">/100</span>
                           </div>
                           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                             nota média
@@ -614,7 +624,7 @@ const RankingPage = () => {
 
                       <div className="text-right shrink-0">
                         <div className="font-display font-bold text-primary">
-                          {mainScore}/{entry.total_questions || 13}
+                          {mainScore}/{isClassic ? 100 : (entry.total_questions || 13)}
                         </div>
                         {bonus > 0 && (
                           <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
