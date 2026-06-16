@@ -374,30 +374,40 @@ const RankingPage = () => {
           Icon={Trophy}
           variant="primary"
           actions={
-            <div
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
-                rtConnected ? "bg-white/15 border-white/25" : "bg-white/5 border-white/15"
-              }`}
-            >
-              <span className="relative flex h-2 w-2">
-                {rtConnected && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                )}
-                <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${
-                    rtConnected
-                      ? "bg-white"
-                      : rtReconnecting
-                      ? "bg-yellow-300 animate-pulse"
-                      : "bg-rose-400"
-                  }`}
-                ></span>
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white">
-                {rtConnected ? "Ao vivo" : rtReconnecting ? "..." : "Off"}
-              </span>
-            </div>
+            isTrimesterActive ? (
+              <div
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
+                  rtConnected ? "bg-white/15 border-white/25" : "bg-white/5 border-white/15"
+                }`}
+              >
+                <span className="relative flex h-2 w-2">
+                  {rtConnected && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  )}
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      rtConnected
+                        ? "bg-white"
+                        : rtReconnecting
+                        ? "bg-yellow-300 animate-pulse"
+                        : "bg-rose-400"
+                    }`}
+                  ></span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  {rtConnected ? "Ao vivo" : rtReconnecting ? "..." : "Off"}
+                </span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-white/5 border-white/15">
+                <Clock className="w-3 h-3 text-white/80" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  {trimesterStatus === "upcoming" ? "Em breve" : "Encerrado"}
+                </span>
+              </div>
+            )
           }
+
         />
 
         {/* Mode tabs: Lição / Trimestral */}
