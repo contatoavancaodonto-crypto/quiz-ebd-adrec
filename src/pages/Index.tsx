@@ -452,9 +452,21 @@ const Index = () => {
       mobileHeader={{ variant: "full" }}
       contentPaddingMobile={false}
       bottomNav={{
-        showFab: (!!weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) || (!!provao && provaoStatus.available),
-        onFabClick: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? handleStartWeekly : handleStartProvao,
-        fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : "Provão",
+        showFab: true,
+        onFabClick: () => {
+          if (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) {
+            handleStartWeekly();
+          } else if (provao && provaoStatus.available) {
+            handleStartProvao();
+          } else if (alreadyAnsweredWeekly) {
+            toast.info("Você já respondeu o quiz desta lição 🎉");
+          } else if (weekClose.expired) {
+            toast.error("Janela do quiz encerrada.");
+          } else {
+            toast.error("Nenhum quiz disponível no momento.");
+          }
+        },
+        fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : (provao && provaoStatus.available) ? "Provão" : "Quiz",
       }}
     >
       <AppTour />
