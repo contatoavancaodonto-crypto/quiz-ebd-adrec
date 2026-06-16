@@ -474,6 +474,8 @@ const Index = () => {
             handleStartWeekly();
           } else if (provao && provaoStatus.available) {
             handleStartProvao();
+          } else if (currentLesson) {
+            handleStartCurrentLesson();
           } else if (alreadyAnsweredWeekly) {
             toast.info("Você já respondeu o quiz desta lição 🎉");
           } else if (weekClose.expired) {
@@ -482,7 +484,14 @@ const Index = () => {
             toast.error("Nenhum quiz disponível no momento.");
           }
         },
-        fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : (provao && provaoStatus.available) ? "Provão" : "Quiz",
+        fabLabel:
+          weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
+            ? "Quiz"
+            : provao && provaoStatus.available
+              ? "Provão"
+              : currentLesson
+                ? `Lição ${currentLesson.lesson_number}`
+                : "Quiz",
       }}
     >
       <AppTour />
