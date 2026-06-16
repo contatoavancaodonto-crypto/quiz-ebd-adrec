@@ -454,20 +454,25 @@ const ResultPage = () => {
         <div className="space-y-3">
           {(() => {
             const shareUrl = typeof window !== "undefined" ? window.location.origin : "https://quizebd.com";
+            const firstName = (store.participantName || "").trim().split(/\s+/)[0] || "Eu";
+            const shareTitle = `🔥 ${firstName} fez ${score}/${totalQuestions} no Quiz EBD!`;
             const shareText =
-`🏆 Acabei de fazer o Quiz EBD — 1º TRI. 2026 / ADREC!
+`${shareTitle}
 
-📊 Meu resultado:
+📖 Quiz EBD — 1º TRI. 2026 / ADREC
+👤 ${store.participantName}
 ✅ ${score}/${totalQuestions} acertos (${pct}%)
-⏱️ Tempo: ${timeStr}${classRank ? `\n🥇 Turma: #${classRank}` : ""}${generalRank ? `\n🌎 Geral: #${generalRank}` : ""}
+⏱️ Tempo: ${timeStr}
+🥇 Turma${store.className ? ` (${store.className})` : ""}: ${classRank ? `#${classRank}` : "—"}
+🌎 Geral: ${generalRank ? `#${generalRank}` : "—"}
 
-Topa o desafio? Faça o seu e tente bater meu resultado 👇
+Bora pro desafio? Faça o seu quiz e tenta bater meu resultado 👇
 ${shareUrl}`;
 
             const handleShare = async () => {
               if (navigator.share) {
                 try {
-                  await navigator.share({ title: "Meu resultado — Quiz EBD", text: shareText, url: shareUrl });
+                  await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
                   return;
                 } catch (e: any) {
                   if (e?.name === "AbortError") return;
