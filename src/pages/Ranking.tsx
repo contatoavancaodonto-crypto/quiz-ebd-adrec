@@ -65,33 +65,73 @@ const RankingPage = () => {
     },
   });
 
-  // Tenta buscar o trimestre atual das lições (mais confiável que fixar um número)
-  const { data: inferredTrimester } = useQuery({
-    queryKey: ["inferred-trimester"],
+  // Janelas (abertura/encerramento) de cada trimestre, baseadas nas datas das lições
+  const { data: trimesterWindows } = useQuery({
+    queryKey: ["trimester-windows"],
     queryFn: async () => {
       const { data } = await supabase
         .from("lessons")
-        .select("trimester")
-        .is("class_id", null)
-        .order("scheduled_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data?.trimester ? parseInt(data.trimester, 10) : null;
-    }
+        .select("trimester, scheduled_date, scheduled_end_date");
+      const acc: Record<number, { opens: Date; closes: Date } | null> = { 1: null, 2: null, 3: null, 4: null };
+      (data || []).forEach((row: any) => {
+        const t = parseInt(String(row.trimester), 10);
+        if (![1, 2, 3, 4].includes(t)) return;
+        const open = row.scheduled_date ? new Date(row.scheduled_date) : null;
+        const close = row.scheduled_end_date ? new Date(row.scheduled_end_date) : open;
+        if (!open || !close) return;
+        const cur = acc[t];
+        if (!cur) acc[t] = { opens: open, closes: close };
+        else {
+          if (open < cur.opens) cur.opens = open;
+          if (close > cur.closes) cur.closes = close;
+        }
+      });
+      return acc;
+    },
   });
 
+  type TrimesterStatus = "active" | "upcoming" | "closed";
+  const getTrimesterStatus = (t: number): TrimesterStatus => {
+    const now = new Date();
+    const win = trimesterWindows?.[t];
+    if (win) {
+      if (now < win.opens) return "upcoming";
+      if (now > win.closes) return "closed";
+      return "active";
+    }
+    // Fallback por calendário (T1=Jan-Mar, T2=Abr-Jun, T3=Jul-Set, T4=Out-Dez)
+    const year = now.getFullYear();
+    const startMonth = (t - 1) * 3;
+    const opens = new Date(year, startMonth, 1, 0, 0, 0);
+    const closes = new Date(year, startMonth + 3, 0, 23, 59, 59);
+    if (now < opens) return "upcoming";
+    if (now > closes) return "closed";
+    return "active";
+  };
+
   const trimesterParam = parseInt(searchParams.get("trimester") || "", 10);
+  const inferredTrimester = useMemo(() => {
+    for (const t of [1, 2, 3, 4]) {
+      const now = new Date();
+      const win = trimesterWindows?.[t];
+      if (win && now >= win.opens && now <= win.closes) return t;
+    }
+    return null;
+  }, [trimesterWindows]);
+
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (inferredTrimester ?? 3)
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (inferredTrimester ?? 2)
   );
 
-  // Sincroniza o trimestre inicial baseado nas lições recentes se não houver na URL
   useEffect(() => {
     if (!trimesterParam && inferredTrimester && inferredTrimester !== trimester) {
       setTrimester(inferredTrimester);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inferredTrimester, trimesterParam]);
+
+  const trimesterStatus = getTrimesterStatus(trimester);
+  const isTrimesterActive = trimesterStatus === "active";
 
   const rawModeParam = searchParams.get("mode");
   const normalizedModeParam: Mode =
@@ -293,20 +333,34 @@ const RankingPage = () => {
             Trimestre em exibição
           </label>
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((t) => (
-              <button
-                key={t}
-                onClick={() => handleTrimesterChange(t)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  trimester === t
-                    ? "gradient-primary text-primary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}º Tri.
-              </button>
-            ))}
+            {[1, 2, 3, 4].map((t) => {
+              const st = getTrimesterStatus(t);
+              const statusLabel = st === "active" ? "Ao vivo" : st === "upcoming" ? "Em breve" : "Encerrado";
+              return (
+                <button
+                  key={t}
+                  onClick={() => handleTrimesterChange(t)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
+                    trimester === t
+                      ? "gradient-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-1">
+                    {st === "active" && (
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+                      </span>
+                    )}
+                    {t}º Tri.
+                  </span>
+                  <span className="text-[9px] font-medium opacity-70 leading-none">{statusLabel}</span>
+                </button>
+              );
+            })}
           </div>
+
         </div>
 
         <PageHero
@@ -320,30 +374,40 @@ const RankingPage = () => {
           Icon={Trophy}
           variant="primary"
           actions={
-            <div
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
-                rtConnected ? "bg-white/15 border-white/25" : "bg-white/5 border-white/15"
-              }`}
-            >
-              <span className="relative flex h-2 w-2">
-                {rtConnected && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                )}
-                <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${
-                    rtConnected
-                      ? "bg-white"
-                      : rtReconnecting
-                      ? "bg-yellow-300 animate-pulse"
-                      : "bg-rose-400"
-                  }`}
-                ></span>
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white">
-                {rtConnected ? "Ao vivo" : rtReconnecting ? "..." : "Off"}
-              </span>
-            </div>
+            isTrimesterActive ? (
+              <div
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
+                  rtConnected ? "bg-white/15 border-white/25" : "bg-white/5 border-white/15"
+                }`}
+              >
+                <span className="relative flex h-2 w-2">
+                  {rtConnected && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  )}
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      rtConnected
+                        ? "bg-white"
+                        : rtReconnecting
+                        ? "bg-yellow-300 animate-pulse"
+                        : "bg-rose-400"
+                    }`}
+                  ></span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  {rtConnected ? "Ao vivo" : rtReconnecting ? "..." : "Off"}
+                </span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-white/5 border-white/15">
+                <Clock className="w-3 h-3 text-white/80" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  {trimesterStatus === "upcoming" ? "Em breve" : "Encerrado"}
+                </span>
+              </div>
+            )
           }
+
         />
 
         {/* Mode tabs: Lição / Trimestral */}
