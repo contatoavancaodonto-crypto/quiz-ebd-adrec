@@ -472,7 +472,7 @@ ${shareUrl}`;
             const handleShare = async () => {
               if (navigator.share) {
                 try {
-                  await navigator.share({ title: "Meu resultado — Quiz EBD", text: shareText, url: shareUrl });
+                  await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
                   return;
                 } catch (e: any) {
                   if (e?.name === "AbortError") return;
