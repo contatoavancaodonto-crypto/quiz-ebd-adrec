@@ -46,9 +46,8 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
 
   // Se FAB ativo, esconde "Perfil"; se inativo, mostra todos os 5 itens
   const visibleItems = showFab ? allItems.slice(0, 4) : allItems;
-  const leftCount = showFab ? 2 : 2;
-  const leftItems = visibleItems.slice(0, leftCount);
-  const rightItems = visibleItems.slice(leftCount);
+  const leftItems = showFab ? visibleItems.slice(0, 2) : visibleItems.slice(0, 3);
+  const rightItems = showFab ? visibleItems.slice(2) : visibleItems.slice(3);
 
   return (
     <>
@@ -104,11 +103,7 @@ export function MobileBottomNav({ showFab = true, onFabClick, fabLabel = "Quiz" 
                 <span className="absolute -inset-0.5 rounded-2xl bg-primary/20 blur-md -z-10" />
               </motion.button>
             </div>
-          ) : (
-            // Quando não há FAB, preenche a coluna do meio com um item extra
-            // Isso mantém o alinhamento com grid-cols-5
-            <div />
-          )}
+          ) : null}
 
           {/* Direita */}
           {rightItems.map((item) => {
