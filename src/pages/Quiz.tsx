@@ -303,15 +303,22 @@ const QuizPage = () => {
         if (!store.isRetrying) {
           const { data: existingAttempt } = await supabase
             .from("quiz_attempts")
-            .select("id, finished_at")
+            .select("id, score, total_questions, accuracy_percentage, total_time_ms, finished_at")
             .eq("participant_id", participantId)
             .eq(isLesson ? "lesson_id" : "quiz_id", quizId)
             .not("finished_at", "is", null)
+            .order("finished_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
           if (existingAttempt) {
-            setAlreadyDone(true);
+            setAlreadyDone({
+              score: existingAttempt.score ?? 0,
+              total: existingAttempt.total_questions ?? 0,
+              accuracy: Number(existingAttempt.accuracy_percentage ?? 0),
+              timeMs: Number(existingAttempt.total_time_ms ?? 0),
+              finishedAt: existingAttempt.finished_at as string,
+            });
             setIsLoading(false);
             return;
           }
