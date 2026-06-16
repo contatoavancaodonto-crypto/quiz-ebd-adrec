@@ -333,20 +333,34 @@ const RankingPage = () => {
             Trimestre em exibição
           </label>
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((t) => (
-              <button
-                key={t}
-                onClick={() => handleTrimesterChange(t)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  trimester === t
-                    ? "gradient-primary text-primary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}º Tri.
-              </button>
-            ))}
+            {[1, 2, 3, 4].map((t) => {
+              const st = getTrimesterStatus(t);
+              const statusLabel = st === "active" ? "Ao vivo" : st === "upcoming" ? "Em breve" : "Encerrado";
+              return (
+                <button
+                  key={t}
+                  onClick={() => handleTrimesterChange(t)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
+                    trimester === t
+                      ? "gradient-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-1">
+                    {st === "active" && (
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+                      </span>
+                    )}
+                    {t}º Tri.
+                  </span>
+                  <span className="text-[9px] font-medium opacity-70 leading-none">{statusLabel}</span>
+                </button>
+              );
+            })}
           </div>
+
         </div>
 
         <PageHero
