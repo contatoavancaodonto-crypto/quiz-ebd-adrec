@@ -467,7 +467,7 @@ const RankingPage = () => {
         )}
 
         {/* Aviso de Ranking Parcial: trimestral (Todas / turma / Minha Igreja) e Entre Igrejas */}
-        {(mode === "classic" || isInter) && enabledForMode && ranking.length > 0 && (
+        {(mode === "classic" || isInter) && enabledForMode && ranking.length > 0 && !!activeSeason && (
           <div className="mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/30 text-[11px] text-foreground/90 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
             <span>
