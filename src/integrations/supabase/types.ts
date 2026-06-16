@@ -2028,10 +2028,13 @@ export type Database = {
           church_name: string | null
           class_id: string | null
           class_name: string | null
+          exam_score: number | null
           last_finished_at: string | null
+          lessons_score: number | null
           participant_name: string | null
           position: number | null
           quizzes_completed: number | null
+          reading_score: number | null
           total_score: number | null
           total_time_ms: number | null
           trimester: number | null
