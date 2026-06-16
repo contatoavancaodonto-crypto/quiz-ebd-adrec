@@ -624,7 +624,7 @@ const RankingPage = () => {
 
                       <div className="text-right shrink-0">
                         <div className="font-display font-bold text-primary">
-                          {mainScore}/{entry.total_questions || 13}
+                          {mainScore}/{isClassic ? 100 : (entry.total_questions || 13)}
                         </div>
                         {bonus > 0 && (
                           <div className="text-[10px] text-orange-500">{baseScore} + {bonus}🔥</div>
