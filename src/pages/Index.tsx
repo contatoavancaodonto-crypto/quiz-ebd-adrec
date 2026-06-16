@@ -403,6 +403,22 @@ const Index = () => {
     startQuiz(userClass.id, userClass.name, 2, provao.id);
   };
 
+  const handleStartCurrentLesson = () => {
+    if (!currentLesson) return toast.error("Nenhuma lição disponível no momento.");
+    if (!profile?.first_name || !profile?.class_id || !profile?.class_name) {
+      return toast.error("Complete seu perfil para iniciar o quiz.");
+    }
+    const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    const trimester = Math.floor(new Date().getMonth() / 3) + 1;
+    const store = useQuizStore.getState();
+    store.setParticipant(fullNameLocal, profile.class_id, profile.class_name, trimester, season?.id);
+    store.setQuizId(currentLesson.id);
+    if (profile.church_id && profile.church_name) {
+      store.setChurch(profile.church_id, profile.church_name);
+    }
+    setTimeout(() => navigate("/quiz"), 0);
+  };
+
   const weekCloseLabel = useMemo(() => {
     if (!weeklyQuiz) return null;
     if (weekClose.expired) return "Encerrado";
@@ -458,6 +474,8 @@ const Index = () => {
             handleStartWeekly();
           } else if (provao && provaoStatus.available) {
             handleStartProvao();
+          } else if (currentLesson) {
+            handleStartCurrentLesson();
           } else if (alreadyAnsweredWeekly) {
             toast.info("Você já respondeu o quiz desta lição 🎉");
           } else if (weekClose.expired) {
@@ -466,7 +484,14 @@ const Index = () => {
             toast.error("Nenhum quiz disponível no momento.");
           }
         },
-        fabLabel: (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) ? "Quiz" : (provao && provaoStatus.available) ? "Provão" : "Quiz",
+        fabLabel:
+          weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
+            ? "Quiz"
+            : provao && provaoStatus.available
+              ? "Provão"
+              : currentLesson
+                ? `Lição ${currentLesson.lesson_number}`
+                : "Quiz",
       }}
     >
       <AppTour />
