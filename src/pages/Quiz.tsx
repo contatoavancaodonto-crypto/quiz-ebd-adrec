@@ -56,7 +56,13 @@ const QuizPage = () => {
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
-  const [alreadyDone, setAlreadyDone] = useState(false);
+  const [alreadyDone, setAlreadyDone] = useState<null | {
+    score: number;
+    total: number;
+    accuracy: number;
+    timeMs: number;
+    finishedAt: string;
+  }>(null);
   // ⏸️ Pausa quando o aluno escolhe uma alternativa (confirmed) e retoma na próxima
   const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak && !confirmed && !alreadyDone);
   const { data: season } = useActiveSeason();
