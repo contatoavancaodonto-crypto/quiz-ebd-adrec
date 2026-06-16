@@ -122,13 +122,6 @@ export type Database = {
             referencedColumns: ["attempt_id"]
           },
           {
-            foreignKeyName: "answers_attempt_id_fkey"
-            columns: ["attempt_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["attempt_id"]
-          },
-          {
             foreignKeyName: "answers_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
@@ -1559,13 +1552,6 @@ export type Database = {
             referencedColumns: ["attempt_id"]
           },
           {
-            foreignKeyName: "user_badges_attempt_id_fkey"
-            columns: ["attempt_id"]
-            isOneToOne: false
-            referencedRelation: "ranking_weekly"
-            referencedColumns: ["attempt_id"]
-          },
-          {
             foreignKeyName: "user_badges_badge_id_fkey"
             columns: ["badge_id"]
             isOneToOne: false
@@ -1888,6 +1874,7 @@ export type Database = {
         Row: {
           accuracy_percentage: number | null
           attempt_id: string | null
+          avatar_url: string | null
           church_id: string | null
           church_name: string | null
           class_id: string | null
@@ -2052,67 +2039,6 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "churches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ranking_weekly: {
-        Row: {
-          accuracy_percentage: number | null
-          attempt_id: string | null
-          church_id: string | null
-          church_name: string | null
-          class_id: string | null
-          class_name: string | null
-          final_score: number | null
-          finished_at: string | null
-          lesson_id: string | null
-          lesson_theme: string | null
-          participant_name: string | null
-          position: number | null
-          quiz_id: string | null
-          score: number | null
-          season_id: string | null
-          streak_bonus: number | null
-          total_questions: number | null
-          total_time_ms: number | null
-          total_time_seconds: number | null
-          week_number: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "participants_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "churches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
