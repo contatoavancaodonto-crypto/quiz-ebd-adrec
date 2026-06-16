@@ -56,7 +56,13 @@ const QuizPage = () => {
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
-  const [alreadyDone, setAlreadyDone] = useState(false);
+  const [alreadyDone, setAlreadyDone] = useState<null | {
+    score: number;
+    total: number;
+    accuracy: number;
+    timeMs: number;
+    finishedAt: string;
+  }>(null);
   // ⏸️ Pausa quando o aluno escolhe uma alternativa (confirmed) e retoma na próxima
   const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak && !confirmed && !alreadyDone);
   const { data: season } = useActiveSeason();
@@ -297,15 +303,22 @@ const QuizPage = () => {
         if (!store.isRetrying) {
           const { data: existingAttempt } = await supabase
             .from("quiz_attempts")
-            .select("id, finished_at")
+            .select("id, score, total_questions, accuracy_percentage, total_time_ms, finished_at")
             .eq("participant_id", participantId)
             .eq(isLesson ? "lesson_id" : "quiz_id", quizId)
             .not("finished_at", "is", null)
+            .order("finished_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
           if (existingAttempt) {
-            setAlreadyDone(true);
+            setAlreadyDone({
+              score: existingAttempt.score ?? 0,
+              total: existingAttempt.total_questions ?? 0,
+              accuracy: Number(existingAttempt.accuracy_percentage ?? 0),
+              timeMs: Number(existingAttempt.total_time_ms ?? 0),
+              finishedAt: existingAttempt.finished_at as string,
+            });
             setIsLoading(false);
             return;
           }
@@ -464,22 +477,61 @@ const QuizPage = () => {
 
 
   if (alreadyDone) {
+    const mins = Math.floor(alreadyDone.timeMs / 60000);
+    const secs = Math.floor((alreadyDone.timeMs % 60000) / 1000);
+    const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    const finishedStr = new Date(alreadyDone.finishedAt).toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+    });
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-10">
         <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-lg">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-primary" />
+            <Trophy className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Quiz já realizado</h1>
           <p className="text-muted-foreground mb-6">
-            Você só pode responder este quiz <strong>uma única vez</strong>. Sua tentativa já foi registrada e está valendo no ranking.
+            Cada quiz pode ser respondido <strong>uma única vez</strong>. Sua tentativa já está registrada e valendo no ranking.
           </p>
-          <button
-            onClick={() => navigate("/")}
-            className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-bold"
-          >
-            Voltar ao início
-          </button>
+
+          <div className="bg-muted/40 rounded-xl p-5 mb-6 text-left space-y-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-bold text-center">
+              Sua pontuação
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-black text-primary">
+                {alreadyDone.score}<span className="text-xl text-muted-foreground">/{alreadyDone.total}</span>
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {alreadyDone.accuracy.toFixed(0)}% de acerto
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border/50 text-sm">
+              <div>
+                <div className="text-muted-foreground text-xs">Tempo</div>
+                <div className="font-bold text-foreground font-mono">{timeStr}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Finalizado em</div>
+                <div className="font-bold text-foreground text-xs">{finishedStr}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => navigate("/ranking")}
+              className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-bold"
+            >
+              Ver ranking
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted/50 transition-colors"
+            >
+              Voltar ao início
+            </button>
+          </div>
         </div>
       </div>
     );
