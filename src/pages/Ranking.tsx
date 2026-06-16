@@ -65,7 +65,7 @@ const RankingPage = () => {
     },
   });
 
-  // Tenta buscar o trimestre atual das lições (mais confiável que fixar 2)
+  // Tenta buscar o trimestre atual das lições (mais confiável que fixar um número)
   const { data: inferredTrimester } = useQuery({
     queryKey: ["inferred-trimester"],
     queryFn: async () => {
@@ -76,20 +76,21 @@ const RankingPage = () => {
         .order("scheduled_date", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return data?.trimester ? parseInt(data.trimester, 10) : 2;
+      return data?.trimester ? parseInt(data.trimester, 10) : null;
     }
   });
 
   const trimesterParam = parseInt(searchParams.get("trimester") || "", 10);
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : 2
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (inferredTrimester ?? 3)
   );
 
   // Sincroniza o trimestre inicial baseado nas lições recentes se não houver na URL
   useEffect(() => {
-    if (!trimesterParam && inferredTrimester) {
+    if (!trimesterParam && inferredTrimester && inferredTrimester !== trimester) {
       setTrimester(inferredTrimester);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inferredTrimester, trimesterParam]);
 
   const rawModeParam = searchParams.get("mode");
