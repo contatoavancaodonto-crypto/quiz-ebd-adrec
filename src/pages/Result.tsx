@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles, CheckCircle2 } from "lucide-react";
+import { Trophy, Clock, Target, BarChart3, ArrowRight, Church, Medal, Sparkles, CheckCircle2, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuizStore } from "@/stores/quizStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -451,6 +452,52 @@ const ResultPage = () => {
 
         {/* Actions */}
         <div className="space-y-3">
+          {(() => {
+            const shareUrl = typeof window !== "undefined" ? window.location.origin : "https://quizebd.com";
+            const shareText =
+`🏆 Acabei de fazer o Quiz EBD — 1º TRI. 2026 / ADREC!
+
+📊 Meu resultado:
+✅ ${score}/${totalQuestions} acertos (${pct}%)
+⏱️ Tempo: ${timeStr}${classRank ? `\n🥇 Turma: #${classRank}` : ""}${generalRank ? `\n🌎 Geral: #${generalRank}` : ""}
+
+Topa o desafio? Faça o seu e tente bater meu resultado 👇
+${shareUrl}`;
+
+            const handleShare = async () => {
+              if (navigator.share) {
+                try {
+                  await navigator.share({ title: "Meu resultado — Quiz EBD", text: shareText, url: shareUrl });
+                  return;
+                } catch (e: any) {
+                  if (e?.name === "AbortError") return;
+                }
+              }
+              // Fallback: WhatsApp Web/App
+              const wa = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+              window.open(wa, "_blank", "noopener,noreferrer");
+              try {
+                await navigator.clipboard.writeText(shareText);
+                toast.success("Mensagem copiada!");
+              } catch {}
+            };
+
+            return (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.78 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleShare}
+                className="w-full py-3.5 rounded-xl bg-[#25D366] text-white font-semibold flex items-center justify-center gap-2 shadow-lg hover:brightness-110 transition-all cursor-pointer"
+              >
+                <Share2 className="w-4 h-4" />
+                Compartilhar resultado
+              </motion.button>
+            );
+          })()}
+
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
