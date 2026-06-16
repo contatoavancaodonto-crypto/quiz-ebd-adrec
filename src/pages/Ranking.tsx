@@ -534,7 +534,7 @@ const RankingPage = () => {
                         </div>
                         <div className="text-right shrink-0">
                           <div className="font-display font-bold text-primary text-lg">
-                            {avg.toFixed(1).replace(".", ",")}<span className="text-xs text-muted-foreground">/100</span>
+                            {avg.toFixed(1).replace(".", ",")}<span className="text-xs text-muted-foreground">/104</span>
                           </div>
                           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                             nota média
