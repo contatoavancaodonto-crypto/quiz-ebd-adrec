@@ -293,6 +293,24 @@ const QuizPage = () => {
           return;
         }
 
+        // 🔒 Regra: cada lição / provão só pode ser feito UMA vez por aluno
+        if (!store.isRetrying) {
+          const { data: existingAttempt } = await supabase
+            .from("quiz_attempts")
+            .select("id, finished_at")
+            .eq("participant_id", participantId)
+            .eq(isLesson ? "lesson_id" : "quiz_id", quizId)
+            .not("finished_at", "is", null)
+            .limit(1)
+            .maybeSingle();
+
+          if (existingAttempt) {
+            setAlreadyDone(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
         setQuestions(selected);
 
