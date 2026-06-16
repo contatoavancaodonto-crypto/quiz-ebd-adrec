@@ -462,9 +462,6 @@ const QuizPage = () => {
     return <SeasonClosedScreen />;
   }
 
-  if (seasonExpired) {
-    return <SeasonClosedScreen />;
-  }
 
   if (alreadyDone) {
     return (
