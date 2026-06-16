@@ -65,33 +65,73 @@ const RankingPage = () => {
     },
   });
 
-  // Tenta buscar o trimestre atual das lições (mais confiável que fixar um número)
-  const { data: inferredTrimester } = useQuery({
-    queryKey: ["inferred-trimester"],
+  // Janelas (abertura/encerramento) de cada trimestre, baseadas nas datas das lições
+  const { data: trimesterWindows } = useQuery({
+    queryKey: ["trimester-windows"],
     queryFn: async () => {
       const { data } = await supabase
         .from("lessons")
-        .select("trimester")
-        .is("class_id", null)
-        .order("scheduled_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data?.trimester ? parseInt(data.trimester, 10) : null;
-    }
+        .select("trimester, scheduled_date, scheduled_end_date");
+      const acc: Record<number, { opens: Date; closes: Date } | null> = { 1: null, 2: null, 3: null, 4: null };
+      (data || []).forEach((row: any) => {
+        const t = parseInt(String(row.trimester), 10);
+        if (![1, 2, 3, 4].includes(t)) return;
+        const open = row.scheduled_date ? new Date(row.scheduled_date) : null;
+        const close = row.scheduled_end_date ? new Date(row.scheduled_end_date) : open;
+        if (!open || !close) return;
+        const cur = acc[t];
+        if (!cur) acc[t] = { opens: open, closes: close };
+        else {
+          if (open < cur.opens) cur.opens = open;
+          if (close > cur.closes) cur.closes = close;
+        }
+      });
+      return acc;
+    },
   });
 
+  type TrimesterStatus = "active" | "upcoming" | "closed";
+  const getTrimesterStatus = (t: number): TrimesterStatus => {
+    const now = new Date();
+    const win = trimesterWindows?.[t];
+    if (win) {
+      if (now < win.opens) return "upcoming";
+      if (now > win.closes) return "closed";
+      return "active";
+    }
+    // Fallback por calendário (T1=Jan-Mar, T2=Abr-Jun, T3=Jul-Set, T4=Out-Dez)
+    const year = now.getFullYear();
+    const startMonth = (t - 1) * 3;
+    const opens = new Date(year, startMonth, 1, 0, 0, 0);
+    const closes = new Date(year, startMonth + 3, 0, 23, 59, 59);
+    if (now < opens) return "upcoming";
+    if (now > closes) return "closed";
+    return "active";
+  };
+
   const trimesterParam = parseInt(searchParams.get("trimester") || "", 10);
+  const inferredTrimester = useMemo(() => {
+    for (const t of [1, 2, 3, 4]) {
+      const now = new Date();
+      const win = trimesterWindows?.[t];
+      if (win && now >= win.opens && now <= win.closes) return t;
+    }
+    return null;
+  }, [trimesterWindows]);
+
   const [trimester, setTrimester] = useState<number>(
-    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (inferredTrimester ?? 3)
+    [1, 2, 3, 4].includes(trimesterParam) ? trimesterParam : (inferredTrimester ?? 2)
   );
 
-  // Sincroniza o trimestre inicial baseado nas lições recentes se não houver na URL
   useEffect(() => {
     if (!trimesterParam && inferredTrimester && inferredTrimester !== trimester) {
       setTrimester(inferredTrimester);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inferredTrimester, trimesterParam]);
+
+  const trimesterStatus = getTrimesterStatus(trimester);
+  const isTrimesterActive = trimesterStatus === "active";
 
   const rawModeParam = searchParams.get("mode");
   const normalizedModeParam: Mode =
