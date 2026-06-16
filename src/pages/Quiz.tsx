@@ -462,6 +462,32 @@ const QuizPage = () => {
     return <SeasonClosedScreen />;
   }
 
+  if (seasonExpired) {
+    return <SeasonClosedScreen />;
+  }
+
+  if (alreadyDone) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-lg">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Quiz já realizado</h1>
+          <p className="text-muted-foreground mb-6">
+            Você só pode responder este quiz <strong>uma única vez</strong>. Sua tentativa já foi registrada e está valendo no ranking.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-bold"
+          >
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
