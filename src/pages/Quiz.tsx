@@ -56,7 +56,9 @@ const QuizPage = () => {
   const [showEvalBreak, setShowEvalBreak] = useState(false);
   const [evalBreakShown, setEvalBreakShown] = useState(false);
   const [evalBreakQuestion] = useState(() => Math.floor(Math.random() * 6) + 5);
-  const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak);
+  const [alreadyDone, setAlreadyDone] = useState(false);
+  // ⏸️ Pausa quando o aluno escolhe uma alternativa (confirmed) e retoma na próxima
+  const { seconds, ms, formatted } = useTimer(!isLoading && !showCountdown && !showEvalBreak && !confirmed && !alreadyDone);
   const { data: season } = useActiveSeason();
   const seasonCountdown = useCountdown(season?.end_date);
   const seasonExpired = !!season && seasonCountdown.expired;
@@ -291,6 +293,24 @@ const QuizPage = () => {
           return;
         }
 
+        // 🔒 Regra: cada lição / provão só pode ser feito UMA vez por aluno
+        if (!store.isRetrying) {
+          const { data: existingAttempt } = await supabase
+            .from("quiz_attempts")
+            .select("id, finished_at")
+            .eq("participant_id", participantId)
+            .eq(isLesson ? "lesson_id" : "quiz_id", quizId)
+            .not("finished_at", "is", null)
+            .limit(1)
+            .maybeSingle();
+
+          if (existingAttempt) {
+            setAlreadyDone(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const selected = shuffleArray(allQs).slice(0, questionsPerQuiz);
         setQuestions(selected);
 
@@ -440,6 +460,29 @@ const QuizPage = () => {
 
   if (seasonExpired) {
     return <SeasonClosedScreen />;
+  }
+
+
+  if (alreadyDone) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-lg">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Quiz já realizado</h1>
+          <p className="text-muted-foreground mb-6">
+            Você só pode responder este quiz <strong>uma única vez</strong>. Sua tentativa já foi registrada e está valendo no ranking.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-bold"
+          >
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {
