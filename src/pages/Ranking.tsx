@@ -471,7 +471,7 @@ const RankingPage = () => {
           <div className="mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/30 text-[11px] text-foreground/90 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
             <span>
-              <strong className="font-semibold">Ranking parcial</strong> · {isInter ? "nota média da igreja" : "pontuação acumulada"} do {trimester}º trimestre <span className="text-muted-foreground">(total possível: 100 pts)</span>
+              <strong className="font-semibold">Ranking parcial</strong> · {isInter ? "nota média da igreja" : "pontuação acumulada"} do {trimester}º trimestre <span className="text-muted-foreground">(total possível: 104 pts · 65 lições + 13 leitura + 26 provão)</span>
             </span>
           </div>
         )}
