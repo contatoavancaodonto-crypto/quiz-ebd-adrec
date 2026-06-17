@@ -52,8 +52,11 @@ Deno.serve(async (req) => {
       .from("user_roles")
       .select("role")
       .eq("user_id", callerId);
-    const isAdmin = (roles ?? []).some(
-      (r: { role: string }) => r.role === "admin" || r.role === "superadmin"
+    const isSuperadmin = (roles ?? []).some(
+      (r: { role: string }) => r.role === "superadmin"
+    );
+    const isAdmin = isSuperadmin || (roles ?? []).some(
+      (r: { role: string }) => r.role === "admin"
     );
     if (!isAdmin) {
       return new Response(
@@ -70,11 +73,33 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Busca todos os usuários com email
-    const { data: profiles, error } = await supabase
+    // Restrict to caller's church unless superadmin (prevents cross-church blast)
+    let callerChurchId: string | null = null;
+    if (!isSuperadmin) {
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("church_id")
+        .eq("user_id", callerId)
+        .eq("role", "admin")
+        .maybeSingle();
+      callerChurchId = (roleRow as any)?.church_id ?? null;
+      if (!callerChurchId) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden", message: "Admin sem igreja vinculada" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    // Busca usuários com email, filtrando por igreja quando não-superadmin
+    let query = supabase
       .from("profiles")
-      .select("id, email, first_name")
+      .select("id, email, first_name, church_id")
       .not("email", "is", null);
+    if (!isSuperadmin && callerChurchId) {
+      query = query.eq("church_id", callerChurchId);
+    }
+    const { data: profiles, error } = await query;
 
     if (error) throw error;
 

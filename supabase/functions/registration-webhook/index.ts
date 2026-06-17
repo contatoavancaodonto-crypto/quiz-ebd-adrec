@@ -5,10 +5,33 @@ const WEBHOOK_URL = "https://webhook.avancaautomacao.com.br/webhook/2cbc5497-4f4
 const MAX_ATTEMPTS = 5
 
 serve(async (req) => {
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  )
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
+  const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  const supabaseClient = createClient(SUPABASE_URL, SERVICE_KEY)
+
+  // Auth: only service_role or superadmin may trigger queue processing
+  const authHeader = req.headers.get('Authorization') ?? ''
+  const token = authHeader.replace(/^Bearer\s+/i, '')
+  let authorized = token && token === SERVICE_KEY
+  if (!authorized && token) {
+    try {
+      const { data: claimsData } = await supabaseClient.auth.getClaims(token)
+      const claims = claimsData?.claims as any
+      if (claims?.role === 'service_role') {
+        authorized = true
+      } else if (claims?.sub) {
+        const { data: roles } = await supabaseClient
+          .from('user_roles').select('role').eq('user_id', claims.sub)
+        if ((roles ?? []).some((r: { role: string }) => r.role === 'superadmin')) {
+          authorized = true
+        }
+      }
+    } catch (_) { /* fall through */ }
+  }
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  }
+
 
   try {
     // 1. Buscar itens pendentes ou que falharam mas ainda têm tentativas

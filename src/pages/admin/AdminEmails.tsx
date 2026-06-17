@@ -684,11 +684,14 @@ export default function AdminEmails() {
             </div>
 
             <div className="flex-1 border rounded-lg overflow-hidden bg-white">
-              <ScrollArea className="h-full">
-                {selectedTemplate && (
-                  <div dangerouslySetInnerHTML={{ __html: selectedTemplate.html }} />
-                )}
-              </ScrollArea>
+              {selectedTemplate && (
+                <iframe
+                  title="Email preview"
+                  sandbox=""
+                  srcDoc={selectedTemplate.html}
+                  className="w-full h-full min-h-[500px]"
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
