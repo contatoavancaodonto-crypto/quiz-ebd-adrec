@@ -133,12 +133,8 @@ export default function AdminQuizzes() {
 
   const loadQuestions = async (quiz: Quiz) => {
     setQuestionsOf(quiz);
-    const { data } = await supabase
-      .from("questions")
-      .select("*")
-      .eq("quiz_id", quiz.id)
-      .eq("active", true)
-      .order("order_index");
+    // correct_option/explanation são lidos via RPC com checagem de role (SECURITY DEFINER)
+    const { data } = await supabase.rpc("admin_get_questions_with_answer", { p_quiz_id: quiz.id });
     setQuestions((data as any) ?? []);
   };
 
