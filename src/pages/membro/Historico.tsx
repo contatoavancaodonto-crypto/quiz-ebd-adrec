@@ -61,8 +61,15 @@ export default function Historico() {
   const { data: profile } = useFullProfile();
   const { data: academicData, isLoading } = useAcademicHistory();
   const [selectedAno, setSelectedAno] = useState("2026");
-  const [selectedTri, setSelectedTri] = useState("1º TRI");
+  const [selectedTri, setSelectedTri] = useState<string | null>(null);
 
+  // Sincroniza o trimestre selecionado com o trimestre que tem dados (atual)
+  useEffect(() => {
+    if (selectedTri || !academicData?.trimestres?.length) return;
+    // Pega o último trimestre disponível (mais recente)
+    const last = academicData.trimestres[academicData.trimestres.length - 1];
+    setSelectedTri(last.trimestre);
+  }, [academicData, selectedTri]);
 
   const currentTri = useMemo(() => {
     if (!academicData) return null;
@@ -75,6 +82,7 @@ export default function Historico() {
     return {
       mediaSemanal: currentTri.mediaSemanal.toFixed(1),
       mediaFinal: currentTri.mediaFinal.toFixed(1),
+      pontuacaoTotal: currentTri.pontuacaoTotal ?? 0,
       participacao: Math.round(currentTri.participacao),
       concluidas: currentTri.semanas.filter(s => s.status === 'concluido').length,
       totalSemanas: currentTri.semanas.length,
