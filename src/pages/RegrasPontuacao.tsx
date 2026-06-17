@@ -60,30 +60,28 @@ const RegrasPontuacao = () => {
               <TableBody>
                 <TableRow>
                   <TableCell>
-                    <div className="font-medium">Quiz semanal</div>
-                    <div className="text-xs text-muted-foreground">(5 por lição)</div>
+                    <div className="font-medium">Quizzes semanais das lições</div>
+                    <div className="text-xs text-muted-foreground">(13 lições × 5 perguntas)</div>
                   </TableCell>
                   <TableCell className="text-right font-bold">65 pontos</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
-                    <div className="font-medium">Bônus por realizar dentro da semana</div>
-                    <div className="text-xs text-muted-foreground">(+1 ponto extra por lição)</div>
+                    <div className="font-medium">Bônus de leitura semanal</div>
+                    <div className="text-xs text-muted-foreground">(1 ponto por semana lida — 13 semanas)</div>
                   </TableCell>
                   <TableCell className="text-right font-bold text-green-600">+13 pontos</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
                     <div className="font-medium">Provão trimestral</div>
+                    <div className="text-xs text-muted-foreground">(vale o dobro: 26 pontos)</div>
                   </TableCell>
-                  <TableCell className="text-right font-bold">20 pontos</TableCell>
+                  <TableCell className="text-right font-bold">26 pontos</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Bônus de leitura semanal</div>
-                    <div className="text-xs text-muted-foreground">(ao menos 5 semanas completas)</div>
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-green-600">+2 pontos</TableCell>
+                <TableRow className="bg-primary/5">
+                  <TableCell className="font-bold">Total possível no trimestre</TableCell>
+                  <TableCell className="text-right font-bold text-primary">104 pontos</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
