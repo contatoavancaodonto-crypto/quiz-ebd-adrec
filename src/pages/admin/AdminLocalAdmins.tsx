@@ -45,10 +45,8 @@ export default function AdminLocalAdmins() {
       setLoading(false);
       return;
     }
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name, email")
-      .in("id", ids);
+    const { data: profs } = await (supabase as any)
+      .rpc("admin_get_profiles_full", { p_ids: ids });
 
     const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
     setRows(
