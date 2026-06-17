@@ -274,7 +274,7 @@ const QuizPage = () => {
             }
             
             const quizKind = quizMeta?.quiz_kind ?? "weekly";
-            const defaultTotal = quizKind === "trimestral" ? 26 : DEFAULT_QUESTIONS_PER_QUIZ;
+            const defaultTotal = quizKind === "trimestral" ? 22 : DEFAULT_QUESTIONS_PER_QUIZ;
             questionsPerQuiz = quizMeta?.total_questions || defaultTotal;
             store.setQuizMetadata(quizKind, questionsPerQuiz);
 
