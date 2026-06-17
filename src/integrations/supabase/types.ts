@@ -2089,6 +2089,35 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_get_profiles_full: {
+        Args: { p_church_id?: string; p_ids?: string[] }
+        Returns: {
+          area: number | null
+          avatar_url: string | null
+          church_id: string | null
+          class_id: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          first_name: string | null
+          has_seen_tour: boolean | null
+          hidden_at: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          provider: string | null
+          show_avatar_in_ranking: boolean
+          tour_views_count: number
+          updated_at: string
+          welcome_sent: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_get_questions_with_answer: {
         Args: { p_quiz_id: string }
         Returns: {
@@ -2164,6 +2193,35 @@ export type Database = {
           question_text: string
           selected_option: string
         }[]
+      }
+      get_my_profile_full: {
+        Args: never
+        Returns: {
+          area: number | null
+          avatar_url: string | null
+          church_id: string | null
+          class_id: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          first_name: string | null
+          has_seen_tour: boolean | null
+          hidden_at: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          provider: string | null
+          show_avatar_in_ranking: boolean
+          tour_views_count: number
+          updated_at: string
+          welcome_sent: boolean | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_or_create_daily_verse: {
         Args: { p_class_id?: string }
