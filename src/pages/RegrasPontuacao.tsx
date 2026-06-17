@@ -97,31 +97,12 @@ const RegrasPontuacao = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" /> Quiz Semanal
+                  <Clock className="w-4 h-4 text-primary" /> Quizzes das Lições
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Os quizzes realizados durante o trimestre valem juntos <strong>65 pontos</strong>.
-                </p>
-                <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-100">
-                  <p className="text-xs font-bold text-green-700">⚡ Bônus Semanal</p>
-                  <p className="text-[11px] text-green-600">
-                    Se realizados na semana correta, você recebe <strong>+13 pontos</strong> extras.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-primary" /> Provão Trimestral
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  O provão final do trimestre vale <strong>20 pontos</strong> na sua média final.
+                  Cada uma das <strong>13 lições</strong> do trimestre tem um quiz com <strong>5 perguntas</strong> (1 ponto cada), totalizando <strong>65 pontos</strong>.
                 </p>
               </CardContent>
             </Card>
@@ -134,7 +115,20 @@ const RegrasPontuacao = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Receba <strong>+2 pontos</strong> bônus se realizar pelo menos 5 semanas completas de leitura.
+                  Marque a leitura da lição da semana e ganhe <strong>+1 ponto</strong> por semana. Em 13 semanas são até <strong>+13 pontos</strong>.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-primary" /> Provão Trimestral
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  O provão final tem perguntas de todas as lições e <strong>vale o dobro</strong>: <strong>26 pontos</strong> na sua nota do trimestre.
                 </p>
               </CardContent>
             </Card>
@@ -147,24 +141,20 @@ const RegrasPontuacao = () => {
               </CardHeader>
               <CardContent className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span>Quizzes:</span>
+                  <span>Quizzes das lições:</span>
                   <span>65 pts</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span>Bônus Semanal:</span>
+                  <span>Bônus de leitura:</span>
                   <span>+13 pts</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span>Provão:</span>
-                  <span>+20 pts</span>
-                </div>
                 <div className="flex justify-between text-xs border-b border-primary-foreground/20 pb-1">
-                  <span>Bônus Leitura:</span>
-                  <span>+2 pts</span>
+                  <span>Provão (×2):</span>
+                  <span>+26 pts</span>
                 </div>
                 <div className="flex justify-between font-bold pt-1">
                   <span>Total:</span>
-                  <span>100 pts</span>
+                  <span>104 pts</span>
                 </div>
               </CardContent>
             </Card>
