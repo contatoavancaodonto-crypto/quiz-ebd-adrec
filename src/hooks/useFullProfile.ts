@@ -35,32 +35,35 @@ export function useFullProfile() {
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<FullProfile | null> => {
-      const { data } = await supabase
-        .from("profiles")
-        .select(
-          "id, first_name, last_name, display_name, email, phone, provider, church_id, class_id, avatar_url, show_avatar_in_ranking, has_seen_tour, tour_views_count, churches(name), classes(name)"
-        )
-
-        .eq("id", user!.id)
-        .maybeSingle();
+      const { data: rpcData } = await (supabase as any).rpc("get_my_profile_full");
+      const data: any = Array.isArray(rpcData) ? rpcData[0] : rpcData;
       if (!data) return null;
+
+      const [churchRes, classRes] = await Promise.all([
+        data.church_id
+          ? supabase.from("churches").select("name").eq("id", data.church_id).maybeSingle()
+          : Promise.resolve({ data: null as any }),
+        data.class_id
+          ? supabase.from("classes").select("name").eq("id", data.class_id).maybeSingle()
+          : Promise.resolve({ data: null as any }),
+      ]);
+
       return {
         id: data.id,
         first_name: data.first_name,
         last_name: data.last_name,
-        display_name: (data as any).display_name || null,
+        display_name: data.display_name || null,
         email: data.email,
         phone: data.phone,
-        provider: (data as any).provider ?? null,
-        class_name: (data as any).classes?.name ?? null,
+        provider: data.provider ?? null,
+        class_name: (classRes.data as any)?.name ?? null,
         church_id: data.church_id,
-        class_id: (data as any).class_id ?? null,
-        avatar_url: (data as any).avatar_url ?? null,
-        show_avatar_in_ranking: (data as any).show_avatar_in_ranking ?? true,
-        has_seen_tour: (data as any).has_seen_tour ?? false,
-        tour_views_count: (data as any).tour_views_count ?? 0,
-        church_name: (data as any).churches?.name ?? null,
-
+        class_id: data.class_id ?? null,
+        avatar_url: data.avatar_url ?? null,
+        show_avatar_in_ranking: data.show_avatar_in_ranking ?? true,
+        has_seen_tour: data.has_seen_tour ?? false,
+        tour_views_count: data.tour_views_count ?? 0,
+        church_name: (churchRes.data as any)?.name ?? null,
       };
     },
   });
