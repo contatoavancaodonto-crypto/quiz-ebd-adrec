@@ -64,17 +64,17 @@ export default function AdminChurchMembers() {
   const load = async () => {
     if (!churchId) return;
     setLoading(true);
-    const query = supabase
-      .from("profiles")
-      .select("id, first_name, last_name, email, phone, area, class_id")
-      .eq("church_id", churchId);
-
-    if (selectedClassId) {
-      query.eq("class_id", selectedClassId);
-    }
+    const profsPromise = (supabase as any)
+      .rpc("admin_get_profiles_full", { p_church_id: churchId })
+      .then((res: any) => {
+        let data = (res.data ?? []) as any[];
+        if (selectedClassId) data = data.filter((p) => p.class_id === selectedClassId);
+        data.sort((a, b) => (a.first_name ?? "").localeCompare(b.first_name ?? ""));
+        return { data };
+      });
 
     const [{ data: profs }, { data: roles }] = await Promise.all([
-      query.order("first_name", { ascending: true }),
+      profsPromise,
       supabase
         .from("user_roles")
         .select("user_id, role, church_id")
