@@ -170,7 +170,7 @@ export default function Historico() {
                   <SelectItem value="2026">2026</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={selectedTri} onValueChange={setSelectedTri}>
+              <Select value={selectedTri ?? undefined} onValueChange={setSelectedTri}>
                 <SelectTrigger className="w-[120px] h-9 rounded-xl border-none bg-background/50 shadow-none focus:ring-0">
                   <SelectValue placeholder="Trimestre" />
                 </SelectTrigger>
