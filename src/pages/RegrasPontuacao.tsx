@@ -75,13 +75,13 @@ const RegrasPontuacao = () => {
                 <TableRow>
                   <TableCell>
                     <div className="font-medium">Provão trimestral</div>
-                    <div className="text-xs text-muted-foreground">(vale o dobro: 26 pontos)</div>
+                    <div className="text-xs text-muted-foreground">(22 perguntas — 1 ponto cada)</div>
                   </TableCell>
-                  <TableCell className="text-right font-bold">26 pontos</TableCell>
+                  <TableCell className="text-right font-bold">22 pontos</TableCell>
                 </TableRow>
                 <TableRow className="bg-primary/5">
                   <TableCell className="font-bold">Total possível no trimestre</TableCell>
-                  <TableCell className="text-right font-bold text-primary">104 pontos</TableCell>
+                  <TableCell className="text-right font-bold text-primary">100 pontos</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -128,7 +128,7 @@ const RegrasPontuacao = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  O provão final tem perguntas de todas as lições e <strong>vale o dobro</strong>: <strong>26 pontos</strong> na sua nota do trimestre.
+                  O provão final tem <strong>22 perguntas</strong> de todas as lições do trimestre, valendo <strong>1 ponto cada</strong> — até <strong>22 pontos</strong> na sua nota.
                 </p>
               </CardContent>
             </Card>
@@ -149,12 +149,12 @@ const RegrasPontuacao = () => {
                   <span>+13 pts</span>
                 </div>
                 <div className="flex justify-between text-xs border-b border-primary-foreground/20 pb-1">
-                  <span>Provão (×2):</span>
-                  <span>+26 pts</span>
+                  <span>Provão trimestral:</span>
+                  <span>+22 pts</span>
                 </div>
                 <div className="flex justify-between font-bold pt-1">
                   <span>Total:</span>
-                  <span>104 pts</span>
+                  <span>100 pts</span>
                 </div>
               </CardContent>
             </Card>

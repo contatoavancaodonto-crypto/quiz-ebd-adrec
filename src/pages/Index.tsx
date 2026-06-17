@@ -754,7 +754,7 @@ const Index = () => {
                   Provões trimestrais
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Acesse o provão de 20 perguntas de cada trimestre e garanta uma melhor posição.
+                  Acesse o provão de 22 perguntas de cada trimestre e garanta uma melhor posição.
                 </p>
               </div>
 
@@ -926,7 +926,7 @@ const Index = () => {
                     <div className="text-[11px] text-muted-foreground">
                       {weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired 
                         ? `${weeklyQuiz.total_questions ?? 5} perguntas valendo pontos`
-                        : "20 perguntas sobre as lições do trimestre"}
+                        : "22 perguntas sobre as lições do trimestre"}
                     </div>
                   </div>
                 </div>
