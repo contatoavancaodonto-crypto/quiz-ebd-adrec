@@ -120,17 +120,22 @@ export function useAcademicHistory() {
       quizzes.forEach((quiz) => {
         const triNum = quiz.trimester || 1;
         if (!trimestresMap.has(triNum)) {
+          const tri = rankingByTri.get(triNum);
           trimestresMap.set(triNum, {
             trimestre: `${triNum}º TRI`,
             semanas: [],
-            ranking,
+            ranking: tri?.position,
             mediaSemanal: 0,
             mediaFinal: 0,
             participacao: 0,
             frequencia: 0,
             tempoTotalMs: 0,
-            comentariosProfessor: formattedComments
-          });
+            comentariosProfessor: formattedComments,
+            pontuacaoTotal: tri?.totalScore ?? 0,
+            pontuacaoLicoes: tri?.lessons ?? 0,
+            pontuacaoLeitura: tri?.reading ?? 0,
+            pontuacaoProvao: tri?.exam ?? 0,
+          } as any);
         }
 
         const tri = trimestresMap.get(triNum)!;
