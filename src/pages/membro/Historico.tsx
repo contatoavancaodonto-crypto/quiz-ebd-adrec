@@ -61,8 +61,15 @@ export default function Historico() {
   const { data: profile } = useFullProfile();
   const { data: academicData, isLoading } = useAcademicHistory();
   const [selectedAno, setSelectedAno] = useState("2026");
-  const [selectedTri, setSelectedTri] = useState("1º TRI");
+  const [selectedTri, setSelectedTri] = useState<string | null>(null);
 
+  // Sincroniza o trimestre selecionado com o trimestre que tem dados (atual)
+  useEffect(() => {
+    if (selectedTri || !academicData?.trimestres?.length) return;
+    // Pega o último trimestre disponível (mais recente)
+    const last = academicData.trimestres[academicData.trimestres.length - 1];
+    setSelectedTri(last.trimestre);
+  }, [academicData, selectedTri]);
 
   const currentTri = useMemo(() => {
     if (!academicData) return null;
@@ -75,6 +82,7 @@ export default function Historico() {
     return {
       mediaSemanal: currentTri.mediaSemanal.toFixed(1),
       mediaFinal: currentTri.mediaFinal.toFixed(1),
+      pontuacaoTotal: currentTri.pontuacaoTotal ?? 0,
       participacao: Math.round(currentTri.participacao),
       concluidas: currentTri.semanas.filter(s => s.status === 'concluido').length,
       totalSemanas: currentTri.semanas.length,
@@ -162,7 +170,7 @@ export default function Historico() {
                   <SelectItem value="2026">2026</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={selectedTri} onValueChange={setSelectedTri}>
+              <Select value={selectedTri ?? undefined} onValueChange={setSelectedTri}>
                 <SelectTrigger className="w-[120px] h-9 rounded-xl border-none bg-background/50 shadow-none focus:ring-0">
                   <SelectValue placeholder="Trimestre" />
                 </SelectTrigger>
@@ -179,11 +187,11 @@ export default function Historico() {
             {/* Cards Superiores de Resumo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard 
-                label="Média Geral" 
-                value={stats?.mediaFinal || "0.0"} 
+                label="Pontuação Trimestral" 
+                value={`${stats?.pontuacaoTotal ?? 0}/100`} 
                 icon={TrendingUp} 
                 color="emerald"
-                description={`Semanal: ${stats?.mediaSemanal}`}
+                description={`Média semanal: ${stats?.mediaSemanal}%`}
                 delay={0.1}
               />
               <StatCard 

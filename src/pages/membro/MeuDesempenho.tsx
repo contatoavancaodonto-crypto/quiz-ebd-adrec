@@ -20,26 +20,31 @@ export default function MeuDesempenho() {
 
   const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim().toLowerCase();
 
+  // Detecta o trimestre atual a partir do nome da temporada (ex.: "2º TRI 2026")
+  const currentTrimester = (() => {
+    const m = season?.name?.match(/(\d+)\s*º?\s*TRI/i);
+    return m ? parseInt(m[1], 10) : 1;
+  })();
+
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["my-performance", fullName, season?.id, profile?.church_id],
+    queryKey: ["my-performance", fullName, season?.id, profile?.church_id, currentTrimester],
     enabled: !!fullName && !!season?.id,
     queryFn: async () => {
-      const { data: general } = await supabase
-        .from("ranking_general")
-        .select("position, score, total_time_seconds, accuracy_percentage, participant_name, attempt_id")
-        .ilike("participant_name", fullName)
-        .order("position", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      // Ranking trimestral consolidado (100 pontos: 65 lições + 13 leitura + 22 provão)
+      const { data: trimRows } = await supabase
+        .from("ranking_trimester_consolidated")
+        .select("position, participant_name, total_score, lessons_score, reading_score, exam_score, total_time_ms, church_id")
+        .eq("trimester", currentTrimester)
+        .order("position", { ascending: true });
+
+      const mine: any = (trimRows ?? []).find(
+        (r: any) => (r.participant_name ?? "").toLowerCase() === fullName
+      );
 
       let churchPosition: number | null = null;
       if (profile?.church_id) {
-        const { data: churchRows } = await supabase
-          .from("ranking_general")
-          .select("position, participant_name, church_id")
-          .eq("church_id", profile.church_id)
-          .order("position", { ascending: true });
-        const idx = (churchRows ?? []).findIndex(
+        const churchRows = (trimRows ?? []).filter((r: any) => r.church_id === profile.church_id);
+        const idx = churchRows.findIndex(
           (r: any) => (r.participant_name ?? "").toLowerCase() === fullName
         );
         if (idx >= 0) churchPosition = idx + 1;
@@ -52,7 +57,7 @@ export default function MeuDesempenho() {
 
       const myBadges = (badges ?? []).filter((b: any) => b.badge);
 
-      return { general, churchPosition, badges: myBadges };
+      return { mine, churchPosition, badges: myBadges };
     },
   });
 
@@ -65,12 +70,13 @@ export default function MeuDesempenho() {
       </MemberLayout>
     );
 
-  const g = stats?.general;
+  const g: any = stats?.mine;
+  const totalSecs = g?.total_time_ms ? Math.round(Number(g.total_time_ms) / 1000) : 0;
   const cards = [
     { Icon: Trophy, label: "Posição geral", value: g?.position ? `#${g.position}` : "—", tone: "amber" as const },
     { Icon: Building2, label: "Na igreja", value: stats?.churchPosition ? `#${stats.churchPosition}` : "—", tone: "secondary" as const },
-    { Icon: Target, label: "Pontuação", value: g?.score ?? "—", tone: "primary" as const },
-    { Icon: Clock, label: "Tempo total", value: g?.total_time_seconds ? `${g.total_time_seconds}s` : "—", tone: "emerald" as const },
+    { Icon: Target, label: "Pontuação", value: g ? `${g.total_score}/100` : "—", tone: "primary" as const },
+    { Icon: Clock, label: "Tempo total", value: totalSecs ? `${totalSecs}s` : "—", tone: "emerald" as const },
   ];
 
   return (
