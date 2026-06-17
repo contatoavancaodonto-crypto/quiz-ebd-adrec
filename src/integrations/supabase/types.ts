@@ -2069,6 +2069,26 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_churches_full: {
+        Args: never
+        Returns: {
+          active: boolean
+          approved: boolean
+          created_at: string
+          id: string
+          name: string
+          pastor_president: string | null
+          requested: boolean
+          requester_pastor_name: string | null
+          requester_phone: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "churches"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_get_questions_with_answer: {
         Args: { p_quiz_id: string }
         Returns: {
