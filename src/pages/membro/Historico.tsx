@@ -187,11 +187,11 @@ export default function Historico() {
             {/* Cards Superiores de Resumo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard 
-                label="Média Geral" 
-                value={stats?.mediaFinal || "0.0"} 
+                label="Pontuação Trimestral" 
+                value={`${stats?.pontuacaoTotal ?? 0}/100`} 
                 icon={TrendingUp} 
                 color="emerald"
-                description={`Semanal: ${stats?.mediaSemanal}`}
+                description={`Média semanal: ${stats?.mediaSemanal}%`}
                 delay={0.1}
               />
               <StatCard 
