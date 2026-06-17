@@ -75,13 +75,13 @@ const RegrasPontuacao = () => {
                 <TableRow>
                   <TableCell>
                     <div className="font-medium">Provão trimestral</div>
-                    <div className="text-xs text-muted-foreground">(vale o dobro: 26 pontos)</div>
+                    <div className="text-xs text-muted-foreground">(22 perguntas — 1 ponto cada)</div>
                   </TableCell>
-                  <TableCell className="text-right font-bold">26 pontos</TableCell>
+                  <TableCell className="text-right font-bold">22 pontos</TableCell>
                 </TableRow>
                 <TableRow className="bg-primary/5">
                   <TableCell className="font-bold">Total possível no trimestre</TableCell>
-                  <TableCell className="text-right font-bold text-primary">104 pontos</TableCell>
+                  <TableCell className="text-right font-bold text-primary">100 pontos</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
