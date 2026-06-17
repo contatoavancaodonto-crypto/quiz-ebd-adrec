@@ -59,17 +59,8 @@ Deno.serve(async (req) => {
     }
   }
 
-  // If we have a valid token but authorization fails, we'll allow it for now
-  // to unblock the user while we debug why the role check might be failing.
-  if (!isAuthorized && token) {
-    console.warn('Authorization check failed, but token is present. Allowing access for debugging.')
-    isAuthorized = true
-  }
+  // (debug bypass removed — strict enforcement only)
 
-  // TEMPORARY: Ensure it never returns 401 while we fix the frontend communication
-  if (!isAuthorized && token) {
-    isAuthorized = true
-  }
 
   if (!isAuthorized) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
