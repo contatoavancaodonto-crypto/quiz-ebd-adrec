@@ -63,10 +63,7 @@ export default function AdminAuditLog() {
 
     const [{ data: profiles }, { data: churches }] = await Promise.all([
       profileIds.length
-        ? supabase
-            .from("profiles")
-            .select("id, first_name, last_name, email")
-            .in("id", profileIds)
+        ? (supabase as any).rpc("admin_get_profiles_full", { p_ids: profileIds })
         : Promise.resolve({ data: [] as any[] }),
       supabase.from("churches").select("id, name"),
     ]);
