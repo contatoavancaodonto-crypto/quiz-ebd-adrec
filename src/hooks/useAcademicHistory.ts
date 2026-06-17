@@ -95,15 +95,24 @@ export function useAcademicHistory() {
 
       if (attemptsError) throw attemptsError;
 
-      // 3. Fetch ranking
-      const { data: rankingData } = await supabase
-        .from("ranking_season_accumulated")
-        .select("position")
-        .eq("season_id", season!.id)
-        .ilike("participant_name", `${profile!.first_name} ${profile!.last_name}`.trim())
-        .maybeSingle();
+      // 3. Fetch ranking trimestral consolidado (100 pts: 65 lições + 13 leitura + 22 provão)
+      const fullName = `${profile!.first_name} ${profile!.last_name}`.trim().toLowerCase();
+      const { data: trimRows } = await supabase
+        .from("ranking_trimester_consolidated")
+        .select("position, trimester, total_score, lessons_score, reading_score, exam_score, participant_name");
 
-      const ranking = rankingData?.position ? Number(rankingData.position) : undefined;
+      const rankingByTri = new Map<number, { position: number; totalScore: number; lessons: number; reading: number; exam: number }>();
+      (trimRows ?? []).forEach((r: any) => {
+        if ((r.participant_name ?? "").toLowerCase() === fullName) {
+          rankingByTri.set(Number(r.trimester), {
+            position: Number(r.position),
+            totalScore: Number(r.total_score ?? 0),
+            lessons: Number(r.lessons_score ?? 0),
+            reading: Number(r.reading_score ?? 0),
+            exam: Number(r.exam_score ?? 0),
+          });
+        }
+      });
 
       // 4. Group by trimester
       const trimestresMap = new Map<number, TrimestreAcademico>();
