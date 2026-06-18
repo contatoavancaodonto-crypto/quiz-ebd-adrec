@@ -1,7 +1,7 @@
 import { ArrowLeft, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode, useState } from "react";
-import churchLogo from "@/assets/church-logo.webp";
+import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useSidebar } from "@/components/ui/sidebar";
 import { NotificationBell } from "./NotificationBell";
@@ -109,11 +109,11 @@ export function AppHeader(props: Props) {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="w-9 h-9 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 flex items-center justify-center shrink-0">
                 <img
-                  src={churchLogo}
-                  alt="ADREC"
-                  className="w-7 h-7 object-contain"
+                  src={emblemaAsset.url}
+                  alt="Quiz EBD"
+                  className="w-9 h-9 object-contain"
                 />
               </div>
               <div className="leading-tight min-w-0">

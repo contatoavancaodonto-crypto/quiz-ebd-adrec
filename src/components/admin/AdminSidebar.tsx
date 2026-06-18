@@ -104,7 +104,10 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent className="overflow-y-auto">
         <SidebarGroup>
-          <SidebarGroupLabel>Painel Admin</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center gap-2">
+            <img src="/__l5e/assets-v1/56e6d1c7-4334-402a-846c-d18723db9705/quizebd-emblema.png" alt="Quiz EBD" className="w-5 h-5 object-contain" />
+            {(!collapsed || isMobile) && <span>Painel Admin</span>}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
