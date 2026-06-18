@@ -2089,6 +2089,49 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_get_my_church: {
+        Args: never
+        Returns: {
+          active: boolean
+          approved: boolean
+          created_at: string
+          id: string
+          name: string
+          pastor_president: string | null
+          requested: boolean
+          requester_pastor_name: string | null
+          requester_phone: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "churches"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_get_my_church_edit_requests: {
+        Args: never
+        Returns: {
+          church_id: string
+          created_at: string
+          id: string
+          proposed_name: string | null
+          proposed_pastor_president: string | null
+          proposed_requester_phone: string | null
+          requested_by: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "church_edit_requests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_get_profiles_full: {
         Args: { p_church_id?: string; p_ids?: string[] }
         Returns: {
