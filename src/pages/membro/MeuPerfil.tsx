@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { AccountTabs } from "@/components/membro/AccountTabs";
 import { AppTour } from "@/components/AppTour";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 
 
 export default function MeuPerfil() {
@@ -33,6 +34,7 @@ export default function MeuPerfil() {
   const [saving, setSaving] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -62,17 +64,26 @@ export default function MeuPerfil() {
     setPhoneLocal(digits);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("A foto precisa ter menos de 5MB");
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("A foto precisa ter menos de 10MB");
       return;
     }
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    const path = `${user.id}/avatar.jpg`;
+    const { error: upErr } = await supabase.storage
+      .from("avatars")
+      .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (upErr) {
       toast.error("Erro ao enviar foto");
       setUploading(false);
@@ -85,6 +96,7 @@ export default function MeuPerfil() {
     toast.success("Foto atualizada!");
     setAvatarError(false);
     setUploading(false);
+    setCropSrc(null);
   };
 
   const handleSave = async () => {
@@ -200,7 +212,7 @@ export default function MeuPerfil() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleAvatarUpload}
+                onChange={handleAvatarSelect}
               />
               <button
                 aria-label="Alterar foto"
