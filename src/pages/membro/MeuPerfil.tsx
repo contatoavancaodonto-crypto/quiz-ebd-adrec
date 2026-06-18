@@ -188,7 +188,7 @@ export default function MeuPerfil() {
                   <img 
                     src={profile.avatar_url} 
                     alt={firstName} 
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-cover object-top" 
                     onError={() => setAvatarError(true)}
                   />
                 ) : (

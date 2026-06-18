@@ -634,7 +634,7 @@ const RankingPage = () => {
                             <img 
                               src={entry.avatar_url} 
                               alt={entry.participant_name} 
-                              className="w-full h-full object-cover transition-opacity group-hover:opacity-30"
+                              className="w-full h-full object-cover object-top transition-opacity group-hover:opacity-30"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                                 const icon = document.createElement('span');
@@ -657,7 +657,7 @@ const RankingPage = () => {
                             <img 
                               src={entry.avatar_url} 
                               alt={entry.participant_name} 
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover object-top"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                                 (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-sm font-bold text-muted-foreground">${entry.position}</span>`;

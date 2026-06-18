@@ -108,7 +108,7 @@ export const CommunityShortcutCard = () => {
               <div className="flex items-center gap-2 mb-1.5">
                 <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold overflow-hidden shrink-0">
                   {post.author_avatar ? (
-                    <img src={post.author_avatar} alt={post.author_name ?? ""} className="w-full h-full object-cover" />
+                    <img src={post.author_avatar} alt={post.author_name ?? ""} className="w-full h-full object-cover object-top" />
                   ) : (
                     (post.author_name ?? "M").charAt(0).toUpperCase()
                   )}
