@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
 import { toast } from "sonner";
-import logoAsset from "@/assets/quizebd-logo.png.asset.json";
+import logoAsset from "@/assets/quizebd-logo-v2.png.asset.json";
 
 const ADD_CHURCH = "CADASTRAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
