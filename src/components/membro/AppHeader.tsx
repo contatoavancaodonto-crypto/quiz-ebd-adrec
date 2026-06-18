@@ -118,7 +118,7 @@ export function AppHeader(props: Props) {
               </div>
               <div className="leading-tight min-w-0">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                  EBD Online
+                  Quiz EBD
                 </div>
                 <div className="text-xs font-semibold text-foreground truncate">
                   CIMADSETA · {userChurch || "ADREC"}

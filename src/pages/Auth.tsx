@@ -335,7 +335,7 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-24 h-24 mb-3">
             <img src={emblemaAsset.url} alt="Quiz EBD" className="w-24 h-24 object-contain drop-shadow-[0_0_20px_rgba(76,201,224,0.35)]" />
           </div>
-          <h1 className="text-2xl font-display font-bold gradient-text">Quiz EBD online</h1>
+          <h1 className="text-2xl font-display font-bold gradient-text">Quiz EBD</h1>
           <p className="text-sm text-muted-foreground">CIMADSETA</p>
         </div>
 
