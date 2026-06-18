@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Trophy, BarChart3 } from "lucide-react";
-import churchLogo from "@/assets/church-logo.webp";
+import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
 import { useSound } from "@/hooks/useSound";
 
 interface ThankYouScreenProps {
@@ -83,9 +83,9 @@ export function ThankYouScreen({
         className="w-full max-w-md relative z-10 text-center"
       >
         <motion.img
-          src={churchLogo}
-          alt="Logo ADREC"
-          className="w-24 h-24 object-contain mx-auto mb-6 drop-shadow-[0_0_15px_rgba(76,201,224,0.4)]"
+          src={emblemaAsset.url}
+          alt="Quiz EBD"
+          className="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-[0_0_25px_rgba(76,201,224,0.5)]"
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
