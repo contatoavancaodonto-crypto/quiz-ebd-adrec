@@ -1,54 +1,43 @@
-## Objetivo
+## Adicionar logo e emblema da marca Quiz EBD
 
-O badge no topo do Ranking (atualmente sempre "Ao vivo" / "Off" / "...") deve refletir o **status do trimestre selecionado**:
+Dois ativos recebidos:
+- **Logo completa "Quiz EBD"** (com tagline APRENDER • RESPONDER • CRESCER) — fundo branco
+- **Emblema** (escudo + livro + troféu + ?) — fundo transparente
 
-- **Ao vivo** → trimestre em andamento (hoje está entre a abertura e o encerramento)
-- **Em breve** → trimestre ainda não começou
-- **Encerrado** → trimestre já terminou
+Como o tema do app é **dark mode premium** (#05070D), a logo completa tem fundo branco que destoa. Vou usá-la em contextos claros (e-mails, splash claro) e usar o emblema (transparente) em todo o resto do app dark.
 
-As datas de cada trimestre serão calculadas a partir da tabela `lessons`:
-- **Abertura** = `MIN(scheduled_date)` das lições daquele trimestre (a data mais antiga / mais próxima de 01-01)
-- **Encerramento** = `MAX(COALESCE(scheduled_end_date, scheduled_date))` (a data mais "velha"/última do trimestre)
+### Upload dos assets
+Subir os dois para CDN via `lovable-assets` e criar pointers em `src/assets/`:
+- `src/assets/quizebd-logo.png.asset.json`
+- `src/assets/quizebd-emblema.png.asset.json`
 
-Exemplo atual no banco: apenas o 2º trimestre tem lições cadastradas (04/05/2026 → 28/06/2026), então hoje (16/06/2026) ele é o único "Ao vivo". O 1º vira "Encerrado" e o 3º/4º viram "Em breve".
+### Locais estratégicos
 
-## Implementação (frontend apenas)
+**Emblema (transparente — para o app dark)**
+1. **`index.html`** — favicon + apple-touch-icon + OG image (substituir placeholder atual)
+2. **`src/pages/Auth.tsx`** — topo da tela de login (centralizado, ~80px)
+3. **`src/components/admin/AdminSidebar.tsx`** — header da sidebar admin ao lado do título
+4. **`src/components/membro/AppHeader.tsx`** — mobile header pequeno (28-32px) ao lado do nome do usuário
+5. **`src/components/PageSkeleton.tsx`** / loading states — emblema com pulse animation enquanto carrega
+6. **`src/components/ThankYouScreen.tsx`** — emblema grande no topo como assinatura
+7. **`src/pages/NotFound.tsx`** — emblema acima do "404"
 
-Arquivo: `src/pages/Ranking.tsx`
+**Logo completa (com fundo claro)**
+1. **`supabase/functions/_shared/email-templates/_brand.ts`** — substituir/atualizar logo em todos os e-mails transacionais (welcome, quiz-result, notification, etc.) via upload para bucket público `email-assets`
+2. **`src/pages/Oferta.tsx`** (se tiver seção clara) — logo completa no header
 
-1. **Novo hook/query `useTrimesterWindows`** dentro do componente:
-   ```ts
-   const { data: trimesterWindows } = useQuery({
-     queryKey: ["trimester-windows"],
-     queryFn: async () => {
-       const { data } = await supabase
-         .from("lessons")
-         .select("trimester, scheduled_date, scheduled_end_date");
-       // reduz para { 1: {opens, closes} | null, 2: {...}, 3: ..., 4: ... }
-     },
-   });
-   ```
-   Para cada trimestre (1–4), agrega `min(scheduled_date)` e `max(scheduled_end_date ?? scheduled_date)`. Se não houver lições, fica `null`.
+**Não usar a logo branca em:** telas dark do app (Ranking, Quiz, Index, Comunidade), pois o retângulo branco quebra o visual premium. Nessas, fica só o emblema.
 
-2. **Função `getTrimesterStatus(t)`**:
-   - Se a janela existe e `now < opens` → `"upcoming"`
-   - Se existe e `now > closes` → `"closed"`
-   - Se existe e `opens ≤ now ≤ closes` → `"active"`
-   - Se **não** existe janela (sem lições):
-     - fallback por calendário: T1 = Jan–Mar, T2 = Abr–Jun, T3 = Jul–Set, T4 = Out–Dez do ano corrente, e aplica a mesma regra. Isso garante o comportamento pedido (T1 encerrado, T3/T4 em breve) mesmo sem lições cadastradas.
+### Detalhes técnicos
+- Pointers via `lovable-assets create --file /mnt/user-uploads/... --filename <nome>.png`
+- E-mails: usar `supabase--storage_upload` para subir a logo completa em bucket `email-assets` (público) e referenciar URL pública nos templates
+- Favicon: substituir `<link rel="icon">` em `index.html` para apontar para o emblema CDN
+- Manter `<meta og:image>` apontando para a logo completa (melhor em previews sociais com fundo branco)
 
-3. **Badge no `PageHero` (linha ~323)** passa a depender de `getTrimesterStatus(trimester)`:
-   - `active` → mantém comportamento atual ("Ao vivo" verde pulsante quando `rtConnected`, "..." quando reconectando, "Off" caso contrário).
-   - `upcoming` → badge azul/cinza com ícone de relógio e texto **"Em breve"** (sem ping).
-   - `closed` → badge neutro/cinza com texto **"Encerrado"** (sem ping).
+### Memória
+Atualizar `mem://style/visual-identity` com:
+- Emblema usado em superfícies dark
+- Logo completa usada em e-mails e contextos light
+- Caminhos dos asset pointers
 
-4. **Bônus de UX nos botões 1º/2º/3º/4º Tri.** (linhas 296–308):
-   - Adicionar um pequeno indicador visual abaixo/ao lado do número:
-     - ponto verde pulsante para o trimestre ativo
-     - texto auxiliar discreto "Em breve" ou "Encerrado" para os demais
-   - Mantém o clique funcional em todos (usuário pode visualizar rankings históricos/futuros), apenas comunica o status.
-
-## Fora do escopo
-
-- Nenhuma mudança no backend, views, migrations ou regras de pontuação.
-- Nenhuma mudança na lógica de realtime: o badge "Ao vivo" continua exigindo conexão WebSocket — só passa a ser **suprimido** quando o trimestre selecionado não está ativo.
+Confirma a estratégia? Se sim, implemento; se preferir outros locais (ex: usar a logo completa em algum lugar específico, ou pular os e-mails nesta rodada), me diz antes.
