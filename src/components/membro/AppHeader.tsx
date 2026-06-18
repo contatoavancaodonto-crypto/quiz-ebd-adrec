@@ -139,7 +139,7 @@ export function AppHeader(props: Props) {
                   <img
                     src={profile.avatar_url}
                     alt={props.firstName ?? "Perfil"}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     onError={() => setAvatarError(true)}
                   />
                 ) : (
