@@ -83,7 +83,7 @@ export function ThankYouScreen({
         className="w-full max-w-md relative z-10 text-center"
       >
         <motion.img
-          src={emblemaAsset.url}
+          src={logoAsset.url}
           alt="Quiz EBD"
           className="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-[0_0_25px_rgba(76,201,224,0.5)]"
           initial={{ scale: 0, rotate: -180 }}
