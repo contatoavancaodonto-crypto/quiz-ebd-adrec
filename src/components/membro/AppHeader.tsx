@@ -1,7 +1,7 @@
 import { ArrowLeft, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode, useState } from "react";
-import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
+import logoAsset from "@/assets/quizebd-logo-v2.png.asset.json";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useSidebar } from "@/components/ui/sidebar";
 import { NotificationBell } from "./NotificationBell";
@@ -111,7 +111,7 @@ export function AppHeader(props: Props) {
               </button>
               <div className="w-9 h-9 flex items-center justify-center shrink-0">
                 <img
-                  src={emblemaAsset.url}
+                  src={logoAsset.url}
                   alt="Quiz EBD"
                   className="w-9 h-9 object-contain"
                 />
