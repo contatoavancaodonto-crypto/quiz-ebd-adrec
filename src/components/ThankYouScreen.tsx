@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Trophy, BarChart3 } from "lucide-react";
-import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
+import logoAsset from "@/assets/quizebd-logo-v2.png.asset.json";
 import { useSound } from "@/hooks/useSound";
 
 interface ThankYouScreenProps {
