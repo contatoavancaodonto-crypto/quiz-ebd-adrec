@@ -47,19 +47,8 @@ export default function AdminMyChurch() {
     const load = async () => {
       setLoading(true);
       const [{ data: ch }, { data: reqs }] = await Promise.all([
-        supabase
-          .from("churches")
-          .select("id, name, pastor_president, requester_phone")
-          .eq("id", churchId)
-          .maybeSingle(),
-        supabase
-          .from("church_edit_requests")
-          .select(
-            "id, proposed_name, proposed_pastor_president, proposed_requester_phone, status, review_note, reviewed_at, created_at"
-          )
-          .eq("church_id", churchId)
-          .order("created_at", { ascending: false })
-          .limit(20),
+        supabase.rpc("admin_get_my_church"),
+        supabase.rpc("admin_get_my_church_edit_requests"),
       ]);
       if (cancelled) return;
       if (ch) {
