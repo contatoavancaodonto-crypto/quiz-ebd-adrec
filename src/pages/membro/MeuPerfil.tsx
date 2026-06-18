@@ -333,6 +333,12 @@ export default function MeuPerfil() {
           </div>
         </section>
       </div>
+      <AvatarCropDialog
+        open={!!cropSrc}
+        imageSrc={cropSrc}
+        onClose={() => setCropSrc(null)}
+        onConfirm={handleCroppedUpload}
+      />
     </MemberLayout>
   );
 }
