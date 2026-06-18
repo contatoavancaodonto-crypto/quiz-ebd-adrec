@@ -1,7 +1,7 @@
 import { ArrowLeft, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ReactNode, useState } from "react";
-import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
+import logoAsset from "@/assets/quizebd-logo-v2.png.asset.json";
 import { useFullProfile } from "@/hooks/useFullProfile";
 import { useSidebar } from "@/components/ui/sidebar";
 import { NotificationBell } from "./NotificationBell";
