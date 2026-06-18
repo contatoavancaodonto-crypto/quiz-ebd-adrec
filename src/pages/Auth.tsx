@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AddChurchModal, type ChurchRequest } from "@/components/AddChurchModal";
 import { useChurches } from "@/hooks/useChurches";
 import { toast } from "sonner";
-import emblemaAsset from "@/assets/quizebd-emblema.png.asset.json";
+import logoAsset from "@/assets/quizebd-logo.png.asset.json";
 
 const ADD_CHURCH = "CADASTRAR IGREJA";
 const OTHER_CHURCH = "OUTRO";
@@ -332,10 +332,9 @@ const Auth = () => {
         className="w-full max-w-[420px] relative z-10"
       >
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 mb-3">
-            <img src={emblemaAsset.url} alt="Quiz EBD" className="w-24 h-24 object-contain drop-shadow-[0_0_20px_rgba(76,201,224,0.35)]" />
+          <div className="inline-flex items-center justify-center mb-3">
+            <img src={logoAsset.url} alt="Quiz EBD" className="h-24 w-auto object-contain drop-shadow-[0_0_20px_rgba(76,201,224,0.35)]" />
           </div>
-          <h1 className="text-2xl font-display font-bold gradient-text">Quiz EBD</h1>
           <p className="text-sm text-muted-foreground">CIMADSETA</p>
         </div>
 
