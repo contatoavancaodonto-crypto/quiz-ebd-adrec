@@ -191,6 +191,14 @@ const Index = () => {
     ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
     : "";
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
+  const { data: trimesterProgress } = useTrimesterProgress(
+    fullName,
+    season?.id,
+    selectedClassId || userClassId,
+  );
+  const completedLesson13 = !!trimesterProgress?.completedLesson13;
+  const completedExam = !!trimesterProgress?.completedExam;
+  const showProvaoCTA = completedLesson13 && !completedExam && !!provao;
   const weekClose = useCountdown(weeklyQuiz?.closes_at, handleRefresh);
   const nextOpen = useCountdown(nextQuiz?.opens_at, handleRefresh);
   const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
