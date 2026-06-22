@@ -54,6 +54,7 @@ import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
 import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
 import { useCurrentLesson, useNextLesson } from "@/hooks/useCurrentLesson";
+import { useTrimesterProgress } from "@/hooks/useTrimesterProgress";
 
 import { toast } from "sonner";
 
