@@ -653,7 +653,24 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {alreadyAnsweredWeekly ? (
+                  {completedExam ? (
+                    <motion.button
+                      disabled
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1.5 cursor-not-allowed border border-emerald-500/30"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Provão Concluído
+                    </motion.button>
+                  ) : showProvaoCTA ? (
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={handleStartProvao}
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm flex items-center gap-1.5 shadow-lg shadow-amber-500/30"
+                    >
+                      🏆 Fazer Provão
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.button>
+                  ) : alreadyAnsweredWeekly ? (
                     <motion.button
                       disabled
                       className="shrink-0 px-4 py-2.5 rounded-xl bg-muted text-muted-foreground font-bold text-[11px] flex items-center gap-1.5 opacity-60 cursor-not-allowed border border-border"
