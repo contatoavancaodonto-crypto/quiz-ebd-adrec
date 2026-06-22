@@ -54,6 +54,7 @@ import { WeeklyVersesGrid } from "@/components/WeeklyVersesGrid";
 import { WeeklyLessonCard } from "@/components/WeeklyLessonCard";
 import { useWeeklyLessons } from "@/hooks/useWeeklyLessons";
 import { useCurrentLesson, useNextLesson } from "@/hooks/useCurrentLesson";
+import { useTrimesterProgress } from "@/hooks/useTrimesterProgress";
 
 import { toast } from "sonner";
 
@@ -190,6 +191,14 @@ const Index = () => {
     ? `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()
     : "";
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
+  const { data: trimesterProgress } = useTrimesterProgress(
+    fullName,
+    season?.id,
+    selectedClassId || userClassId,
+  );
+  const completedLesson13 = !!trimesterProgress?.completedLesson13;
+  const completedExam = !!trimesterProgress?.completedExam;
+  const showProvaoCTA = completedLesson13 && !completedExam && !!provao;
   const weekClose = useCountdown(weeklyQuiz?.closes_at, handleRefresh);
   const nextOpen = useCountdown(nextQuiz?.opens_at, handleRefresh);
   const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
@@ -470,10 +479,17 @@ const Index = () => {
       bottomNav={{
         showFab: true,
         onFabClick: () => {
+          if (completedExam) {
+            toast.success("✅ Provão Concluído! Veja seu resultado no histórico.");
+            navigate("/membro/historico");
+            return;
+          }
+          if (showProvaoCTA) {
+            handleStartProvao();
+            return;
+          }
           if (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) {
             handleStartWeekly();
-          } else if (provao && provaoStatus.available) {
-            handleStartProvao();
           } else if (currentLesson) {
             handleStartCurrentLesson();
           } else if (alreadyAnsweredWeekly) {
@@ -484,11 +500,12 @@ const Index = () => {
             toast.error("Nenhum quiz disponível no momento.");
           }
         },
-        fabLabel:
-          weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
-            ? "Quiz"
-            : provao && provaoStatus.available
-              ? "Provão"
+        fabLabel: completedExam
+          ? "✅ Concluído"
+          : showProvaoCTA
+            ? "🏆 Provão"
+            : weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
+              ? "Quiz"
               : currentLesson
                 ? `Lição ${currentLesson.lesson_number}`
                 : "Quiz",
@@ -636,7 +653,24 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {alreadyAnsweredWeekly ? (
+                  {completedExam ? (
+                    <motion.button
+                      disabled
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1.5 cursor-not-allowed border border-emerald-500/30"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Provão Concluído
+                    </motion.button>
+                  ) : showProvaoCTA ? (
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={handleStartProvao}
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm flex items-center gap-1.5 shadow-lg shadow-amber-500/30"
+                    >
+                      🏆 Fazer Provão
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.button>
+                  ) : alreadyAnsweredWeekly ? (
                     <motion.button
                       disabled
                       className="shrink-0 px-4 py-2.5 rounded-xl bg-muted text-muted-foreground font-bold text-[11px] flex items-center gap-1.5 opacity-60 cursor-not-allowed border border-border"
