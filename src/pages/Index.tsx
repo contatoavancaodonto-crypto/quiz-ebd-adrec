@@ -479,10 +479,17 @@ const Index = () => {
       bottomNav={{
         showFab: true,
         onFabClick: () => {
+          if (completedExam) {
+            toast.success("✅ Provão Concluído! Veja seu resultado no histórico.");
+            navigate("/membro/historico");
+            return;
+          }
+          if (showProvaoCTA) {
+            handleStartProvao();
+            return;
+          }
           if (weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired) {
             handleStartWeekly();
-          } else if (provao && provaoStatus.available) {
-            handleStartProvao();
           } else if (currentLesson) {
             handleStartCurrentLesson();
           } else if (alreadyAnsweredWeekly) {
@@ -493,11 +500,12 @@ const Index = () => {
             toast.error("Nenhum quiz disponível no momento.");
           }
         },
-        fabLabel:
-          weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
-            ? "Quiz"
-            : provao && provaoStatus.available
-              ? "Provão"
+        fabLabel: completedExam
+          ? "✅ Concluído"
+          : showProvaoCTA
+            ? "🏆 Provão"
+            : weeklyQuiz && !alreadyAnsweredWeekly && !weekClose.expired
+              ? "Quiz"
               : currentLesson
                 ? `Lição ${currentLesson.lesson_number}`
                 : "Quiz",
