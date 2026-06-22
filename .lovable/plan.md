@@ -1,43 +1,37 @@
-## Adicionar logo e emblema da marca Quiz EBD
+## Liberação automática do Provão após a Lição 13
 
-Dois ativos recebidos:
-- **Logo completa "Quiz EBD"** (com tagline APRENDER • RESPONDER • CRESCER) — fundo branco
-- **Emblema** (escudo + livro + troféu + ?) — fundo transparente
+Hoje a Home já mostra um card separado de "Provão Trimestral" e o botão principal sempre diz "Responder Quiz". Vou transformar esse botão principal para refletir três estados de progresso do trimestre.
 
-Como o tema do app é **dark mode premium** (#05070D), a logo completa tem fundo branco que destoa. Vou usá-la em contextos claros (e-mails, splash claro) e usar o emblema (transparente) em todo o resto do app dark.
+### Comportamento
+- **Estado 1 — Lições 1 a 12 (ou L13 ainda não respondida):** botão = `Responder Quiz` → abre quiz da semana corrente.
+- **Estado 2 — Lição 13 concluída e Provão ainda não feito:** botão = `🏆 Fazer Provão` → abre o quiz `quiz_kind = 'trimestral'`.
+- **Estado 3 — Provão concluído:** botão = `✅ Provão Concluído` (desabilitado) + atalhos para Resultado, Certificado e Ranking.
 
-### Upload dos assets
-Subir os dois para CDN via `lovable-assets` e criar pointers em `src/assets/`:
-- `src/assets/quizebd-logo.png.asset.json`
-- `src/assets/quizebd-emblema.png.asset.json`
+### Como detectar a conclusão da Lição 13
+Adicionar um hook `useTrimesterProgress(classId, seasonId, participantId)` que consulta `quiz_attempts` filtrando pelo `season_id` da temporada ativa e retorna:
+- `completedLesson13`: existe attempt finalizado cujo quiz tem `lesson_number = 13` e `quiz_kind = 'weekly'`.
+- `completedExam`: existe attempt finalizado com `quiz_kind = 'trimestral'`.
 
-### Locais estratégicos
+Sem nova coluna no banco — o estado é derivado das tentativas existentes.
 
-**Emblema (transparente — para o app dark)**
-1. **`index.html`** — favicon + apple-touch-icon + OG image (substituir placeholder atual)
-2. **`src/pages/Auth.tsx`** — topo da tela de login (centralizado, ~80px)
-3. **`src/components/admin/AdminSidebar.tsx`** — header da sidebar admin ao lado do título
-4. **`src/components/membro/AppHeader.tsx`** — mobile header pequeno (28-32px) ao lado do nome do usuário
-5. **`src/components/PageSkeleton.tsx`** / loading states — emblema com pulse animation enquanto carrega
-6. **`src/components/ThankYouScreen.tsx`** — emblema grande no topo como assinatura
-7. **`src/pages/NotFound.tsx`** — emblema acima do "404"
+### Gate de acesso ao Provão
+- Front: bloquear o botão `Fazer Provão` quando `completedLesson13 === false`, exibindo toast: "Conclua a Lição 13 para liberar o Provão".
+- Back (defesa em profundidade): adicionar checagem no início do quiz trimestral via uma função `can_take_provao(p_participant_id uuid, p_season_id uuid)` ou validar dentro de um trigger no `quiz_attempts` (INSERT com `quiz_kind='trimestral'` exige attempt L13 finalizado).
 
-**Logo completa (com fundo claro)**
-1. **`supabase/functions/_shared/email-templates/_brand.ts`** — substituir/atualizar logo em todos os e-mails transacionais (welcome, quiz-result, notification, etc.) via upload para bucket público `email-assets`
-2. **`src/pages/Oferta.tsx`** (se tiver seção clara) — logo completa no header
+### Banco de questões do Provão
+A função `get_trimestral_provao_questions(class_id, season_id)` já existe e monta as perguntas a partir das lições 1–13 do trimestre, embaralhando e garantindo cobertura. Mantemos como está.
 
-**Não usar a logo branca em:** telas dark do app (Ranking, Quiz, Index, Comunidade), pois o retângulo branco quebra o visual premium. Nessas, fica só o emblema.
+### Pontuação 22 pontos
+A regra atual de score do provão é por acertos. Para fixar em "22 pontos", definir `total_questions = 22` nos quizzes trimestrais e manter score por acertos (cada questão = 1 pt, máx 22). Sem mudança de schema; apenas garantir esse valor na criação do provão (admin).
 
-### Detalhes técnicos
-- Pointers via `lovable-assets create --file /mnt/user-uploads/... --filename <nome>.png`
-- E-mails: usar `supabase--storage_upload` para subir a logo completa em bucket `email-assets` (público) e referenciar URL pública nos templates
-- Favicon: substituir `<link rel="icon">` em `index.html` para apontar para o emblema CDN
-- Manter `<meta og:image>` apontando para a logo completa (melhor em previews sociais com fundo branco)
+### UI mobile
+`MobileBottomNav` já tem o FAB central. Vou mudar o `fabLabel` e `onFabClick` em `Index.tsx` conforme o estado calculado.
 
-### Memória
-Atualizar `mem://style/visual-identity` com:
-- Emblema usado em superfícies dark
-- Logo completa usada em e-mails e contextos light
-- Caminhos dos asset pointers
+### Arquivos
+- novo: `src/hooks/useTrimesterProgress.ts`
+- editar: `src/pages/Index.tsx` — calcular estado, ajustar label/handler do FAB e do CTA principal, mostrar "Provão Concluído" disabled.
+- editar: `src/components/membro/MobileBottomNav.tsx` — aceitar `fabDisabled` opcional.
+- migration (opcional, defesa): trigger `enforce_provao_prerequisite` em `quiz_attempts`.
 
-Confirma a estratégia? Se sim, implemento; se preferir outros locais (ex: usar a logo completa em algum lugar específico, ou pular os e-mails nesta rodada), me diz antes.
+### Fora de escopo
+Geração de certificado (assumo que já existe ou é tela futura) e mudança das views de ranking (o provão já entra no `total_score` porque é um attempt finalizado).
