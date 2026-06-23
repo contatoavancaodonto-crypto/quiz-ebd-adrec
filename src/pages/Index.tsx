@@ -285,7 +285,8 @@ const Index = () => {
 
   const provaoIsDisabled =
     PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri) ||
-    !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri);
+    !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri) ||
+    completedExam;
 
   const handleProvaoTriClick = (t: number) => {
     const isClosed = PROVAO_CLOSED_TRIMESTERS.includes(t);
