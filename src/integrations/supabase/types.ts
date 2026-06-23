@@ -1721,6 +1721,35 @@ export type Database = {
       }
     }
     Views: {
+      provao_consistency_check: {
+        Row: {
+          attempt_score: number | null
+          attempts_count: number | null
+          class_id: string | null
+          class_name: string | null
+          participant_id: string | null
+          participant_name: string | null
+          ranking_exam_score: number | null
+          status: string | null
+          trimester: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ranking_by_class: {
         Row: {
           accuracy_percentage: number | null
