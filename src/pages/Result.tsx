@@ -496,10 +496,11 @@ const ResultPage = () => {
             const shareUrl = typeof window !== "undefined" ? window.location.origin : "https://quizebd.com";
             const firstName = (store.participantName || "").trim().split(/\s+/)[0] || "Eu";
             const shareTitle = `🔥 ${firstName} fez ${score}/${totalQuestions} no Quiz EBD!`;
+            const tri = store.trimester || 1;
             const shareText =
 `${shareTitle}
 
-📖 Quiz EBD — 1º TRI. 2026 / ADREC
+📖 Quiz EBD — ${tri}º TRI. 2026 / ADREC
 👤 ${store.participantName}
 ✅ ${score}/${totalQuestions} acertos (${pct}%)
 ⏱️ Tempo: ${timeStr}
