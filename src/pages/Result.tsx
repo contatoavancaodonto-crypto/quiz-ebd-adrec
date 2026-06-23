@@ -130,15 +130,26 @@ const ResultPage = () => {
 
       const churchId = store.churchId || (gr as any)?.church_id;
 
-      // Top 5 geral do trimestre (usando a nova view consolidada)
+      // Helper: deduplica por participant_name + class_name (mesma pessoa não aparece duas vezes)
+      const dedupe = <T extends { participant_name?: string; class_name?: string }>(arr: T[]) => {
+        const seen = new Set<string>();
+        return arr.filter((it) => {
+          const k = `${(it.participant_name || "").toLowerCase().trim()}::${(it.class_name || "").toLowerCase().trim()}`;
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+      };
+
+      // Top 5 geral do trimestre
       const { data: top } = await supabase
         .from("ranking_trimester_consolidated")
         .select("position, participant_name, total_score, total_time_ms, church_name, class_name")
         .eq("trimester", store.trimester)
         .order("position")
-        .limit(5);
-      
-      const mappedTop = (top || []).map(item => ({
+        .limit(20);
+
+      const mappedTop = dedupe(top || []).slice(0, 5).map((item: any) => ({
         position: item.position,
         participant_name: item.participant_name,
         score: item.total_score,
@@ -146,7 +157,7 @@ const ResultPage = () => {
         total_time_seconds: Math.round((item.total_time_ms || 0) / 1000),
         church_name: item.church_name,
         class_name: item.class_name,
-        attempt_id: "" // View consolidada não tem attempt_id único
+        attempt_id: ""
       }));
       setGeneralTop(mappedTop);
 
@@ -154,13 +165,13 @@ const ResultPage = () => {
       if (churchId) {
         const { data: ch } = await supabase
           .from("ranking_trimester_consolidated")
-          .select("position, participant_name, total_score, total_time_ms, church_name")
+          .select("position, participant_name, total_score, total_time_ms, church_name, class_name")
           .eq("trimester", store.trimester)
           .eq("church_id", churchId)
           .order("position")
-          .limit(10);
-        
-        const list = (ch || []).map(item => ({
+          .limit(30);
+
+        const list = dedupe(ch || []).slice(0, 10).map((item: any) => ({
           position: item.position,
           participant_name: item.participant_name,
           score: item.total_score,
@@ -170,14 +181,16 @@ const ResultPage = () => {
           attempt_id: ""
         }));
         setChurchTop(list);
-        
-        // Encontrar minha posição na igreja (baseado no nome já que é consolidado)
+
         const me = list.find((e) => e.participant_name.toLowerCase().trim() === store.participantName.toLowerCase().trim());
         if (me) setChurchRank(me.position);
       }
     };
 
     fetchAll();
+    // Re-fetch após pequena janela para garantir que a view consolidada já refletiu a tentativa
+    const t1 = setTimeout(fetchAll, 1500);
+    const t2 = setTimeout(fetchAll, 4000);
     
     // Configura um listener real-time para atualizar o ranking assim que o broadcast chegar
     const channel = supabase.channel(`result-refresh-${store.attemptId}`)
@@ -187,6 +200,8 @@ const ResultPage = () => {
       .subscribe();
 
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
       supabase.removeChannel(channel);
     };
   }, [store.attemptId, store.churchId, store.trimester, navigate]);
