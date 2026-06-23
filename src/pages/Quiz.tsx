@@ -305,7 +305,7 @@ const QuizPage = () => {
         }
 
         // 🔒 Regra: cada lição / provão só pode ser feito UMA vez por aluno
-        if (!store.isRetrying) {
+        if (!store.isRetrying && quizId) {
           const { data: existingAttempt } = await supabase
             .from("quiz_attempts")
             .select("id, score, total_questions, accuracy_percentage, total_time_ms, finished_at")
@@ -336,10 +336,12 @@ const QuizPage = () => {
           .from("quiz_attempts")
           .insert({
             participant_id: participantId,
-            quiz_id: isLesson ? null : quizId,
-            lesson_id: isLesson ? quizId : null,
+            quiz_id: quizId && !isLesson ? quizId : null,
+            lesson_id: quizId && isLesson ? quizId : null,
             total_questions: selected.length,
-            source_type: isLesson ? 'lesson_table' : 'quiz_table'
+            season_id: store.seasonId || null,
+            trimester: isTrimestral ? (store.trimester ?? null) : null,
+            source_type: isTrimestral ? 'trimestral_rpc' : (isLesson ? 'lesson_table' : 'quiz_table')
           })
           .select("id")
           .single();
