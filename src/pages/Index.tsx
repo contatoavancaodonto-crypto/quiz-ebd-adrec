@@ -410,9 +410,24 @@ const Index = () => {
   };
 
   const handleStartProvao = () => {
-    if (!provao) return;
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
-    startQuiz(userClass.id, userClass.name, 2, provao.id);
+    // Se existir um registro de quiz trimestral, usa o id dele.
+    // Caso contrário, inicia o provão sem quizId — Quiz.tsx detecta o modo
+    // trimestral e carrega perguntas via RPC `get_trimestral_provao_questions`.
+    if (provao) {
+      startQuiz(userClass.id, userClass.name, 2, provao.id);
+      return;
+    }
+    if (!profile?.first_name) return toast.error("Perfil incompleto.");
+    const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+    const store = useQuizStore.getState();
+    store.reset();
+    store.setParticipant(fullNameLocal, userClass.id, userClass.name, 2, season?.id);
+    store.setQuizMetadata("trimestral", 26);
+    if (profile.church_id && profile.church_name) {
+      store.setChurch(profile.church_id, profile.church_name);
+    }
+    setTimeout(() => navigate("/quiz"), 0);
   };
 
   const handleStartCurrentLesson = () => {
