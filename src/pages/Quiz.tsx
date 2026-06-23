@@ -306,16 +306,26 @@ const QuizPage = () => {
         }
 
         // 🔒 Regra: cada lição / provão só pode ser feito UMA vez por aluno
-        if (!store.isRetrying && quizId) {
-          const { data: existingAttempt } = await supabase
+        if (!store.isRetrying) {
+          let dupQuery = supabase
             .from("quiz_attempts")
             .select("id, score, total_questions, accuracy_percentage, total_time_ms, finished_at")
             .eq("participant_id", participantId)
-            .eq(isLesson ? "lesson_id" : "quiz_id", quizId)
             .not("finished_at", "is", null)
             .order("finished_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+            .limit(1);
+
+          if (isTrimestral) {
+            dupQuery = dupQuery
+              .eq("source_type", "trimestral_rpc")
+              .eq("trimester", store.trimester ?? 0);
+          } else if (quizId) {
+            dupQuery = dupQuery.eq(isLesson ? "lesson_id" : "quiz_id", quizId);
+          } else {
+            dupQuery = dupQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+          }
+
+          const { data: existingAttempt } = await dupQuery.maybeSingle();
 
           if (existingAttempt) {
             setAlreadyDone({
