@@ -316,9 +316,10 @@ const QuizPage = () => {
             .limit(1);
 
           if (isTrimestral) {
-            dupQuery = dupQuery
-              .eq("source_type", "trimestral_rpc")
-              .eq("trimester", store.trimester ?? 0);
+            dupQuery = dupQuery.eq("source_type", "trimestral_rpc");
+            if (store.trimester) {
+              dupQuery = dupQuery.eq("trimester", store.trimester);
+            }
           } else if (quizId) {
             dupQuery = dupQuery.eq(isLesson ? "lesson_id" : "quiz_id", quizId);
           } else {
