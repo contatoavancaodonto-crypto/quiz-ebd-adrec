@@ -119,7 +119,8 @@ const QuizPage = () => {
           }
 
           // Se o quizId não veio do store (veio da Home), tentamos descobrir o quiz aberto
-          if (!quizId) {
+          // (pula no modo trimestral — o provão usa RPC e não precisa de quizId).
+          if (!quizId && store.quizKind !== "trimestral") {
             const nowIso = new Date().toISOString();
             console.log("QuizId não encontrado no store, buscando quiz ativo...");
             
