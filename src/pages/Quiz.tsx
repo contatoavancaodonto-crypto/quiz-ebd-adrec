@@ -185,7 +185,7 @@ const QuizPage = () => {
           .eq("id", quizId)
           .maybeSingle();
 
-        const isTrimestral = quizMeta?.quiz_kind === 'trimestral' || store.trimester !== undefined && !quizId;
+        const isTrimestral = quizMeta?.quiz_kind === 'trimestral' || store.quizKind === 'trimestral' || (store.trimester !== undefined && !quizId);
 
         if (isTrimestral) {
           console.log("Detectado Provão Trimestral. Buscando perguntas via RPC...");
