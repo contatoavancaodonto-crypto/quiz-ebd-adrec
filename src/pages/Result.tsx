@@ -516,7 +516,7 @@ const ResultPage = () => {
 👤 ${store.participantName}
 ✅ ${score}/${totalQuestions} acertos (${pct}%)
 ⏱️ Tempo: ${timeStr}
-🥇 Turma${store.className ? ` (${store.className})` : ""}: ${classRank ? `#${classRank}` : "—"}
+🥇 Turma${store.className ? ` (${store.className}${store.churchName ? ` - ${store.churchName}` : ""})` : ""}: ${classRank ? `#${classRank}` : "—"}
 🌎 Geral: ${generalRank ? `#${generalRank}` : "—"}
 
 Bora pro desafio? Faça o seu quiz e tenta bater meu resultado 👇
