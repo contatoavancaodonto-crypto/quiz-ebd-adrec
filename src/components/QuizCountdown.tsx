@@ -8,12 +8,12 @@ interface QuizCountdownProps {
 }
 
 const getRules = (total: number) => [
-  `📝 O quiz contém ${total} perguntas da lição vigente`,
+  `📝 O quiz contém 20 perguntas da lição vigente`,
   "🏆 Haverá 2 rankings: da sua Classe e Geral",
   "💡 Critério de desempate: Menor tempo de respostas",
 ];
 
-export function QuizCountdown({ onComplete, totalQuestions = 13 }: QuizCountdownProps) {
+export function QuizCountdown({ onComplete, totalQuestions = 20 }: QuizCountdownProps) {
   const rules = getRules(totalQuestions);
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">

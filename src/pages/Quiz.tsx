@@ -29,7 +29,7 @@ interface Question {
 
 const optionLabels = ["A", "B", "C", "D"] as const;
 const optionKeys = ["option_a", "option_b", "option_c", "option_d"] as const;
-const DEFAULT_QUESTIONS_PER_QUIZ = 13;
+const DEFAULT_QUESTIONS_PER_QUIZ = 20;
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
