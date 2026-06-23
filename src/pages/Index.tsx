@@ -285,7 +285,8 @@ const Index = () => {
 
   const provaoIsDisabled =
     PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri) ||
-    !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri);
+    !PROVAO_AVAILABLE_TRIMESTERS.includes(provaoSelectedTri) ||
+    completedExam;
 
   const handleProvaoTriClick = (t: number) => {
     const isClosed = PROVAO_CLOSED_TRIMESTERS.includes(t);
@@ -309,6 +310,7 @@ const Index = () => {
   };
 
   const handleStartProvaoCard = async () => {
+    if (completedExam) return toast.info("✅ Você já realizou o Provão deste trimestre.");
     if (seasonExpired) return toast.error("Este quiz foi encerrado.");
     if (PROVAO_QUIZ_CLOSED) return toast.error("⏰ Tempo esgotado!");
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
@@ -917,8 +919,10 @@ const Index = () => {
                       ) : provaoIsDisabled ? (
                         <>
                           <Lock className="w-4 h-4" />
-                          {provaoSelectedTri === 2 && !provaoStatus.available 
-                            ? `Disponível em ${provaoStatus.daysToOpen} dias` 
+                          {completedExam
+                            ? "Provão Concluído"
+                            : provaoSelectedTri === 2 && !provaoStatus.available
+                            ? `Disponível em ${provaoStatus.daysToOpen} dias`
                             : `${provaoSelectedTri}º Tri. indisponível`}
                         </>
                       ) : (
