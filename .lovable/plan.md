@@ -1,24 +1,35 @@
-Origem do erro:
-- O botão FAB inicia o Provão sem `quizId`, usando a RPC `get_trimestral_provao_questions` para montar as 26 perguntas.
-- A RPC quebra porque a coluna `lessons.trimester` no banco é `text`, mas a função declara `v_trimester` como `integer` e faz comparação `l.trimester = v_trimester`. Isso gera: `operator does not exist: text = integer`.
-- Depois disso, o frontend cai em fallbacks de quiz normal e tenta consultar `.eq("id", quizId)` com `quizId` vazio (`""`), causando o segundo erro: `invalid input syntax for type uuid: ""`.
-- Portanto, a correção anterior resolveu parte do fluxo, mas não tratou a incompatibilidade de tipo da RPC nem bloqueou todos os fallbacks quando o Provão está sem `quizId`.
+## Problema
 
-Plano de correção alternativa:
-1. Corrigir a função do banco `get_trimestral_provao_questions`:
-   - Trocar a lógica para comparar `trimester` como texto de forma explícita (`'2'`/`p_trimester::text` ou cast seguro).
-   - Não depender de `SELECT trimester INTO v_trimester` com tipo errado.
-   - Manter a regra crítica: 2 perguntas garantidas por lição 1–13 e resultado final embaralhado com `ORDER BY random()`.
+Um usuário recém-criado clicou no botão central (FAB) do menu mobile e foi direto para o **Provão**, sem antes ter feito o quiz da **Lição 13**. A regra correta é:
 
-2. Blindar o frontend em `Quiz.tsx`:
-   - Quando `isTrimestral` for verdadeiro e a RPC falhar ou vier vazia, parar o carregamento com mensagem específica do Provão, sem cair nos fallbacks de quiz/lição.
-   - Garantir que nenhuma consulta UUID rode quando `quizId` estiver vazio.
+1. Primeiro o usuário faz o **quiz da Lição 13** (clicando no FAB).
+2. Só **depois** que a Lição 13 está concluída, o FAB passa a abrir o **Provão**.
 
-3. Ajustar início pelo FAB em `Index.tsx`:
-   - Antes de iniciar o Provão sem `quizId`, limpar o store e setar explicitamente `quizKind = "trimestral"`, `totalQuestions = 26`, `trimester = 2`, `seasonId` e dados do participante.
-   - Se existir um registro de quiz trimestral, ainda assim priorizar o mesmo fluxo RPC do Provão para evitar depender de `quizId`.
+## Causa
 
-4. Validar:
-   - Chamar a RPC no banco para a turma do usuário e confirmar retorno de 26 questões, sendo 2 por lição 1–13.
-   - Validar que o fluxo do `/quiz` não tenta mais consultar UUID vazio.
-   - Confirmar que o botão "🏆 Provão" abre o quiz em vez de voltar para home com "Erro ao carregar quiz."
+O hook `useTrimesterProgress` identifica o participante via `participants.name ILIKE fullName` (busca por nome). Se já existe outro participante com o mesmo nome que concluiu a Lição 13, o novo usuário "herda" esse progresso → `completedLesson13 = true` → `showProvaoCTA = true` → o FAB dispara o Provão imediatamente.
+
+Além disso, o hook intencionalmente ignora `season_id`, então uma Lição 13 de trimestre anterior também desbloqueia o Provão atual indevidamente.
+
+## Correção (escopo mínimo)
+
+**Arquivo:** `src/hooks/useTrimesterProgress.ts`
+- Adicionar parâmetro `userId: string | null | undefined`.
+- Substituir o lookup por nome por `participants.user_id = userId` (sem fallback por nome — evita colisões).
+- Filtrar `quiz_attempts.season_id = seasonId` quando `seasonId` estiver disponível, garantindo que Lição 13 só desbloqueia o Provão da temporada atual.
+- Atualizar `queryKey` para incluir `userId` e `seasonId`.
+- `enabled: !!userId`.
+
+**Arquivo:** `src/pages/Index.tsx`
+- Importar `useAuth` (já está disponível) e passar `user?.id` como primeiro argumento de `useTrimesterProgress`.
+- Manter a lógica existente do FAB:
+  - `showProvaoCTA = completedLesson13 && !completedExam` → abre Provão.
+  - Caso contrário, abre quiz da semana / lição atual (que será a Lição 13 quando for o caso).
+
+## Resultado esperado
+
+- Usuário novo (sem attempt de Lição 13 vinculado ao seu `user_id` na temporada atual): FAB abre o quiz da Lição 13.
+- Após concluir a Lição 13: FAB passa a abrir o Provão.
+- Após concluir o Provão: FAB mostra "✅ Concluído" e leva ao histórico (comportamento já existente).
+
+Nenhuma alteração de banco, RLS ou outros componentes.

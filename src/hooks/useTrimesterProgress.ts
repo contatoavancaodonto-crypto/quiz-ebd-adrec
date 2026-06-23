@@ -9,21 +9,19 @@ export interface TrimesterProgress {
 /**
  * Deriva o progresso do participante no trimestre a partir de quiz_attempts.
  * - completedLesson13: existe attempt finalizado de uma lição/quiz com lesson_number = 13
- * - completedExam: existe attempt finalizado com quiz_kind = 'trimestral'
+ * - completedExam: existe attempt finalizado com quiz_kind = 'trimestral' (ou source_type='trimestral_rpc')
  *
- * Considera attempts vinculados via quiz_id (quizzes.lesson_number) OU
- * via lesson_id (lessons.lesson_number), para cobrir todos os fluxos.
- * Não filtra por season_id para garantir que qualquer usuário que já fez
- * a Lição 13 tenha acesso ao Provão.
+ * Escopo estrito por `user_id` (evita colisões de nome entre participantes)
+ * e por `season_id` quando disponível (Lição 13 do trimestre atual).
  */
 export function useTrimesterProgress(
-  fullName: string | null | undefined,
+  userId: string | null | undefined,
   seasonId: string | null | undefined,
   classId: string | null | undefined,
 ) {
   return useQuery({
-    queryKey: ["trimester-progress", fullName?.toLowerCase().trim(), classId],
-    enabled: !!fullName,
+    queryKey: ["trimester-progress", userId, seasonId, classId],
+    enabled: !!userId,
     staleTime: 30_000,
     queryFn: async (): Promise<TrimesterProgress> => {
       const result: TrimesterProgress = { completedLesson13: false, completedExam: false };
@@ -31,15 +29,21 @@ export function useTrimesterProgress(
       const { data: parts } = await supabase
         .from("participants")
         .select("id")
-        .ilike("name", fullName!);
+        .eq("user_id", userId!);
       const ids = (parts ?? []).map((p) => p.id);
       if (ids.length === 0) return result;
 
-      const { data: attempts } = await supabase
+      let attemptsQuery = supabase
         .from("quiz_attempts")
-        .select("id, quiz_id, lesson_id, source_type, trimester")
+        .select("id, quiz_id, lesson_id, source_type, trimester, season_id")
         .in("participant_id", ids)
         .not("finished_at", "is", null);
+
+      if (seasonId) {
+        attemptsQuery = attemptsQuery.eq("season_id", seasonId);
+      }
+
+      const { data: attempts } = await attemptsQuery;
 
       // Provão via RPC (source_type='trimestral_rpc') também conta como completedExam
       for (const a of attempts ?? []) {
