@@ -200,6 +200,8 @@ const ResultPage = () => {
       .subscribe();
 
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
       supabase.removeChannel(channel);
     };
   }, [store.attemptId, store.churchId, store.trimester, navigate]);
