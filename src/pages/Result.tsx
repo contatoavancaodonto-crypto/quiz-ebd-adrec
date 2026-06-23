@@ -96,12 +96,37 @@ const ResultPage = () => {
       }
 
 
-      const [{ data: cr }, { data: gr }] = await Promise.all([
-        supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
-        supabase.from("ranking_general").select("position, church_id").eq("attempt_id", store.attemptId).maybeSingle(),
-      ]);
-      if (cr) setClassRank(Number(cr.position));
-      if (gr) setGeneralRank(Number(gr.position));
+      const isTrimestral = store.quizKind === "trimestral";
+      if (isTrimestral) {
+        // Para o Provão, classRank/generalRank vêm do ranking consolidado do trimestre
+        const nameKey = store.participantName.toLowerCase().trim();
+        const [{ data: classList }, { data: generalList }] = await Promise.all([
+          supabase
+            .from("ranking_trimester_consolidated")
+            .select("position, participant_name, church_id")
+            .eq("trimester", store.trimester)
+            .eq("class_id", store.classId)
+            .order("position"),
+          supabase
+            .from("ranking_trimester_consolidated")
+            .select("position, participant_name, church_id")
+            .eq("trimester", store.trimester)
+            .order("position"),
+        ]);
+        const meClass = (classList || []).find((e: any) => e.participant_name?.toLowerCase().trim() === nameKey);
+        const meGeneral = (generalList || []).find((e: any) => e.participant_name?.toLowerCase().trim() === nameKey);
+        if (meClass) setClassRank(Number(meClass.position));
+        if (meGeneral) setGeneralRank(Number(meGeneral.position));
+      } else {
+        const [{ data: cr }, { data: gr }] = await Promise.all([
+          supabase.from("ranking_by_class").select("position").eq("attempt_id", store.attemptId).maybeSingle(),
+          supabase.from("ranking_general").select("position, church_id").eq("attempt_id", store.attemptId).maybeSingle(),
+        ]);
+        if (cr) setClassRank(Number(cr.position));
+        if (gr) setGeneralRank(Number(gr.position));
+      }
+
+      const { data: gr } = await supabase.from("ranking_general").select("church_id").eq("attempt_id", store.attemptId).maybeSingle();
 
       const churchId = store.churchId || (gr as any)?.church_id;
 
