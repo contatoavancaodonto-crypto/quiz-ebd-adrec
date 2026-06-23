@@ -13,11 +13,16 @@ export function useActiveSeason() {
   return useQuery({
     queryKey: ["active-season"],
     queryFn: async () => {
+      const nowIso = new Date().toISOString();
+      // Pick the active season currently in progress (ends soonest from now).
+      // Avoids returning a future season (e.g. next trimester) that would
+      // delay provão availability windows tied to end_date.
       const { data, error } = await supabase
         .from("seasons")
         .select("*")
         .eq("status", "active")
-        .order("end_date", { ascending: false })
+        .gte("end_date", nowIso)
+        .order("end_date", { ascending: true })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
