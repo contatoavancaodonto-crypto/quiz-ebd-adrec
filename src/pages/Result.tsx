@@ -507,17 +507,21 @@ const ResultPage = () => {
           {(() => {
             const shareUrl = typeof window !== "undefined" ? window.location.origin : "https://quizebd.com";
             const firstName = (store.participantName || "").trim().split(/\s+/)[0] || "Eu";
-            const shareTitle = `🔥 ${firstName} fez ${score}/${totalQuestions} no Quiz EBD!`;
+            const isProvao = store.quizKind === "trimestral";
             const tri = store.trimester || 1;
+            const label = isProvao ? "Provão Trimestral" : "Quiz EBD";
+            const shareTitle = isProvao
+              ? `🔥 *${firstName}* tirou *${score}/${totalQuestions}* no *Provão Trimestral*!`
+              : `🔥 *${firstName}* fez *${score}/${totalQuestions}* no *Quiz EBD*!`;
             const shareText =
 `${shareTitle}
 
-📖 Quiz EBD — ${tri}º TRI. 2026 / ADREC
-👤 ${store.participantName}
-✅ ${score}/${totalQuestions} acertos (${pct}%)
-⏱️ Tempo: ${timeStr}
-🥇 Turma${store.className ? ` (${store.className}${store.churchName ? ` - ${store.churchName}` : ""})` : ""}: ${classRank ? `#${classRank}` : "—"}
-🌎 Geral: ${generalRank ? `#${generalRank}` : "—"}
+📖 *${label}* — *${tri}º TRI. 2026 / ADREC*
+👤 *${store.participantName}*
+✅ *${score}/${totalQuestions}* acertos (*${pct}%*)
+⏱️ Tempo: *${timeStr}*
+🥇 Turma${store.className ? ` (*${store.className}${store.churchName ? ` - ${store.churchName}` : ""}*)` : ""}: *${classRank ? `#${classRank}` : "—"}*
+🌎 Geral: *${generalRank ? `#${generalRank}` : "—"}*
 
 Bora pro desafio? Faça o seu quiz e tenta bater meu resultado 👇
 ${shareUrl}`;
