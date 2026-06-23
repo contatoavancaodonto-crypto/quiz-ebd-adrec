@@ -37,9 +37,16 @@ export function useTrimesterProgress(
 
       const { data: attempts } = await supabase
         .from("quiz_attempts")
-        .select("id, quiz_id, lesson_id")
+        .select("id, quiz_id, lesson_id, source_type, trimester")
         .in("participant_id", ids)
         .not("finished_at", "is", null);
+
+      // Provão via RPC (source_type='trimestral_rpc') também conta como completedExam
+      for (const a of attempts ?? []) {
+        if ((a as any).source_type === "trimestral_rpc") {
+          result.completedExam = true;
+        }
+      }
 
       const quizIds = Array.from(
         new Set((attempts ?? []).map((a) => a.quiz_id).filter(Boolean)),
