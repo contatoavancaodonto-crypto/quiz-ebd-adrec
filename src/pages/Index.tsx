@@ -310,6 +310,7 @@ const Index = () => {
   };
 
   const handleStartProvaoCard = async () => {
+    if (completedExam) return toast.info("✅ Você já realizou o Provão deste trimestre.");
     if (seasonExpired) return toast.error("Este quiz foi encerrado.");
     if (PROVAO_QUIZ_CLOSED) return toast.error("⏰ Tempo esgotado!");
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
