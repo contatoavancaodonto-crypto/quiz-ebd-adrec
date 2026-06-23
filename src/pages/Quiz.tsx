@@ -179,11 +179,13 @@ const QuizPage = () => {
         let dbQuestions = null;
         let dbQuestionsErr = null;
 
-        const { data: quizMeta } = await supabase
-          .from("quizzes")
-          .select("quiz_kind, total_questions")
-          .eq("id", quizId)
-          .maybeSingle();
+        const { data: quizMeta } = quizId
+          ? await supabase
+              .from("quizzes")
+              .select("quiz_kind, total_questions")
+              .eq("id", quizId)
+              .maybeSingle()
+          : { data: null as any };
 
         const isTrimestral = quizMeta?.quiz_kind === 'trimestral' || store.quizKind === 'trimestral' || (store.trimester !== undefined && !quizId);
 
@@ -210,7 +212,7 @@ const QuizPage = () => {
           }
         }
 
-        if (!dbQuestions) {
+        if (!dbQuestions && quizId) {
           const { data: normalQs, error: normalErr } = await supabase
             .from("questions")
             .select("id, question_text, option_a, option_b, option_c, option_d, order_index")
@@ -229,12 +231,14 @@ const QuizPage = () => {
           console.log("Processando perguntas da tabela questions. Total:", dbQuestions.length);
           allQs = dbQuestions as Question[];
           
-          // Verifica se é uma lição para decidir os metadados
-          const { data: isLessonCheck } = await supabase.from("lessons").select("id").eq("id", quizId).maybeSingle();
-          isLesson = !!isLessonCheck;
+          // Verifica se é uma lição (só se houver quizId e não for trimestral)
+          if (quizId && !isTrimestral) {
+            const { data: isLessonCheck } = await supabase.from("lessons").select("id").eq("id", quizId).maybeSingle();
+            isLesson = !!isLessonCheck;
+          }
           
           questionsPerQuiz = allQs.length;
-          store.setQuizMetadata(isLesson ? "weekly" : "weekly", questionsPerQuiz);
+          store.setQuizMetadata(isTrimestral ? "trimestral" : "weekly", questionsPerQuiz);
         } else {
           // Fallback para ler do JSON da lição (legado/redundância)
           const { data: lessonData } = await supabase
@@ -301,7 +305,7 @@ const QuizPage = () => {
         }
 
         // 🔒 Regra: cada lição / provão só pode ser feito UMA vez por aluno
-        if (!store.isRetrying) {
+        if (!store.isRetrying && quizId) {
           const { data: existingAttempt } = await supabase
             .from("quiz_attempts")
             .select("id, score, total_questions, accuracy_percentage, total_time_ms, finished_at")
@@ -332,10 +336,12 @@ const QuizPage = () => {
           .from("quiz_attempts")
           .insert({
             participant_id: participantId,
-            quiz_id: isLesson ? null : quizId,
-            lesson_id: isLesson ? quizId : null,
+            quiz_id: quizId && !isLesson ? quizId : null,
+            lesson_id: quizId && isLesson ? quizId : null,
             total_questions: selected.length,
-            source_type: isLesson ? 'lesson_table' : 'quiz_table'
+            season_id: store.seasonId || null,
+            trimester: isTrimestral ? (store.trimester ?? null) : null,
+            source_type: isTrimestral ? 'trimestral_rpc' : (isLesson ? 'lesson_table' : 'quiz_table')
           })
           .select("id")
           .single();
