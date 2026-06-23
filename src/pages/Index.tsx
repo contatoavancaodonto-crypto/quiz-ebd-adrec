@@ -192,7 +192,7 @@ const Index = () => {
     : "";
   const { data: streak = 0 } = useParticipantStreak(fullName, season?.id);
   const { data: trimesterProgress } = useTrimesterProgress(
-    fullName,
+    user?.id,
     season?.id,
     selectedClassId || userClassId,
   );
