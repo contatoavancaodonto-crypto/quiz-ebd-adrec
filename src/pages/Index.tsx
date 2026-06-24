@@ -315,6 +315,11 @@ const Index = () => {
     if (PROVAO_QUIZ_CLOSED) return toast.error("⏰ Tempo esgotado!");
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     if (!provaoSelectedClass) return toast.error("Selecione uma turma.");
+    if (isAdmin && userClassId && provaoSelectedClass.id !== userClassId) {
+      return toast.info(
+        "👀 A pontuação só conta na sua turma de cadastro. Selecione sua turma para realizar o Provão."
+      );
+    }
     if (PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri))
       return toast.info(`🔒 ${provaoSelectedTri}º Tri. encerrado.`);
     if (!provaoStatus.available)
@@ -401,9 +406,25 @@ const Index = () => {
     }, 0);
   };
 
+  // Regra: admin pode navegar entre turmas (visualizar), mas a pontuação só conta
+  // na turma de cadastro dele. Se estiver visualizando outra turma, bloqueia o quiz.
+  const isViewingOtherClass =
+    isAdmin && !!userClassId && !!selectedClassId && selectedClassId !== userClassId;
+
+  const blockIfOtherClass = () => {
+    if (isViewingOtherClass) {
+      toast.info(
+        "👀 Você está visualizando outra turma. Volte para a sua turma de cadastro para realizar o quiz — a pontuação só conta na sua turma."
+      );
+      return true;
+    }
+    return false;
+  };
+
   const handleStartWeekly = () => {
     if (!weeklyQuiz) return toast.error("Quiz da lição não está disponível.");
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
+    if (blockIfOtherClass()) return;
     if (alreadyAnsweredWeekly) {
       return toast.info("Você já respondeu o quiz desta lição 🎉");
     }
@@ -413,6 +434,7 @@ const Index = () => {
 
   const handleStartProvao = () => {
     if (!userClass) return toast.error("Sua turma não foi encontrada no perfil.");
+    if (blockIfOtherClass()) return;
     // Se existir um registro de quiz trimestral, usa o id dele.
     // Caso contrário, inicia o provão sem quizId — Quiz.tsx detecta o modo
     // trimestral e carrega perguntas via RPC `get_trimestral_provao_questions`.
@@ -437,6 +459,7 @@ const Index = () => {
     if (!profile?.first_name || !profile?.class_id || !profile?.class_name) {
       return toast.error("Complete seu perfil para iniciar o quiz.");
     }
+    if (blockIfOtherClass()) return;
     const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     const trimester = Math.floor(new Date().getMonth() / 3) + 1;
     const store = useQuizStore.getState();
