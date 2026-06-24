@@ -315,6 +315,11 @@ const Index = () => {
     if (PROVAO_QUIZ_CLOSED) return toast.error("⏰ Tempo esgotado!");
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     if (!provaoSelectedClass) return toast.error("Selecione uma turma.");
+    if (isAdmin && userClassId && provaoSelectedClass.id !== userClassId) {
+      return toast.info(
+        "👀 A pontuação só conta na sua turma de cadastro. Selecione sua turma para realizar o Provão."
+      );
+    }
     if (PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri))
       return toast.info(`🔒 ${provaoSelectedTri}º Tri. encerrado.`);
     if (!provaoStatus.available)
