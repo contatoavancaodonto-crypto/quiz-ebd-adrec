@@ -33,17 +33,15 @@ export function useTrimesterProgress(
       const ids = (parts ?? []).map((p) => p.id);
       if (ids.length === 0) return result;
 
-      let attemptsQuery = supabase
+      // Não filtramos por season_id: algumas attempts legítimas da Lição 13
+      // foram gravadas com season_id divergente da season "active" atual
+      // (existem múltiplas seasons ativas em transição de trimestre). A
+      // confiabilidade vem do escopo por user_id + lesson_number/quiz_kind.
+      const { data: attempts } = await supabase
         .from("quiz_attempts")
         .select("id, quiz_id, lesson_id, source_type, trimester, season_id")
         .in("participant_id", ids)
         .not("finished_at", "is", null);
-
-      if (seasonId) {
-        attemptsQuery = attemptsQuery.eq("season_id", seasonId);
-      }
-
-      const { data: attempts } = await attemptsQuery;
 
       // Provão via RPC (source_type='trimestral_rpc') também conta como completedExam
       for (const a of attempts ?? []) {
