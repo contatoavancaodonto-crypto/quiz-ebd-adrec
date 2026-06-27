@@ -32,11 +32,14 @@ export const useWeeklyVerses = () => {
       sunday.setDate(monday.getDate() + 6);
       sunday.setHours(23, 59, 59, 999);
 
+      const orFilter = classId
+        ? `class_id.eq.${classId},class_id.is.null`
+        : `class_id.is.null`;
       const { data, error } = await supabase
         .from("verses")
         .select("*")
         .eq("active", true)
-        .or(`class_id.eq.${classId},class_id.is.null`)
+        .or(orFilter)
         .gte("scheduled_date", monday.toISOString().split('T')[0])
         .lte("scheduled_date", sunday.toISOString().split('T')[0])
         .order("scheduled_date", { ascending: true });
@@ -44,6 +47,6 @@ export const useWeeklyVerses = () => {
       if (error) throw error;
       return data as WeeklyVerse[];
     },
-    enabled: !!classId,
+    enabled: true,
   });
 };
