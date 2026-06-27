@@ -2228,29 +2228,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      finalize_attempt:
-        | {
-            Args: { p_attempt_id: string; p_total_time_ms: number }
-            Returns: {
-              accuracy_percentage: number
-              score: number
-              total_questions: number
-              total_time_ms: number
-            }[]
-          }
-        | {
-            Args: {
-              p_attempt_id: string
-              p_total_time_ms: number
-              p_trimester?: number
-            }
-            Returns: {
-              accuracy_percentage: number
-              score: number
-              total_questions: number
-              total_time_ms: number
-            }[]
-          }
+      finalize_attempt: {
+        Args: {
+          p_attempt_id: string
+          p_total_time_ms: number
+          p_trimester?: number
+        }
+        Returns: {
+          accuracy_percentage: number
+          score: number
+          total_questions: number
+          total_time_ms: number
+        }[]
+      }
       get_attempt_gabarito: {
         Args: { p_attempt_id: string }
         Returns: {
