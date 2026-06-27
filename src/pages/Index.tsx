@@ -307,7 +307,10 @@ const Index = () => {
     setProvaoLoading(true);
     try {
       const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
+      const store = useQuizStore.getState();
+      store.reset();
       setParticipant(fullNameLocal, provaoSelectedClass.id, provaoSelectedClass.name, provaoSelectedTri, season?.id);
+      store.setQuizMetadata("trimestral", 20);
       if (profile.church_id && profile.church_name) {
         setChurch(profile.church_id, profile.church_name);
       }
@@ -364,8 +367,9 @@ const Index = () => {
     if (!profile?.first_name) return toast.error("Perfil incompleto.");
     const fullNameLocal = `${profile.first_name} ${profile.last_name ?? ""}`.trim();
     
-    // Configura o store com os dados necessários - ANTES de navegar
+    // Limpa qualquer quiz anterior antes de configurar o novo fluxo.
     const store = useQuizStore.getState();
+    store.reset();
     store.setParticipant(fullNameLocal, quizClassId, quizClassName, trimester, season?.id);
     
     if (quizId) {

@@ -96,6 +96,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       churchId: "",
       churchName: "",
       quizId: "",
+      seasonId: "",
       quizKind: "weekly",
       totalQuestions: 13,
       participantId: "",
