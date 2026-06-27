@@ -187,7 +187,8 @@ const QuizPage = () => {
               .maybeSingle()
           : { data: null as any };
 
-        const isTrimestral = quizMeta?.quiz_kind === 'trimestral' || store.quizKind === 'trimestral' || (store.trimester !== undefined && !quizId);
+        const hasTrimestralQuizRecord = quizMeta?.quiz_kind === 'trimestral';
+        const isTrimestral = hasTrimestralQuizRecord || store.quizKind === 'trimestral' || (store.trimester !== undefined && !quizId);
 
         if (isTrimestral) {
           console.log("Detectado Provão Trimestral. Buscando perguntas via RPC...");
@@ -348,7 +349,7 @@ const QuizPage = () => {
           .from("quiz_attempts")
           .insert({
             participant_id: participantId,
-            quiz_id: quizId && !isLesson ? quizId : null,
+            quiz_id: isTrimestral ? (hasTrimestralQuizRecord ? quizId : null) : (quizId && !isLesson ? quizId : null),
             lesson_id: quizId && isLesson ? quizId : null,
             total_questions: selected.length,
             season_id: store.seasonId || null,
