@@ -301,10 +301,6 @@ const Index = () => {
         "👀 A pontuação só conta na sua turma de cadastro. Selecione sua turma para realizar o Provão."
       );
     }
-    if (PROVAO_CLOSED_TRIMESTERS.includes(provaoSelectedTri))
-      return toast.info(`🔒 ${provaoSelectedTri}º Tri. encerrado.`);
-    if (!provaoStatus.available)
-      return toast.info(`📅 Disponível em ${provaoStatus.daysToOpen} dias!`);
     if (provaoSelectedClass.name === "Adolescentes")
       return toast.info("🚧 Em construção!");
 
