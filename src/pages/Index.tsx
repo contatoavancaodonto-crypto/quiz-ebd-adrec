@@ -198,10 +198,10 @@ const Index = () => {
   );
   const completedLesson13 = !!trimesterProgress?.completedLesson13;
   const completedExam = !!trimesterProgress?.completedExam;
-  // Mostra CTA do Provão para qualquer usuário que concluiu a Lição 13
-  // (não exige que exista um registro de quiz trimestral — as perguntas
-  // são geradas via RPC `get_trimestral_provao_questions`).
-  const showProvaoCTA = completedLesson13 && !completedExam;
+  // Provão liberado para todos os usuários (sem exigir conclusão da Lição 13).
+  // As perguntas são geradas via RPC `get_trimestral_provao_questions`.
+  void completedLesson13;
+  const showProvaoCTA = !completedExam;
   const weekClose = useCountdown(weeklyQuiz?.closes_at, handleRefresh);
   const nextOpen = useCountdown(nextQuiz?.opens_at, handleRefresh);
   const { data: currentLesson, isLoading: isLoadingCurrentLesson } = useCurrentLesson();
