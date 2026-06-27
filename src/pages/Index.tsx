@@ -833,28 +833,24 @@ const Index = () => {
                     <div className="grid grid-cols-4 gap-2">
                       {[1, 2, 3, 4].map((t) => {
                         const closed = PROVAO_CLOSED_TRIMESTERS.includes(t);
-                        const available = PROVAO_AVAILABLE_TRIMESTERS.includes(t);
-                        const selectable = available || closed;
-                        const active = provaoSelectedTri === t && selectable;
+                        const active = provaoSelectedTri === t;
                         return (
                           <motion.button
                             key={t}
-                            whileHover={{ scale: selectable ? 1.05 : 1 }}
-                            whileTap={{ scale: selectable ? 0.95 : 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleProvaoTriClick(t)}
                             className={`py-2.5 rounded-xl border-2 transition-all text-center cursor-pointer ${
                               active
                                 ? "border-primary bg-primary/10 shadow-md"
-                                : selectable
-                                ? "border-border bg-muted/50 hover:border-primary/40"
-                                : "border-border bg-muted/30 opacity-60"
-                            } ${!available && t === 2 ? "relative" : ""}`}
+                                : "border-border bg-muted/50 hover:border-primary/40"
+                            }`}
                           >
                             <div className="text-sm font-bold text-foreground">
                               {t}º
                             </div>
                             <div className="text-[9px] text-muted-foreground">
-                              {closed ? "Encerrado" : available ? "Tri." : (t === 2 ? `em ${provaoStatus.daysToOpen} dias` : "Em breve")}
+                              {closed ? "Encerrado" : "Tri."}
                             </div>
                           </motion.button>
                         );
