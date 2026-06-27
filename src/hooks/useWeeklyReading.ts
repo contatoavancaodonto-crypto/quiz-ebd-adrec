@@ -30,20 +30,24 @@ export const useWeeklyReading = () => {
   const classId = profile?.class_id;
 
   return useQuery({
-    queryKey: ["weekly-reading", classId],
-    enabled: !!classId,
+    queryKey: ["weekly-reading", classId ?? "none"],
+    enabled: true,
     queryFn: async (): Promise<WeeklyReading> => {
       // Obtém a data local atual à meia-noite para garantir consistência
       const now = new Date();
       const day = now.getDay(); // 0 (Dom) a 6 (Sáb)
-      
+
       // 1. Tenta buscar versículo agendado para hoje na tabela verses
+      // Usuários sem class_id ainda recebem versículos gerais (class_id NULL)
+      const orFilter = classId
+        ? `class_id.eq.${classId},class_id.is.null`
+        : `class_id.is.null`;
       const { data: scheduledVerse } = await supabase
         .from("verses")
         .select("*")
         .eq("scheduled_date", now.toISOString().split('T')[0])
         .eq("active", true)
-        .or(`class_id.eq.${classId},class_id.is.null`)
+        .or(orFilter)
         .order("class_id", { ascending: false, nullsFirst: false }) // Prioriza o da classe
         .limit(1)
         .maybeSingle();
