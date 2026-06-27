@@ -915,11 +915,7 @@ const Index = () => {
                       ) : provaoIsDisabled ? (
                         <>
                           <Lock className="w-4 h-4" />
-                          {completedExam
-                            ? "Provão Concluído"
-                            : provaoSelectedTri === 2 && !provaoStatus.available
-                            ? `Disponível em ${provaoStatus.daysToOpen} dias`
-                            : `${provaoSelectedTri}º Tri. indisponível`}
+                          {completedExam ? "Provão Concluído" : `${provaoSelectedTri}º Tri. indisponível`}
                         </>
                       ) : (
                         <>
