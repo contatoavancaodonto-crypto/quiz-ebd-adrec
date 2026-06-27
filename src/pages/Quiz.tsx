@@ -92,7 +92,13 @@ const QuizPage = () => {
         let quizId = store.quizId;
 
         if (!store.isRetrying) {
-          const { data: { user } } = await supabase.auth.getUser();
+          const { data: { user }, error: userErr } = await supabase.auth.getUser();
+
+          if (userErr || !user) {
+            toast.error("Sua sessão expirou. Entre novamente para fazer o Provão.");
+            navigate("/auth", { replace: true });
+            return;
+          }
           
           // Verifica se já existe um participante com esse nome nesta turma para evitar duplicatas infinitas
           const { data: existingParticipant } = await supabase
@@ -100,7 +106,7 @@ const QuizPage = () => {
             .select("id")
             .eq("name", store.participantName)
             .eq("class_id", store.classId)
-            .eq("user_id", user?.id ?? null)
+              .eq("user_id", user.id)
             .limit(1)
             .maybeSingle();
 
@@ -110,7 +116,7 @@ const QuizPage = () => {
           } else {
             const { data: participant, error: pErr } = await supabase
               .from("participants")
-              .insert({ name: store.participantName, class_id: store.classId, user_id: user?.id ?? null })
+              .insert({ name: store.participantName, class_id: store.classId, user_id: user.id })
               .select("id")
               .single();
             if (pErr) throw pErr;
@@ -436,12 +442,19 @@ const QuizPage = () => {
 
       const totalMs = Math.round(ms);
 
-      await supabase
+      const { error: finalizeErr } = await supabase
         .rpc("finalize_attempt", {
           p_attempt_id: store.attemptId,
           p_total_time_ms: totalMs,
           p_trimester: store.trimester
         });
+
+      if (finalizeErr) {
+        console.error("Erro ao finalizar tentativa:", finalizeErr);
+        toast.error(finalizeErr.message || "Não foi possível finalizar agora. Tente novamente.");
+        finishingRef.current = false;
+        return;
+      }
 
       store.finishQuiz(score, totalMs);
       navigate("/result");
@@ -683,13 +696,19 @@ const QuizPage = () => {
                       p_selected_option: label,
                     });
 
-                    if (!error && data && data[0]) {
+                    if (error || !data?.[0]) {
+                      console.error("Erro ao enviar resposta:", error);
+                      toast.error(error?.message || "Falha ao salvar resposta. Tente novamente.");
+                      setSelectedOption(null);
+                      setIsSubmitting(false);
+                      return;
+                    }
+
+                    if (data[0]) {
                       const isCorrect = data[0].is_correct;
                       setRevealedCorrect((s) => ({ ...s, [currentQ.id]: data[0].correct_option }));
                       setCorrectnessByQ((s) => ({ ...s, [currentQ.id]: isCorrect }));
                       playSound(isCorrect ? 'win' : 'error');
-                    } else {
-                      playSound('ding');
                     }
                     setConfirmed(true);
                     setIsSubmitting(false);
