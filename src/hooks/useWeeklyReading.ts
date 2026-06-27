@@ -65,6 +65,10 @@ export const useWeeklyReading = () => {
         };
       }
 
+      if (!classId) {
+        return { type: "none", title: "", content: null, weeklyBibleReading: null, dayName: days[day] };
+      }
+
       const { data: quiz, error } = await supabase
         .from("quizzes")
         .select("*")
